@@ -2,11 +2,11 @@
 
 
 current_time=$(date +"%y;%m;%d;%H;%M;%S;+2")
-encoded_text=$(node ./4g_modem/encode_gsm7.js "$2")
+encoded_text=$2
 textlen=${#2}
 
-if test $textlen -ge 270; then 
-	echo [-1] Sms limit is 270
+if test $textlen -ge 1080; then 
+	echo [-1] Sms limit is 1080
 	return
 fi
 
