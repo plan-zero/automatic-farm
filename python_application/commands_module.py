@@ -14,15 +14,17 @@ def unregisterCommandHandler(commandString, commandHandler):
 			definedCommands.remove(ftuple)
 
 def executeCommand(messages):
+	print("messages are: " + str(messages))
 	global definedCommands
-	arg = []
 	for msg in messages:
+		arg = []
 		arg.append(msg[1])
 		arg.append(msg[2])
 
 		#print("going to execution")
 		for ftuple in definedCommands:
 			if ftuple[0] == arg[1]:
+				#print("These are eq:" + str(ftuple[0]) + "  " + str(arg[1]) )
 				functPtr = ftuple[1]
 				functPtr(arg)
 
