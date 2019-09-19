@@ -1,4 +1,6 @@
+from time import gmtime, strftime, localtime
 import sys,time,os
+import subprocess
 sys.path.insert(0, '/home/pi/farmview/python_application')
 
 import serial_module as Serial
@@ -11,12 +13,55 @@ import util_module as Util
 import postdata_module as PostData
 
 
+usbDownThr = 0
+dailyRebootDone = 0
+def manageDailyReboot():
+	global usbDownThr
+	global dailyRebootDone
+	timestamp = strftime("%H:%M",localtime())
+	if timestamp == "12:00" and dailyRebootDone == 0:
+		try:
+			dailyRebootDone = 1
+            		#remove log messages
+			#os.system('sudo rm /home/pi/farmview/messages.txt')
+			Logger.logMessage("Daily reboot")
+			Reboot.triggerReboot(1)
+		except:
+			e = sys.exc_info()
+			print(e)
+	elif timestamp == "12:05":
+		dailyRebootDone = 0
+
+	###check if usb0 interface still running
+	ifconf = open("tmp.txt", 'w')
+	subprocess.call(['ifconfig'], stdout=ifconf)
+	ifconf.close()
+	with open("tmp.txt", 'r') as ifconf_out:
+		if "usb0" not in  ifconf_out.read():
+			usbDownThr = usbDownThr + 1
+			Logger.logMessage("Interface down, wait 5 minutes until reboot")
+			if usbDownThr == 60:
+				Logger.logMessage("Trigger reboot because usb0 is down")
+				Reboot.triggerReboot(1)
+		else:
+			Logger.logMessage("Interface up")
+			usbDownThr = 0
+		ifconf_out.close()
 
 
 appInit = False
 modemInit = False
 phonebook = ["0743566434"]
 
+def RebootShutdownHandler():
+	Logger.logMessage("Shutdown...")
+
+def RebootPreShutdownHandler():
+	Logger.logMessage("The system will shut down in few seconds")
+	for n in phonebook:
+		number = Gsm.formatNumber(n)
+		Gsm.sendSMS(number, "The system will shut down in few seconds")
+	os.system('sudo rm /home/pi/farmview/messages.txt')
 
 def HandlerCommand_getBattery(arg):
 	bat = Battery.getBatteryData()
@@ -26,7 +71,7 @@ def HandlerCommand_getBattery(arg):
 
 def BatteryStatusHandler(warning, critical):
 	Logger.logMessage("BatteryStatusHandler called warning:" + str(warning) + " critical:" + str(critical))
-
+	Reboot.postBatteryStatus(warning, critical)
 
 Logger.logMessage("Application: initialization phase")
 
@@ -41,12 +86,13 @@ Logger.logMessage("The modem is fully initialized")
 Logger.logMessage("Application: Sending greeting message")
 
 for number in phonebook:
-#	output = Gsm.sendSMS(number, "FarmView system is starting...")
+	output = Gsm.sendSMS(number, "FarmView system is starting...")
 	value = Util.extractResponse(output,'result')
 	if value != 'success':
 		Logger.logMessage("Application: can't send the message due an internal error")
 
 appInit = True
+
 Logger.logMessage("Register battery handler to the serial module")
 if Serial.registerSerialCallback(Battery.readBatteryDataHandler) != 1:
 	Logger.logMessage("Register of battery handler failed!")
@@ -57,6 +103,8 @@ if Battery.registerStatusBatteryCallback(BatteryStatusHandler) != 1:
 	appInit = False
 
 Commands.registerCommandHandler("getBattery",HandlerCommand_getBattery)
+Reboot.registerShutdownCallback(RebootShutdownHandler)
+Reboot.registerPreShutdownCallback(RebootPreShutdownHandler)
 
 Gsm.addAdministrator("0743566434")
 Gsm.addAdministrator("+40743566434")
@@ -76,8 +124,11 @@ while modemInit == True and appInit == True:
 ########Check messages and execute commands
 	cmd_messages = Gsm.checkMessages()
 	Commands.executeCommand(cmd_messages)
+########Manage reboots and shutdown
+	Reboot.manageRebootEvent()
+	Reboot.manageLowBatteryShutdown()
 ####################################################################
 
-
+	manageDailyReboot()
 	Logger.logMessage("5 seconds passed, going to sleep")
 	time.sleep(5)
