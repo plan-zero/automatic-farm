@@ -1,0 +1,9 @@
+
+*.cproj
+*.o
+*.d
+*.srec
+*.map
+*.hex
+*.lss
+nrf24leaf/leaf_nrf2401/Debug/Makefile
