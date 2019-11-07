@@ -1,0 +1,1408 @@
+
+bootloader_m16.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000003a4  00003800  00003800  0000042c  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .shared       00000358  00003000  00003000  000000d4  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .data         00000014  00800060  00003ba4  000007d0  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .bss          00000023  00800074  00800074  000007e4  2**0
+                  ALLOC
+  4 .eeprom       00000005  00810000  00810000  000007e4  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .comment      00000030  00000000  00000000  000007e9  2**0
+                  CONTENTS, READONLY
+  6 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000081c  2**2
+                  CONTENTS, READONLY
+  7 .debug_aranges 00000108  00000000  00000000  00000858  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_info   00001a42  00000000  00000000  00000960  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_abbrev 00000b0c  00000000  00000000  000023a2  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_line   00000a5b  00000000  00000000  00002eae  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_frame  000002c4  00000000  00000000  0000390c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_str    00000854  00000000  00000000  00003bd0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_loc    00000c41  00000000  00000000  00004424  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 14 .debug_ranges 000000b8  00000000  00000000  00005065  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00003800 <__vectors>:
+    3800:	0c 94 2a 1c 	jmp	0x3854	; 0x3854 <__ctors_end>
+    3804:	0c 94 16 1d 	jmp	0x3a2c	; 0x3a2c <__vector_1>
+    3808:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    380c:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3810:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3814:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3818:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    381c:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3820:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3824:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3828:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    382c:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3830:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3834:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3838:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    383c:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3840:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3844:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3848:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    384c:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+    3850:	0c 94 47 1c 	jmp	0x388e	; 0x388e <__bad_interrupt>
+
+00003854 <__ctors_end>:
+    3854:	11 24       	eor	r1, r1
+    3856:	1f be       	out	0x3f, r1	; 63
+    3858:	cf e5       	ldi	r28, 0x5F	; 95
+    385a:	d4 e0       	ldi	r29, 0x04	; 4
+    385c:	de bf       	out	0x3e, r29	; 62
+    385e:	cd bf       	out	0x3d, r28	; 61
+
+00003860 <__do_copy_data>:
+    3860:	10 e0       	ldi	r17, 0x00	; 0
+    3862:	a0 e6       	ldi	r26, 0x60	; 96
+    3864:	b0 e0       	ldi	r27, 0x00	; 0
+    3866:	e4 ea       	ldi	r30, 0xA4	; 164
+    3868:	fb e3       	ldi	r31, 0x3B	; 59
+    386a:	02 c0       	rjmp	.+4      	; 0x3870 <__do_copy_data+0x10>
+    386c:	05 90       	lpm	r0, Z+
+    386e:	0d 92       	st	X+, r0
+    3870:	a4 37       	cpi	r26, 0x74	; 116
+    3872:	b1 07       	cpc	r27, r17
+    3874:	d9 f7       	brne	.-10     	; 0x386c <__do_copy_data+0xc>
+
+00003876 <__do_clear_bss>:
+    3876:	20 e0       	ldi	r18, 0x00	; 0
+    3878:	a4 e7       	ldi	r26, 0x74	; 116
+    387a:	b0 e0       	ldi	r27, 0x00	; 0
+    387c:	01 c0       	rjmp	.+2      	; 0x3880 <.do_clear_bss_start>
+
+0000387e <.do_clear_bss_loop>:
+    387e:	1d 92       	st	X+, r1
+
+00003880 <.do_clear_bss_start>:
+    3880:	a7 39       	cpi	r26, 0x97	; 151
+    3882:	b2 07       	cpc	r27, r18
+    3884:	e1 f7       	brne	.-8      	; 0x387e <.do_clear_bss_loop>
+    3886:	0e 94 50 1c 	call	0x38a0	; 0x38a0 <main>
+    388a:	0c 94 d0 1d 	jmp	0x3ba0	; 0x3ba0 <_exit>
+
+0000388e <__bad_interrupt>:
+    388e:	0c 94 00 1c 	jmp	0x3800	; 0x3800 <__vectors>
+
+00003892 <radio_rxhandler>:
+#define RADIO_RX_ADDRESS (const uint8_t*)0
+#define RADIO_RX_LENGTH	 5
+
+volatile int rx_radio;
+void radio_rxhandler(uint8_t pipenumber){
+	rx_radio = 1;
+    3892:	81 e0       	ldi	r24, 0x01	; 1
+    3894:	90 e0       	ldi	r25, 0x00	; 0
+    3896:	90 93 96 00 	sts	0x0096, r25	; 0x800096 <rx_radio+0x1>
+    389a:	80 93 95 00 	sts	0x0095, r24	; 0x800095 <rx_radio>
+    389e:	08 95       	ret
+
+000038a0 <main>:
+}
+radiopacket_t buffer;
+uint8_t EEMEM _rx_address[RADIO_RX_LENGTH];
+
+int main(void)
+{
+    38a0:	cf 93       	push	r28
+    38a2:	df 93       	push	r29
+    38a4:	00 d0       	rcall	.+0      	; 0x38a6 <main+0x6>
+    38a6:	00 d0       	rcall	.+0      	; 0x38a8 <main+0x8>
+    38a8:	1f 92       	push	r1
+    38aa:	cd b7       	in	r28, 0x3d	; 61
+    38ac:	de b7       	in	r29, 0x3e	; 62
+    LED_PORT_DIR |= 1 << LED_PORT_PIN;
+    38ae:	b8 9a       	sbi	0x17, 0	; 23
+	Radio_Init();
+    38b0:	0e 94 00 18 	call	0x3000	; 0x3000 <Radio_Init>
+	
+	uint8_t rx_address[RADIO_RX_LENGTH];
+	eeprom_read_block ((void*)&rx_address, (void*)&_rx_address, RADIO_RX_LENGTH);
+    38b4:	45 e0       	ldi	r20, 0x05	; 5
+    38b6:	50 e0       	ldi	r21, 0x00	; 0
+    38b8:	60 e0       	ldi	r22, 0x00	; 0
+    38ba:	70 e0       	ldi	r23, 0x00	; 0
+    38bc:	ce 01       	movw	r24, r28
+    38be:	01 96       	adiw	r24, 0x01	; 1
+    38c0:	0e 94 c0 1d 	call	0x3b80	; 0x3b80 <eeprom_read_block>
+	
+	Radio_Configure_Rx(RADIO_PIPE_1, rx_address, ENABLE);
+    38c4:	41 e0       	ldi	r20, 0x01	; 1
+    38c6:	be 01       	movw	r22, r28
+    38c8:	6f 5f       	subi	r22, 0xFF	; 255
+    38ca:	7f 4f       	sbci	r23, 0xFF	; 255
+    38cc:	81 e0       	ldi	r24, 0x01	; 1
+    38ce:	0e 94 6f 18 	call	0x30de	; 0x30de <Radio_Configure_Rx>
+	
+	
+	buffer.payload.message.address[0] = 0xE0;
+    38d2:	80 ee       	ldi	r24, 0xE0	; 224
+    38d4:	80 93 79 00 	sts	0x0079, r24	; 0x800079 <buffer+0x4>
+	buffer.payload.message.address[1] = 0x70;
+    38d8:	80 e7       	ldi	r24, 0x70	; 112
+    38da:	80 93 7a 00 	sts	0x007A, r24	; 0x80007a <buffer+0x5>
+	buffer.payload.message.address[2] = 0x35;
+    38de:	85 e3       	ldi	r24, 0x35	; 53
+    38e0:	80 93 7b 00 	sts	0x007B, r24	; 0x80007b <buffer+0x6>
+	buffer.payload.message.address[3] = 0x01;
+    38e4:	81 e0       	ldi	r24, 0x01	; 1
+    38e6:	80 93 7c 00 	sts	0x007C, r24	; 0x80007c <buffer+0x7>
+	buffer.payload.message.address[4] = 0xA1;
+    38ea:	81 ea       	ldi	r24, 0xA1	; 161
+    38ec:	80 93 7d 00 	sts	0x007D, r24	; 0x80007d <buffer+0x8>
+	
+	Radio_Configure(RADIO_2MBPS, RADIO_HIGHEST_POWER);
+    38f0:	63 e0       	ldi	r22, 0x03	; 3
+    38f2:	81 e0       	ldi	r24, 0x01	; 1
+    38f4:	0e 94 e8 18 	call	0x31d0	; 0x31d0 <Radio_Configure>
+		TURN_LED_ON;
+	}*/
+	
+	//TURN_LED_ON;
+
+	sei();
+    38f8:	78 94       	sei
+	
+	
+    while (1) 
+    {
+		if(rx_radio){
+    38fa:	80 91 95 00 	lds	r24, 0x0095	; 0x800095 <rx_radio>
+    38fe:	90 91 96 00 	lds	r25, 0x0096	; 0x800096 <rx_radio+0x1>
+    3902:	89 2b       	or	r24, r25
+    3904:	d1 f3       	breq	.-12     	; 0x38fa <main+0x5a>
+			
+			Radio_Receive(&buffer);
+    3906:	85 e7       	ldi	r24, 0x75	; 117
+    3908:	90 e0       	ldi	r25, 0x00	; 0
+    390a:	0e 94 70 19 	call	0x32e0	; 0x32e0 <Radio_Receive>
+			Radio_Flush();
+    390e:	0e 94 9c 19 	call	0x3338	; 0x3338 <Radio_Flush>
+			rx_radio = 0;
+    3912:	10 92 96 00 	sts	0x0096, r1	; 0x800096 <rx_radio+0x1>
+    3916:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <rx_radio>
+			
+			if( buffer.payload.message.messagecontent[0] == 0xAA )
+    391a:	80 91 7e 00 	lds	r24, 0x007E	; 0x80007e <buffer+0x9>
+    391e:	8a 3a       	cpi	r24, 0xAA	; 170
+    3920:	61 f7       	brne	.-40     	; 0x38fa <main+0x5a>
+			{
+				TURN_LED_ON;
+    3922:	c0 9a       	sbi	0x18, 0	; 24
+    3924:	ea cf       	rjmp	.-44     	; 0x38fa <main+0x5a>
+
+00003926 <get_status>:
+ * Retrieve the status register.
+ */
+static uint8_t get_status()
+{
+	uint8_t status = 0;
+	CSN_LOW();
+    3926:	c2 98       	cbi	0x18, 2	; 24
+
+	status = SPI_Write_Byte(NOP);
+    3928:	8f ef       	ldi	r24, 0xFF	; 255
+    392a:	0e 94 bb 1d 	call	0x3b76	; 0x3b76 <SPI_Write_Byte>
+
+	CSN_HIGH();
+    392e:	c2 9a       	sbi	0x18, 2	; 24
+
+	return status;
+}
+    3930:	08 95       	ret
+
+00003932 <set_register>:
+ * \param reg The register value defined in nRF24L01.h (e.g. CONFIG, EN_AA, &c.).
+ * \param value The value to write to the given register (the whole register is overwritten).
+ * \return The status register.
+ */
+static uint8_t set_register(radio_register_t reg, uint8_t* value, uint8_t len)
+{
+    3932:	0f 93       	push	r16
+    3934:	1f 93       	push	r17
+    3936:	cf 93       	push	r28
+    3938:	df 93       	push	r29
+    393a:	8b 01       	movw	r16, r22
+    393c:	d4 2f       	mov	r29, r20
+	uint8_t status;
+	CSN_LOW();
+    393e:	c2 98       	cbi	0x18, 2	; 24
+
+	status = SPI_Write_Byte(W_REGISTER | (REGISTER_MASK & reg));
+    3940:	8f 71       	andi	r24, 0x1F	; 31
+    3942:	80 62       	ori	r24, 0x20	; 32
+    3944:	0e 94 bb 1d 	call	0x3b76	; 0x3b76 <SPI_Write_Byte>
+    3948:	c8 2f       	mov	r28, r24
+	SPI_Write_Block(value, len);
+    394a:	6d 2f       	mov	r22, r29
+    394c:	c8 01       	movw	r24, r16
+    394e:	0e 94 af 1d 	call	0x3b5e	; 0x3b5e <SPI_Write_Block>
+
+	CSN_HIGH();
+    3952:	c2 9a       	sbi	0x18, 2	; 24
+
+	return status;
+}
+    3954:	8c 2f       	mov	r24, r28
+    3956:	df 91       	pop	r29
+    3958:	cf 91       	pop	r28
+    395a:	1f 91       	pop	r17
+    395c:	0f 91       	pop	r16
+    395e:	08 95       	ret
+
+00003960 <send_instruction>:
+ * \param data An array of argument data to the instruction.  If len is 0, then this may be NULL.
+ * \param buffer An array for the instruction's return data.  This can be NULL if the instruction has no output.
+ * \param len The length of the data and buffer arrays.
+ */
+static void send_instruction(uint8_t instruction, uint8_t* data, uint8_t* buffer, uint8_t len)
+{
+    3960:	ef 92       	push	r14
+    3962:	ff 92       	push	r15
+    3964:	0f 93       	push	r16
+    3966:	1f 93       	push	r17
+    3968:	cf 93       	push	r28
+    396a:	8b 01       	movw	r16, r22
+    396c:	7a 01       	movw	r14, r20
+    396e:	c2 2f       	mov	r28, r18
+    CSN_LOW();
+    3970:	c2 98       	cbi	0x18, 2	; 24
+	// send the instruction
+	SPI_Write_Byte(instruction);
+    3972:	0e 94 bb 1d 	call	0x3b76	; 0x3b76 <SPI_Write_Byte>
+	// pass in args
+	if (len > 0)
+    3976:	cc 23       	and	r28, r28
+    3978:	69 f0       	breq	.+26     	; 0x3994 <send_instruction+0x34>
+	{
+		if (buffer == NULL)	//
+    397a:	e1 14       	cp	r14, r1
+    397c:	f1 04       	cpc	r15, r1
+    397e:	29 f4       	brne	.+10     	; 0x398a <send_instruction+0x2a>
+			SPI_Write_Block(data, len);
+    3980:	6c 2f       	mov	r22, r28
+    3982:	c8 01       	movw	r24, r16
+    3984:	0e 94 af 1d 	call	0x3b5e	; 0x3b5e <SPI_Write_Block>
+    3988:	05 c0       	rjmp	.+10     	; 0x3994 <send_instruction+0x34>
+		else
+			SPI_ReadWrite_Block(data, buffer, len);
+    398a:	4c 2f       	mov	r20, r28
+    398c:	b7 01       	movw	r22, r14
+    398e:	c8 01       	movw	r24, r16
+    3990:	0e 94 9f 1d 	call	0x3b3e	; 0x3b3e <SPI_ReadWrite_Block>
+	}
+    // resynch SPI
+    CSN_HIGH();
+    3994:	c2 9a       	sbi	0x18, 2	; 24
+}
+    3996:	cf 91       	pop	r28
+    3998:	1f 91       	pop	r17
+    399a:	0f 91       	pop	r16
+    399c:	ff 90       	pop	r15
+    399e:	ef 90       	pop	r14
+    39a0:	08 95       	ret
+
+000039a2 <reset_pipe0_address>:
+ * the pipe 0 address is set to the transmit address while the radio is transmitting (this is how the radio receives
+ * auto-ack packets).
+ */
+static void reset_pipe0_address()
+{
+	if (rx_pipe_widths[RADIO_PIPE_0] != 0)
+    39a2:	80 91 6d 00 	lds	r24, 0x006D	; 0x80006d <rx_pipe_widths>
+    39a6:	88 23       	and	r24, r24
+    39a8:	31 f0       	breq	.+12     	; 0x39b6 <reset_pipe0_address+0x14>
+	{
+		// reset the pipe 0 address if pipe 0 is enabled.
+		set_register(RX_ADDR_P0, (uint8_t*)rx_pipe0_address, ADDRESS_LENGTH);
+    39aa:	45 e0       	ldi	r20, 0x05	; 5
+    39ac:	63 e6       	ldi	r22, 0x63	; 99
+    39ae:	70 e0       	ldi	r23, 0x00	; 0
+    39b0:	8a e0       	ldi	r24, 0x0A	; 10
+    39b2:	0c 94 99 1c 	jmp	0x3932	; 0x3932 <set_register>
+    39b6:	08 95       	ret
+
+000039b8 <get_register.constprop.1>:
+ * \param reg The register value defined in nRF24L01.h (e.g. CONFIG, EN_AA, &c.).
+ * \param buffer A contiguous memory block into which the register contents will be copied.  If the buffer is too long for the
+ * 		register contents, then the remaining bytes will be overwritten with 0xFF.
+ * \param len The length of the buffer.
+ */
+static uint8_t get_register(radio_register_t reg, uint8_t* buffer, uint8_t len)
+    39b8:	1f 93       	push	r17
+    39ba:	cf 93       	push	r28
+    39bc:	df 93       	push	r29
+    39be:	eb 01       	movw	r28, r22
+	uint8_t status, i;
+	for (i = 0; i < len; i++)
+	{
+		// If the buffer is too long for the register results, then the radio will interpret the extra bytes as instructions.
+		// To remove the risk, we set the buffer elements to NOP instructions.
+		buffer[i] = 0xFF;
+    39c0:	9f ef       	ldi	r25, 0xFF	; 255
+    39c2:	98 83       	st	Y, r25
+	}
+	CSN_LOW();
+    39c4:	c2 98       	cbi	0x18, 2	; 24
+
+	status = SPI_Write_Byte(R_REGISTER | (REGISTER_MASK & reg));
+    39c6:	8f 71       	andi	r24, 0x1F	; 31
+    39c8:	0e 94 bb 1d 	call	0x3b76	; 0x3b76 <SPI_Write_Byte>
+    39cc:	18 2f       	mov	r17, r24
+	SPI_ReadWrite_Block(NULL, buffer, len);
+    39ce:	41 e0       	ldi	r20, 0x01	; 1
+    39d0:	be 01       	movw	r22, r28
+    39d2:	80 e0       	ldi	r24, 0x00	; 0
+    39d4:	90 e0       	ldi	r25, 0x00	; 0
+    39d6:	0e 94 9f 1d 	call	0x3b3e	; 0x3b3e <SPI_ReadWrite_Block>
+
+	CSN_HIGH();
+    39da:	c2 9a       	sbi	0x18, 2	; 24
+
+	return status;
+}
+    39dc:	81 2f       	mov	r24, r17
+    39de:	df 91       	pop	r29
+    39e0:	cf 91       	pop	r28
+    39e2:	1f 91       	pop	r17
+    39e4:	08 95       	ret
+
+000039e6 <set_rx_mode>:
+
+/**
+ * Switch the radio to receive mode.  If the radio is already in receive mode, this does nothing.
+ */
+static void set_rx_mode()
+{
+    39e6:	cf 93       	push	r28
+    39e8:	df 93       	push	r29
+    39ea:	1f 92       	push	r1
+    39ec:	cd b7       	in	r28, 0x3d	; 61
+    39ee:	de b7       	in	r29, 0x3e	; 62
+	uint8_t config;
+	get_register(CONFIG, &config, 1);
+    39f0:	be 01       	movw	r22, r28
+    39f2:	6f 5f       	subi	r22, 0xFF	; 255
+    39f4:	7f 4f       	sbci	r23, 0xFF	; 255
+    39f6:	80 e0       	ldi	r24, 0x00	; 0
+    39f8:	0e 94 dc 1c 	call	0x39b8	; 0x39b8 <get_register.constprop.1>
+	if ((config & _BV(PRIM_RX)) == 0)
+    39fc:	89 81       	ldd	r24, Y+1	; 0x01
+    39fe:	80 fd       	sbrc	r24, 0
+    3a00:	11 c0       	rjmp	.+34     	; 0x3a24 <set_rx_mode+0x3e>
+	{
+		config |= _BV(PRIM_RX);
+    3a02:	81 60       	ori	r24, 0x01	; 1
+    3a04:	89 83       	std	Y+1, r24	; 0x01
+		set_register(CONFIG, &config, 1);
+    3a06:	41 e0       	ldi	r20, 0x01	; 1
+    3a08:	be 01       	movw	r22, r28
+    3a0a:	6f 5f       	subi	r22, 0xFF	; 255
+    3a0c:	7f 4f       	sbci	r23, 0xFF	; 255
+    3a0e:	80 e0       	ldi	r24, 0x00	; 0
+    3a10:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+    3a14:	86 e5       	ldi	r24, 0x56	; 86
+    3a16:	8a 95       	dec	r24
+    3a18:	f1 f7       	brne	.-4      	; 0x3a16 <set_rx_mode+0x30>
+    3a1a:	00 c0       	rjmp	.+0      	; 0x3a1c <set_rx_mode+0x36>
+    3a1c:	86 e5       	ldi	r24, 0x56	; 86
+    3a1e:	8a 95       	dec	r24
+    3a20:	f1 f7       	brne	.-4      	; 0x3a1e <set_rx_mode+0x38>
+    3a22:	00 c0       	rjmp	.+0      	; 0x3a24 <set_rx_mode+0x3e>
+		// the radio takes 130 us to power up the receiver.
+		_delay_us(65);
+		_delay_us(65);
+	}
+}
+    3a24:	0f 90       	pop	r0
+    3a26:	df 91       	pop	r29
+    3a28:	cf 91       	pop	r28
+    3a2a:	08 95       	ret
+
+00003a2c <__vector_1>:
+
+
+
+// Interrupt handler
+ISR(INT0_vect)
+{
+    3a2c:	1f 92       	push	r1
+    3a2e:	0f 92       	push	r0
+    3a30:	0f b6       	in	r0, 0x3f	; 63
+    3a32:	0f 92       	push	r0
+    3a34:	11 24       	eor	r1, r1
+    3a36:	2f 93       	push	r18
+    3a38:	3f 93       	push	r19
+    3a3a:	4f 93       	push	r20
+    3a3c:	5f 93       	push	r21
+    3a3e:	6f 93       	push	r22
+    3a40:	7f 93       	push	r23
+    3a42:	8f 93       	push	r24
+    3a44:	9f 93       	push	r25
+    3a46:	af 93       	push	r26
+    3a48:	bf 93       	push	r27
+    3a4a:	ef 93       	push	r30
+    3a4c:	ff 93       	push	r31
+    3a4e:	cf 93       	push	r28
+    3a50:	df 93       	push	r29
+    3a52:	1f 92       	push	r1
+    3a54:	cd b7       	in	r28, 0x3d	; 61
+    3a56:	de b7       	in	r29, 0x3e	; 62
+	GIFR = (1<<INTF0);
+    3a58:	80 e4       	ldi	r24, 0x40	; 64
+    3a5a:	8a bf       	out	0x3a, r24	; 58
+
+    uint8_t status;
+    uint8_t pipe_number;
+
+    CE_LOW();
+    3a5c:	c3 98       	cbi	0x18, 3	; 24
+
+    status = get_status();
+    3a5e:	0e 94 93 1c 	call	0x3926	; 0x3926 <get_status>
+    3a62:	89 83       	std	Y+1, r24	; 0x01
+
+    if (status & _BV(RX_DR))
+    3a64:	86 ff       	sbrs	r24, 6
+    3a66:	04 c0       	rjmp	.+8      	; 0x3a70 <__vector_1+0x44>
+    {
+    	pipe_number =  (status & 0xE) >> 1;
+    	radio_rxhandler(pipe_number);
+    3a68:	8e 70       	andi	r24, 0x0E	; 14
+    3a6a:	86 95       	lsr	r24
+    3a6c:	0e 94 49 1c 	call	0x3892	; 0x3892 <radio_rxhandler>
+    }
+    // We can get the TX_DS or the MAX_RT interrupt, but not both.
+    if (status & _BV(TX_DS))
+    3a70:	89 81       	ldd	r24, Y+1	; 0x01
+    3a72:	85 ff       	sbrs	r24, 5
+    3a74:	1d c0       	rjmp	.+58     	; 0x3ab0 <__vector_1+0x84>
+    {
+        // if there's nothing left to transmit, switch back to receive mode.
+        transmit_lock = 0;
+    3a76:	10 92 74 00 	sts	0x0074, r1	; 0x800074 <__data_end>
+        reset_pipe0_address();
+    3a7a:	0e 94 d1 1c 	call	0x39a2	; 0x39a2 <reset_pipe0_address>
+        set_rx_mode();
+    3a7e:	0e 94 f3 1c 	call	0x39e6	; 0x39e6 <set_rx_mode>
+
+    	// indicate in the history that a packet was transmitted successfully by appending a 1.
+    	tx_history <<= 1;
+    3a82:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <tx_history>
+    3a86:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <tx_history+0x1>
+    3a8a:	88 0f       	add	r24, r24
+    3a8c:	99 1f       	adc	r25, r25
+    3a8e:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <tx_history+0x1>
+    3a92:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <tx_history>
+    	tx_history |= 1;
+    3a96:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <tx_history>
+    3a9a:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <tx_history+0x1>
+    3a9e:	81 60       	ori	r24, 0x01	; 1
+    3aa0:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <tx_history+0x1>
+    3aa4:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <tx_history>
+
+    	tx_last_status = RADIO_TX_SUCCESS;
+    3aa8:	81 e0       	ldi	r24, 0x01	; 1
+    3aaa:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__data_start>
+    3aae:	1c c0       	rjmp	.+56     	; 0x3ae8 <__vector_1+0xbc>
+    }
+    else if (status & _BV(MAX_RT))
+    3ab0:	84 ff       	sbrs	r24, 4
+    3ab2:	1a c0       	rjmp	.+52     	; 0x3ae8 <__vector_1+0xbc>
+    {
+        send_instruction(FLUSH_TX, NULL, NULL, 0);
+    3ab4:	20 e0       	ldi	r18, 0x00	; 0
+    3ab6:	40 e0       	ldi	r20, 0x00	; 0
+    3ab8:	50 e0       	ldi	r21, 0x00	; 0
+    3aba:	60 e0       	ldi	r22, 0x00	; 0
+    3abc:	70 e0       	ldi	r23, 0x00	; 0
+    3abe:	81 ee       	ldi	r24, 0xE1	; 225
+    3ac0:	0e 94 b0 1c 	call	0x3960	; 0x3960 <send_instruction>
+
+    	transmit_lock = 0;
+    3ac4:	10 92 74 00 	sts	0x0074, r1	; 0x800074 <__data_end>
+    	reset_pipe0_address();
+    3ac8:	0e 94 d1 1c 	call	0x39a2	; 0x39a2 <reset_pipe0_address>
+		set_rx_mode();
+    3acc:	0e 94 f3 1c 	call	0x39e6	; 0x39e6 <set_rx_mode>
+    	// indicate in the history that a packet was dropped by appending a 0.
+    	tx_history <<= 1;
+    3ad0:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <tx_history>
+    3ad4:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <tx_history+0x1>
+    3ad8:	88 0f       	add	r24, r24
+    3ada:	99 1f       	adc	r25, r25
+    3adc:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <tx_history+0x1>
+    3ae0:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <tx_history>
+
+    	tx_last_status = RADIO_TX_MAX_RT;
+    3ae4:	10 92 60 00 	sts	0x0060, r1	; 0x800060 <__data_start>
+    }
+
+    // clear the interrupt flags.
+	status = _BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT);
+    3ae8:	80 e7       	ldi	r24, 0x70	; 112
+    3aea:	89 83       	std	Y+1, r24	; 0x01
+	set_register(STATUS, &status, 1);
+    3aec:	41 e0       	ldi	r20, 0x01	; 1
+    3aee:	be 01       	movw	r22, r28
+    3af0:	6f 5f       	subi	r22, 0xFF	; 255
+    3af2:	7f 4f       	sbci	r23, 0xFF	; 255
+    3af4:	87 e0       	ldi	r24, 0x07	; 7
+    3af6:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+    CE_HIGH();
+    3afa:	c3 9a       	sbi	0x18, 3	; 24
+	
+}
+    3afc:	0f 90       	pop	r0
+    3afe:	df 91       	pop	r29
+    3b00:	cf 91       	pop	r28
+    3b02:	ff 91       	pop	r31
+    3b04:	ef 91       	pop	r30
+    3b06:	bf 91       	pop	r27
+    3b08:	af 91       	pop	r26
+    3b0a:	9f 91       	pop	r25
+    3b0c:	8f 91       	pop	r24
+    3b0e:	7f 91       	pop	r23
+    3b10:	6f 91       	pop	r22
+    3b12:	5f 91       	pop	r21
+    3b14:	4f 91       	pop	r20
+    3b16:	3f 91       	pop	r19
+    3b18:	2f 91       	pop	r18
+    3b1a:	0f 90       	pop	r0
+    3b1c:	0f be       	out	0x3f, r0	; 63
+    3b1e:	0f 90       	pop	r0
+    3b20:	1f 90       	pop	r1
+    3b22:	18 95       	reti
+
+00003b24 <SPI_Init>:
+	// The DDR operations are pretty fragile and doing this less awkwardly breaks SPI.  I don't care enough
+	// to figure out why right now.  Note that SPI_SS is the actual SPI port's SS pin, which is not necessarily
+	// the SS pin that's used for a given slave.  Anything that uses this driver must handle its own slave selection.
+	// It must set its SS pin direction to output, set the pin low before doing an SPI operation, and set it high
+	// when the SPI operation is complete.
+    SPI_DDR &= ~(_BV(SPI_MOSI)|_BV(SPI_MISO)|_BV(SPI_SS)|_BV(SPI_SCK));
+    3b24:	87 b3       	in	r24, 0x17	; 23
+    3b26:	8f 70       	andi	r24, 0x0F	; 15
+    3b28:	87 bb       	out	0x17, r24	; 23
+    // Define the following pins as output
+    SPI_DDR |= (_BV(SPI_MOSI) | _BV(SPI_SS) | _BV(SPI_SCK));
+    3b2a:	87 b3       	in	r24, 0x17	; 23
+    3b2c:	80 6b       	ori	r24, 0xB0	; 176
+    3b2e:	87 bb       	out	0x17, r24	; 23
+	 * SPR1 | SPR0 - Determines SCK frequency along with the SPI2X bit in SPSR.  See Table 17-4 in hardware manual [p178].
+	 * bit 0
+	 */
+
+    // Set the AT90's SS pin high during config (this disables the Flash RAM or something)
+    SPI_PORT |= _BV(SPI_SS);
+    3b30:	c4 9a       	sbi	0x18, 4	; 24
+
+	SPCR = _BV(SPE) | _BV(MSTR);	// enable SPI, set as master, set prescaler to f(osc)/4
+    3b32:	80 e5       	ldi	r24, 0x50	; 80
+    3b34:	8d b9       	out	0x0d, r24	; 13
+
+	SPSR = _BV(SPI2X);							// Double SCK to f(osc)/2 (4 MHz)
+    3b36:	81 e0       	ldi	r24, 0x01	; 1
+    3b38:	8e b9       	out	0x0e, r24	; 14
+
+	SPI_PORT &= ~_BV(SPI_SS);
+    3b3a:	c4 98       	cbi	0x18, 4	; 24
+    3b3c:	08 95       	ret
+
+00003b3e <SPI_ReadWrite_Block>:
+}
+
+void SPI_ReadWrite_Block(uint8_t* data, uint8_t* buffer, uint8_t len)
+{
+    3b3e:	36 2f       	mov	r19, r22
+    uint8_t i;
+    for (i = 0; i < len; i++) {
+    3b40:	fb 01       	movw	r30, r22
+    3b42:	2e 2f       	mov	r18, r30
+    3b44:	23 1b       	sub	r18, r19
+    3b46:	24 17       	cp	r18, r20
+    3b48:	48 f4       	brcc	.+18     	; 0x3b5c <SPI_ReadWrite_Block+0x1e>
+          SPDR = data[i];
+    3b4a:	dc 01       	movw	r26, r24
+    3b4c:	2d 91       	ld	r18, X+
+    3b4e:	cd 01       	movw	r24, r26
+    3b50:	2f b9       	out	0x0f, r18	; 15
+          SPI_WAIT();
+    3b52:	77 9b       	sbis	0x0e, 7	; 14
+    3b54:	fe cf       	rjmp	.-4      	; 0x3b52 <SPI_ReadWrite_Block+0x14>
+          buffer[i] = SPDR;
+    3b56:	2f b1       	in	r18, 0x0f	; 15
+    3b58:	21 93       	st	Z+, r18
+    3b5a:	f3 cf       	rjmp	.-26     	; 0x3b42 <SPI_ReadWrite_Block+0x4>
+    }
+}
+    3b5c:	08 95       	ret
+
+00003b5e <SPI_Write_Block>:
+
+void SPI_Write_Block(uint8_t* data, uint8_t len)
+{
+    3b5e:	28 2f       	mov	r18, r24
+    uint8_t i;
+    for (i = 0; i < len; i++) {
+    3b60:	fc 01       	movw	r30, r24
+    3b62:	8e 2f       	mov	r24, r30
+    3b64:	82 1b       	sub	r24, r18
+    3b66:	86 17       	cp	r24, r22
+    3b68:	28 f4       	brcc	.+10     	; 0x3b74 <SPI_Write_Block+0x16>
+          SPDR = data[i];
+    3b6a:	81 91       	ld	r24, Z+
+    3b6c:	8f b9       	out	0x0f, r24	; 15
+          SPI_WAIT();
+    3b6e:	77 9b       	sbis	0x0e, 7	; 14
+    3b70:	fe cf       	rjmp	.-4      	; 0x3b6e <SPI_Write_Block+0x10>
+    3b72:	f7 cf       	rjmp	.-18     	; 0x3b62 <SPI_Write_Block+0x4>
+    }
+}
+    3b74:	08 95       	ret
+
+00003b76 <SPI_Write_Byte>:
+
+uint8_t SPI_Write_Byte(uint8_t byte)
+{
+    SPDR = byte;
+    3b76:	8f b9       	out	0x0f, r24	; 15
+    SPI_WAIT();
+    3b78:	77 9b       	sbis	0x0e, 7	; 14
+    3b7a:	fe cf       	rjmp	.-4      	; 0x3b78 <SPI_Write_Byte+0x2>
+    return SPDR;
+    3b7c:	8f b1       	in	r24, 0x0f	; 15
+}
+    3b7e:	08 95       	ret
+
+00003b80 <eeprom_read_block>:
+    3b80:	dc 01       	movw	r26, r24
+    3b82:	cb 01       	movw	r24, r22
+
+00003b84 <eeprom_read_blraw>:
+    3b84:	fc 01       	movw	r30, r24
+    3b86:	e1 99       	sbic	0x1c, 1	; 28
+    3b88:	fe cf       	rjmp	.-4      	; 0x3b86 <eeprom_read_blraw+0x2>
+    3b8a:	06 c0       	rjmp	.+12     	; 0x3b98 <eeprom_read_blraw+0x14>
+    3b8c:	ff bb       	out	0x1f, r31	; 31
+    3b8e:	ee bb       	out	0x1e, r30	; 30
+    3b90:	e0 9a       	sbi	0x1c, 0	; 28
+    3b92:	31 96       	adiw	r30, 0x01	; 1
+    3b94:	0d b2       	in	r0, 0x1d	; 29
+    3b96:	0d 92       	st	X+, r0
+    3b98:	41 50       	subi	r20, 0x01	; 1
+    3b9a:	50 40       	sbci	r21, 0x00	; 0
+    3b9c:	b8 f7       	brcc	.-18     	; 0x3b8c <eeprom_read_blraw+0x8>
+    3b9e:	08 95       	ret
+
+00003ba0 <_exit>:
+    3ba0:	f8 94       	cli
+
+00003ba2 <__stop_program>:
+    3ba2:	ff cf       	rjmp	.-2      	; 0x3ba2 <__stop_program>
+
+Disassembly of section .shared:
+
+00003000 <Radio_Init>:
+	send_instruction(FLUSH_RX, NULL, NULL, 0);
+}
+
+
+void Radio_Init()
+{
+    3000:	1f 93       	push	r17
+    3002:	cf 93       	push	r28
+    3004:	df 93       	push	r29
+    3006:	1f 92       	push	r1
+    3008:	cd b7       	in	r28, 0x3d	; 61
+    300a:	de b7       	in	r29, 0x3e	; 62
+	transmit_lock = 0;
+    300c:	10 92 74 00 	sts	0x0074, r1	; 0x800074 <__data_end>
+
+	// disable radio during config
+	CE_LOW();
+    3010:	c3 98       	cbi	0x18, 3	; 24
+
+	// set as output AT90 pins connected to the radio's slave select and chip enable pins.
+	CE_DDR |= _BV(CE_PIN);
+    3012:	bb 9a       	sbi	0x17, 3	; 23
+	CSN_DDR |= _BV(CSN_PIN);
+    3014:	ba 9a       	sbi	0x17, 2	; 23
+
+	// Enable radio interrupt.  This interrupt is triggered when data are received and when a transmission completes.
+	DDRD &= ~ (1 << PIND2);
+    3016:	8a 98       	cbi	0x11, 2	; 17
+	//PORTD |= 1 << PIND2;
+	GICR|=(1<<IVCE);
+    3018:	8b b7       	in	r24, 0x3b	; 59
+    301a:	81 60       	ori	r24, 0x01	; 1
+    301c:	8b bf       	out	0x3b, r24	; 59
+	GICR=0x02;
+    301e:	82 e0       	ldi	r24, 0x02	; 2
+    3020:	8b bf       	out	0x3b, r24	; 59
+
+	GICR |= 1<<INT0;					// Enable INT0
+    3022:	8b b7       	in	r24, 0x3b	; 59
+    3024:	80 64       	ori	r24, 0x40	; 64
+    3026:	8b bf       	out	0x3b, r24	; 59
+	MCUCR |= (1 << ISC01); //| 1<<ISC00;	// Trigger INT0 on rising edge
+    3028:	85 b7       	in	r24, 0x35	; 53
+    302a:	82 60       	ori	r24, 0x02	; 2
+    302c:	85 bf       	out	0x35, r24	; 53
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+    302e:	87 ef       	ldi	r24, 0xF7	; 247
+    3030:	9a e2       	ldi	r25, 0x2A	; 42
+    3032:	01 97       	sbiw	r24, 0x01	; 1
+    3034:	f1 f7       	brne	.-4      	; 0x3032 <Radio_Init+0x32>
+    3036:	00 c0       	rjmp	.+0      	; 0x3038 <Radio_Init+0x38>
+    3038:	00 00       	nop
+ */
+static void configure_registers()
+{
+	uint8_t value;
+
+	SPI_Init();
+    303a:	0e 94 92 1d 	call	0x3b24	; 0x3b24 <SPI_Init>
+
+	// set address width to 5 bytes.
+	value = ADDRESS_LENGTH - 2;			// 0b11 for 5 bytes, 0b10 for 4 bytes, 0b01 for 3 bytes
+    303e:	83 e0       	ldi	r24, 0x03	; 3
+    3040:	89 83       	std	Y+1, r24	; 0x01
+	set_register(SETUP_AW, &value, 1);
+    3042:	41 e0       	ldi	r20, 0x01	; 1
+    3044:	be 01       	movw	r22, r28
+    3046:	6f 5f       	subi	r22, 0xFF	; 255
+    3048:	7f 4f       	sbci	r23, 0xFF	; 255
+    304a:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// set Enhanced Shockburst retry to every 586 us, up to 5 times.  If packet collisions are a problem even with AA enabled,
+	// then consider changing the retry delay to be different on the different stations so that they do not keep colliding on each retry.
+	value = 0x15;
+    304e:	85 e1       	ldi	r24, 0x15	; 21
+    3050:	89 83       	std	Y+1, r24	; 0x01
+	//value = 0x10;
+	set_register(SETUP_RETR, &value, 1);
+    3052:	41 e0       	ldi	r20, 0x01	; 1
+    3054:	be 01       	movw	r22, r28
+    3056:	6f 5f       	subi	r22, 0xFF	; 255
+    3058:	7f 4f       	sbci	r23, 0xFF	; 255
+    305a:	84 e0       	ldi	r24, 0x04	; 4
+    305c:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// Set to use 2.4 GHz channel 110.
+	value = CHANNEL;
+    3060:	10 e7       	ldi	r17, 0x70	; 112
+    3062:	19 83       	std	Y+1, r17	; 0x01
+	set_register(RF_CH, &value, 1);
+    3064:	41 e0       	ldi	r20, 0x01	; 1
+    3066:	be 01       	movw	r22, r28
+    3068:	6f 5f       	subi	r22, 0xFF	; 255
+    306a:	7f 4f       	sbci	r23, 0xFF	; 255
+    306c:	85 e0       	ldi	r24, 0x05	; 5
+    306e:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// Set radio to 2 Mbps and high power.  Leave LNA_HCURR at its default.
+	value = _BV(RF_DR) | _BV(LNA_HCURR);
+    3072:	89 e0       	ldi	r24, 0x09	; 9
+    3074:	89 83       	std	Y+1, r24	; 0x01
+	set_register(RF_SETUP, &value, 1);
+    3076:	41 e0       	ldi	r20, 0x01	; 1
+    3078:	be 01       	movw	r22, r28
+    307a:	6f 5f       	subi	r22, 0xFF	; 255
+    307c:	7f 4f       	sbci	r23, 0xFF	; 255
+    307e:	86 e0       	ldi	r24, 0x06	; 6
+    3080:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// Enable 2-byte CRC and power up in receive mode.
+	value = _BV(EN_CRC) | _BV(CRCO) | _BV(PWR_UP) | _BV(PRIM_RX);
+    3084:	8f e0       	ldi	r24, 0x0F	; 15
+    3086:	89 83       	std	Y+1, r24	; 0x01
+	set_register(CONFIG, &value, 1);
+    3088:	41 e0       	ldi	r20, 0x01	; 1
+    308a:	be 01       	movw	r22, r28
+    308c:	6f 5f       	subi	r22, 0xFF	; 255
+    308e:	7f 4f       	sbci	r23, 0xFF	; 255
+    3090:	80 e0       	ldi	r24, 0x00	; 0
+    3092:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// clear the interrupt flags in case the radio's still asserting an old unhandled interrupt
+    value = _BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT);
+    3096:	19 83       	std	Y+1, r17	; 0x01
+    set_register(STATUS, &value, 1);
+    3098:	41 e0       	ldi	r20, 0x01	; 1
+    309a:	be 01       	movw	r22, r28
+    309c:	6f 5f       	subi	r22, 0xFF	; 255
+    309e:	7f 4f       	sbci	r23, 0xFF	; 255
+    30a0:	87 e0       	ldi	r24, 0x07	; 7
+    30a2:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+    // flush the FIFOs in case there are old data in them.
+	send_instruction(FLUSH_TX, NULL, NULL, 0);
+    30a6:	20 e0       	ldi	r18, 0x00	; 0
+    30a8:	40 e0       	ldi	r20, 0x00	; 0
+    30aa:	50 e0       	ldi	r21, 0x00	; 0
+    30ac:	60 e0       	ldi	r22, 0x00	; 0
+    30ae:	70 e0       	ldi	r23, 0x00	; 0
+    30b0:	81 ee       	ldi	r24, 0xE1	; 225
+    30b2:	0e 94 b0 1c 	call	0x3960	; 0x3960 <send_instruction>
+	send_instruction(FLUSH_RX, NULL, NULL, 0);
+    30b6:	20 e0       	ldi	r18, 0x00	; 0
+    30b8:	40 e0       	ldi	r20, 0x00	; 0
+    30ba:	50 e0       	ldi	r21, 0x00	; 0
+    30bc:	60 e0       	ldi	r22, 0x00	; 0
+    30be:	70 e0       	ldi	r23, 0x00	; 0
+    30c0:	82 ee       	ldi	r24, 0xE2	; 226
+    30c2:	0e 94 b0 1c 	call	0x3960	; 0x3960 <send_instruction>
+    30c6:	8f ec       	ldi	r24, 0xCF	; 207
+    30c8:	97 e0       	ldi	r25, 0x07	; 7
+    30ca:	01 97       	sbiw	r24, 0x01	; 1
+    30cc:	f1 f7       	brne	.-4      	; 0x30ca <Radio_Init+0xca>
+    30ce:	00 c0       	rjmp	.+0      	; 0x30d0 <Radio_Init+0xd0>
+    30d0:	00 00       	nop
+
+	// A 1.5 ms delay is required between power down and power up states (controlled by PWR_UP bit in CONFIG)
+	_delay_ms(2);
+
+	// enable radio as a receiver
+	CE_HIGH();
+    30d2:	c3 9a       	sbi	0x18, 3	; 24
+	
+	
+}
+    30d4:	0f 90       	pop	r0
+    30d6:	df 91       	pop	r29
+    30d8:	cf 91       	pop	r28
+    30da:	1f 91       	pop	r17
+    30dc:	08 95       	ret
+
+000030de <Radio_Configure_Rx>:
+// default address for pipe 2 is 0xc2c2c2c2c3 (disabled)
+// default address for pipe 3 is 0xc2c2c2c2c4 (disabled)
+// default address for pipe 4 is 0xc2c2c2c2c5 (disabled)
+// default address for pipe 5 is 0xc2c2c2c2c6 (disabled)
+void Radio_Configure_Rx(RADIO_PIPE pipe, uint8_t* address, uint8_t enable)
+{
+    30de:	cf 92       	push	r12
+    30e0:	df 92       	push	r13
+    30e2:	ef 92       	push	r14
+    30e4:	ff 92       	push	r15
+    30e6:	0f 93       	push	r16
+    30e8:	1f 93       	push	r17
+    30ea:	cf 93       	push	r28
+    30ec:	df 93       	push	r29
+    30ee:	1f 92       	push	r1
+    30f0:	cd b7       	in	r28, 0x3d	; 61
+    30f2:	de b7       	in	r29, 0x3e	; 62
+    30f4:	fb 01       	movw	r30, r22
+	uint8_t value;
+	uint8_t use_aa = 1;
+	uint8_t payload_width = 32;
+	if (payload_width < 1 || payload_width > 32 || pipe < RADIO_PIPE_0 || pipe > RADIO_PIPE_5) return;
+    30f6:	86 30       	cpi	r24, 0x06	; 6
+    30f8:	08 f0       	brcs	.+2      	; 0x30fc <Radio_Configure_Rx+0x1e>
+    30fa:	60 c0       	rjmp	.+192    	; 0x31bc <Radio_Configure_Rx+0xde>
+
+	// store the pipe 0 address so that it can be overwritten when transmitting with auto-ack enabled.
+	if (pipe == RADIO_PIPE_0)
+    30fc:	81 11       	cpse	r24, r1
+    30fe:	10 c0       	rjmp	.+32     	; 0x3120 <Radio_Configure_Rx+0x42>
+	{
+		rx_pipe0_address[0] = address[0];
+    3100:	90 81       	ld	r25, Z
+    3102:	90 93 63 00 	sts	0x0063, r25	; 0x800063 <rx_pipe0_address>
+		rx_pipe0_address[1] = address[1];
+    3106:	91 81       	ldd	r25, Z+1	; 0x01
+    3108:	90 93 64 00 	sts	0x0064, r25	; 0x800064 <rx_pipe0_address+0x1>
+		rx_pipe0_address[2] = address[2];
+    310c:	92 81       	ldd	r25, Z+2	; 0x02
+    310e:	90 93 65 00 	sts	0x0065, r25	; 0x800065 <rx_pipe0_address+0x2>
+		rx_pipe0_address[3] = address[3];
+    3112:	93 81       	ldd	r25, Z+3	; 0x03
+    3114:	90 93 66 00 	sts	0x0066, r25	; 0x800066 <rx_pipe0_address+0x3>
+		rx_pipe0_address[4] = address[4];
+    3118:	94 81       	ldd	r25, Z+4	; 0x04
+    311a:	90 93 67 00 	sts	0x0067, r25	; 0x800067 <rx_pipe0_address+0x4>
+    311e:	02 c0       	rjmp	.+4      	; 0x3124 <Radio_Configure_Rx+0x46>
+	}
+
+	// Set the address.  We set this stuff even if the pipe is being disabled, because for example the transmitter
+	// needs pipe 0 to have the same address as the Tx address for auto-ack to work, even if pipe 0 is disabled.
+	set_register(RX_ADDR_P0 + pipe, address, pipe > RADIO_PIPE_1 ? 1 : ADDRESS_LENGTH);
+    3120:	81 30       	cpi	r24, 0x01	; 1
+    3122:	11 f4       	brne	.+4      	; 0x3128 <Radio_Configure_Rx+0x4a>
+    3124:	95 e0       	ldi	r25, 0x05	; 5
+    3126:	01 c0       	rjmp	.+2      	; 0x312a <Radio_Configure_Rx+0x4c>
+    3128:	91 e0       	ldi	r25, 0x01	; 1
+    312a:	e4 2e       	mov	r14, r20
+    312c:	bf 01       	movw	r22, r30
+    312e:	f8 2e       	mov	r15, r24
+    3130:	49 2f       	mov	r20, r25
+    3132:	8a e0       	ldi	r24, 0x0A	; 10
+    3134:	8f 0d       	add	r24, r15
+    3136:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// Set auto-ack.
+	get_register(EN_AA, &value, 1);
+    313a:	be 01       	movw	r22, r28
+    313c:	6f 5f       	subi	r22, 0xFF	; 255
+    313e:	7f 4f       	sbci	r23, 0xFF	; 255
+    3140:	81 e0       	ldi	r24, 0x01	; 1
+    3142:	0e 94 dc 1c 	call	0x39b8	; 0x39b8 <get_register.constprop.1>
+	if (use_aa)
+		value |= _BV(pipe);
+    3146:	cf 2c       	mov	r12, r15
+    3148:	d1 2c       	mov	r13, r1
+    314a:	01 e0       	ldi	r16, 0x01	; 1
+    314c:	10 e0       	ldi	r17, 0x00	; 0
+    314e:	0f 2c       	mov	r0, r15
+    3150:	01 c0       	rjmp	.+2      	; 0x3154 <Radio_Configure_Rx+0x76>
+    3152:	00 0f       	add	r16, r16
+    3154:	0a 94       	dec	r0
+    3156:	ea f7       	brpl	.-6      	; 0x3152 <Radio_Configure_Rx+0x74>
+    3158:	89 81       	ldd	r24, Y+1	; 0x01
+    315a:	80 2b       	or	r24, r16
+    315c:	89 83       	std	Y+1, r24	; 0x01
+	else
+		value &= ~_BV(pipe);
+	set_register(EN_AA, &value, 1);
+    315e:	41 e0       	ldi	r20, 0x01	; 1
+    3160:	be 01       	movw	r22, r28
+    3162:	6f 5f       	subi	r22, 0xFF	; 255
+    3164:	7f 4f       	sbci	r23, 0xFF	; 255
+    3166:	81 e0       	ldi	r24, 0x01	; 1
+    3168:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+	// Set the pipe's payload width.  If the pipe is being disabled, then the payload width is set to 0.
+	value = enable ? payload_width : 0;
+    316c:	e1 10       	cpse	r14, r1
+    316e:	02 c0       	rjmp	.+4      	; 0x3174 <Radio_Configure_Rx+0x96>
+    3170:	80 e0       	ldi	r24, 0x00	; 0
+    3172:	01 c0       	rjmp	.+2      	; 0x3176 <Radio_Configure_Rx+0x98>
+    3174:	80 e2       	ldi	r24, 0x20	; 32
+    3176:	89 83       	std	Y+1, r24	; 0x01
+	set_register(RX_PW_P0 + pipe, &value, 1);
+    3178:	41 e0       	ldi	r20, 0x01	; 1
+    317a:	be 01       	movw	r22, r28
+    317c:	6f 5f       	subi	r22, 0xFF	; 255
+    317e:	7f 4f       	sbci	r23, 0xFF	; 255
+    3180:	81 e1       	ldi	r24, 0x11	; 17
+    3182:	8f 0d       	add	r24, r15
+    3184:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+	rx_pipe_widths[pipe] = value;
+    3188:	89 81       	ldd	r24, Y+1	; 0x01
+    318a:	f6 01       	movw	r30, r12
+    318c:	e3 59       	subi	r30, 0x93	; 147
+    318e:	ff 4f       	sbci	r31, 0xFF	; 255
+    3190:	80 83       	st	Z, r24
+
+	// Enable or disable the pipe.
+	get_register(EN_RXADDR, &value, 1);
+    3192:	be 01       	movw	r22, r28
+    3194:	6f 5f       	subi	r22, 0xFF	; 255
+    3196:	7f 4f       	sbci	r23, 0xFF	; 255
+    3198:	82 e0       	ldi	r24, 0x02	; 2
+    319a:	0e 94 dc 1c 	call	0x39b8	; 0x39b8 <get_register.constprop.1>
+    319e:	89 81       	ldd	r24, Y+1	; 0x01
+	if (enable)
+    31a0:	ee 20       	and	r14, r14
+    31a2:	11 f0       	breq	.+4      	; 0x31a8 <Radio_Configure_Rx+0xca>
+		value |= _BV(pipe);
+    31a4:	08 2b       	or	r16, r24
+    31a6:	02 c0       	rjmp	.+4      	; 0x31ac <Radio_Configure_Rx+0xce>
+	else
+		value &= ~_BV(pipe);
+    31a8:	00 95       	com	r16
+    31aa:	08 23       	and	r16, r24
+    31ac:	09 83       	std	Y+1, r16	; 0x01
+	set_register(EN_RXADDR, &value, 1);
+    31ae:	41 e0       	ldi	r20, 0x01	; 1
+    31b0:	be 01       	movw	r22, r28
+    31b2:	6f 5f       	subi	r22, 0xFF	; 255
+    31b4:	7f 4f       	sbci	r23, 0xFF	; 255
+    31b6:	82 e0       	ldi	r24, 0x02	; 2
+    31b8:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+}
+    31bc:	0f 90       	pop	r0
+    31be:	df 91       	pop	r29
+    31c0:	cf 91       	pop	r28
+    31c2:	1f 91       	pop	r17
+    31c4:	0f 91       	pop	r16
+    31c6:	ff 90       	pop	r15
+    31c8:	ef 90       	pop	r14
+    31ca:	df 90       	pop	r13
+    31cc:	cf 90       	pop	r12
+    31ce:	08 95       	ret
+
+000031d0 <Radio_Configure>:
+	tx_address[4] = address[4];
+	set_register(TX_ADDR, address, ADDRESS_LENGTH);
+}
+
+void Radio_Configure(RADIO_DATA_RATE dr, RADIO_TX_POWER power)
+{
+    31d0:	0f 93       	push	r16
+    31d2:	1f 93       	push	r17
+    31d4:	cf 93       	push	r28
+    31d6:	df 93       	push	r29
+    31d8:	1f 92       	push	r1
+    31da:	cd b7       	in	r28, 0x3d	; 61
+    31dc:	de b7       	in	r29, 0x3e	; 62
+	uint8_t value;
+
+	if (power < RADIO_LOWEST_POWER || power > RADIO_HIGHEST_POWER || dr < RADIO_1MBPS || dr > RADIO_2MBPS) return;
+    31de:	64 30       	cpi	r22, 0x04	; 4
+    31e0:	c8 f4       	brcc	.+50     	; 0x3214 <Radio_Configure+0x44>
+    31e2:	82 30       	cpi	r24, 0x02	; 2
+    31e4:	b8 f4       	brcc	.+46     	; 0x3214 <Radio_Configure+0x44>
+    31e6:	16 2f       	mov	r17, r22
+    31e8:	08 2f       	mov	r16, r24
+
+	// set the address
+	//Radio_Set_Tx_Addr(address);
+
+	// set the data rate and power bits in the RF_SETUP register
+	get_register(RF_SETUP, &value, 1);
+    31ea:	be 01       	movw	r22, r28
+    31ec:	6f 5f       	subi	r22, 0xFF	; 255
+    31ee:	7f 4f       	sbci	r23, 0xFF	; 255
+    31f0:	86 e0       	ldi	r24, 0x06	; 6
+    31f2:	0e 94 dc 1c 	call	0x39b8	; 0x39b8 <get_register.constprop.1>
+
+	value |= 3 << RF_PWR;			// set the power bits so that the & will mask the power value in properly.
+	value &= power << RF_PWR;		// mask the power value into the RF status byte.
+    31f6:	99 81       	ldd	r25, Y+1	; 0x01
+    31f8:	96 60       	ori	r25, 0x06	; 6
+    31fa:	61 2f       	mov	r22, r17
+    31fc:	66 0f       	add	r22, r22
+    31fe:	69 23       	and	r22, r25
+
+	if (dr)
+    3200:	01 11       	cpse	r16, r1
+		value |= _BV(RF_DR);
+    3202:	68 60       	ori	r22, 0x08	; 8
+    3204:	69 83       	std	Y+1, r22	; 0x01
+	else
+		value &= ~_BV(RF_DR);
+
+	set_register(RF_SETUP, &value, 1);
+    3206:	41 e0       	ldi	r20, 0x01	; 1
+    3208:	be 01       	movw	r22, r28
+    320a:	6f 5f       	subi	r22, 0xFF	; 255
+    320c:	7f 4f       	sbci	r23, 0xFF	; 255
+    320e:	86 e0       	ldi	r24, 0x06	; 6
+    3210:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+}
+    3214:	0f 90       	pop	r0
+    3216:	df 91       	pop	r29
+    3218:	cf 91       	pop	r28
+    321a:	1f 91       	pop	r17
+    321c:	0f 91       	pop	r16
+    321e:	08 95       	ret
+
+00003220 <Radio_Set_Tx_Addr>:
+
+}
+
+// default transmitter address is 0xe7e7e7e7e7.
+void Radio_Set_Tx_Addr(uint8_t* address)
+{
+    3220:	fc 01       	movw	r30, r24
+	tx_address[0] = address[0];
+    3222:	80 81       	ld	r24, Z
+    3224:	a8 e6       	ldi	r26, 0x68	; 104
+    3226:	b0 e0       	ldi	r27, 0x00	; 0
+    3228:	8c 93       	st	X, r24
+	tx_address[1] = address[1];
+    322a:	81 81       	ldd	r24, Z+1	; 0x01
+    322c:	11 96       	adiw	r26, 0x01	; 1
+    322e:	8c 93       	st	X, r24
+    3230:	11 97       	sbiw	r26, 0x01	; 1
+	tx_address[2] = address[2];
+    3232:	82 81       	ldd	r24, Z+2	; 0x02
+    3234:	12 96       	adiw	r26, 0x02	; 2
+    3236:	8c 93       	st	X, r24
+    3238:	12 97       	sbiw	r26, 0x02	; 2
+	tx_address[3] = address[3];
+    323a:	83 81       	ldd	r24, Z+3	; 0x03
+    323c:	13 96       	adiw	r26, 0x03	; 3
+    323e:	8c 93       	st	X, r24
+    3240:	13 97       	sbiw	r26, 0x03	; 3
+	tx_address[4] = address[4];
+    3242:	84 81       	ldd	r24, Z+4	; 0x04
+    3244:	14 96       	adiw	r26, 0x04	; 4
+    3246:	8c 93       	st	X, r24
+	set_register(TX_ADDR, address, ADDRESS_LENGTH);
+    3248:	45 e0       	ldi	r20, 0x05	; 5
+    324a:	bf 01       	movw	r22, r30
+    324c:	80 e1       	ldi	r24, 0x10	; 16
+    324e:	0c 94 99 1c 	jmp	0x3932	; 0x3932 <set_register>
+
+00003252 <Radio_Transmit>:
+
+	set_register(RF_SETUP, &value, 1);
+}
+
+uint8_t Radio_Transmit(radiopacket_t* payload, RADIO_TX_WAIT wait)
+{
+    3252:	ef 92       	push	r14
+    3254:	ff 92       	push	r15
+    3256:	1f 93       	push	r17
+    3258:	cf 93       	push	r28
+    325a:	df 93       	push	r29
+    325c:	1f 92       	push	r1
+    325e:	cd b7       	in	r28, 0x3d	; 61
+    3260:	de b7       	in	r29, 0x3e	; 62
+    3262:	7c 01       	movw	r14, r24
+    3264:	16 2f       	mov	r17, r22
+	//if (block && transmit_lock) while (transmit_lock);
+	//if (!block && transmit_lock) return 0;
+	uint8_t len = 32;
+
+	// indicate that the driver is transmitting.
+    transmit_lock = 1;
+    3266:	81 e0       	ldi	r24, 0x01	; 1
+    3268:	80 93 74 00 	sts	0x0074, r24	; 0x800074 <__data_end>
+
+	// disable the radio while writing to the Tx FIFO.
+    CE_LOW();
+    326c:	c3 98       	cbi	0x18, 3	; 24
+ * Switch the radio to transmit mode.  If the radio is already in transmit mode, this does nothing.
+ */
+static void set_tx_mode()
+{
+	uint8_t config;
+	get_register(CONFIG, &config, 1);
+    326e:	be 01       	movw	r22, r28
+    3270:	6f 5f       	subi	r22, 0xFF	; 255
+    3272:	7f 4f       	sbci	r23, 0xFF	; 255
+    3274:	80 e0       	ldi	r24, 0x00	; 0
+    3276:	0e 94 dc 1c 	call	0x39b8	; 0x39b8 <get_register.constprop.1>
+	if ((config & _BV(PRIM_RX)) != 0)
+    327a:	89 81       	ldd	r24, Y+1	; 0x01
+    327c:	80 ff       	sbrs	r24, 0
+    327e:	11 c0       	rjmp	.+34     	; 0x32a2 <Radio_Transmit+0x50>
+	{
+		config &= ~_BV(PRIM_RX);
+    3280:	8e 7f       	andi	r24, 0xFE	; 254
+    3282:	89 83       	std	Y+1, r24	; 0x01
+		set_register(CONFIG, &config, 1);
+    3284:	41 e0       	ldi	r20, 0x01	; 1
+    3286:	be 01       	movw	r22, r28
+    3288:	6f 5f       	subi	r22, 0xFF	; 255
+    328a:	7f 4f       	sbci	r23, 0xFF	; 255
+    328c:	80 e0       	ldi	r24, 0x00	; 0
+    328e:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+    3292:	86 e5       	ldi	r24, 0x56	; 86
+    3294:	8a 95       	dec	r24
+    3296:	f1 f7       	brne	.-4      	; 0x3294 <Radio_Transmit+0x42>
+    3298:	00 c0       	rjmp	.+0      	; 0x329a <Radio_Transmit+0x48>
+    329a:	86 e5       	ldi	r24, 0x56	; 86
+    329c:	8a 95       	dec	r24
+    329e:	f1 f7       	brne	.-4      	; 0x329c <Radio_Transmit+0x4a>
+    32a0:	00 c0       	rjmp	.+0      	; 0x32a2 <Radio_Transmit+0x50>
+
+	set_tx_mode();
+
+    // for auto-ack to work, the pipe0 address must be set to the Tx address while the radio is transmitting.
+    // The register will be set back to the original pipe 0 address when the TX_DS or MAX_RT interrupt is asserted.
+    set_register(RX_ADDR_P0, (uint8_t*)tx_address, ADDRESS_LENGTH);
+    32a2:	45 e0       	ldi	r20, 0x05	; 5
+    32a4:	68 e6       	ldi	r22, 0x68	; 104
+    32a6:	70 e0       	ldi	r23, 0x00	; 0
+    32a8:	8a e0       	ldi	r24, 0x0A	; 10
+    32aa:	0e 94 99 1c 	call	0x3932	; 0x3932 <set_register>
+
+    // transfer the packet to the radio's Tx FIFO for transmission
+    send_instruction(W_TX_PAYLOAD, payload, NULL, len);
+    32ae:	20 e2       	ldi	r18, 0x20	; 32
+    32b0:	40 e0       	ldi	r20, 0x00	; 0
+    32b2:	50 e0       	ldi	r21, 0x00	; 0
+    32b4:	b7 01       	movw	r22, r14
+    32b6:	80 ea       	ldi	r24, 0xA0	; 160
+    32b8:	0e 94 b0 1c 	call	0x3960	; 0x3960 <send_instruction>
+
+    // start the transmission.
+    CE_HIGH();
+    32bc:	c3 9a       	sbi	0x18, 3	; 24
+
+    if (wait == RADIO_WAIT_FOR_TX)
+    32be:	11 11       	cpse	r17, r1
+    32c0:	07 c0       	rjmp	.+14     	; 0x32d0 <Radio_Transmit+0x7e>
+    {
+    	while (transmit_lock);
+    32c2:	80 91 74 00 	lds	r24, 0x0074	; 0x800074 <__data_end>
+    32c6:	81 11       	cpse	r24, r1
+    32c8:	fc cf       	rjmp	.-8      	; 0x32c2 <Radio_Transmit+0x70>
+    	return tx_last_status;
+    32ca:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__data_start>
+    32ce:	01 c0       	rjmp	.+2      	; 0x32d2 <Radio_Transmit+0x80>
+    }
+
+    return RADIO_TX_SUCCESS;
+    32d0:	81 e0       	ldi	r24, 0x01	; 1
+}
+    32d2:	0f 90       	pop	r0
+    32d4:	df 91       	pop	r29
+    32d6:	cf 91       	pop	r28
+    32d8:	1f 91       	pop	r17
+    32da:	ff 90       	pop	r15
+    32dc:	ef 90       	pop	r14
+    32de:	08 95       	ret
+
+000032e0 <Radio_Receive>:
+
+RADIO_RX_STATUS Radio_Receive(radiopacket_t* buffer)
+{
+    32e0:	cf 93       	push	r28
+    32e2:	df 93       	push	r29
+    32e4:	ec 01       	movw	r28, r24
+	uint8_t status;
+	uint8_t pipe_number;
+	uint8_t doMove = 1;
+	RADIO_RX_STATUS result;
+
+	transmit_lock = 0;
+    32e6:	10 92 74 00 	sts	0x0074, r1	; 0x800074 <__data_end>
+
+	CE_LOW();
+    32ea:	c3 98       	cbi	0x18, 3	; 24
+
+    status = get_status();
+    32ec:	0e 94 93 1c 	call	0x3926	; 0x3926 <get_status>
+	pipe_number =  (status & 0xE) >> 1;
+    32f0:	8e 70       	andi	r24, 0x0E	; 14
+    32f2:	90 e0       	ldi	r25, 0x00	; 0
+    32f4:	95 95       	asr	r25
+    32f6:	87 95       	ror	r24
+	{
+		result = RADIO_RX_FIFO_EMPTY;
+		doMove = 0;
+	}
+
+	if (rx_pipe_widths[pipe_number] > len)
+    32f8:	fc 01       	movw	r30, r24
+    32fa:	e3 59       	subi	r30, 0x93	; 147
+    32fc:	ff 4f       	sbci	r31, 0xFF	; 255
+    32fe:	20 81       	ld	r18, Z
+    3300:	21 32       	cpi	r18, 0x21	; 33
+    3302:	78 f4       	brcc	.+30     	; 0x3322 <Radio_Receive+0x42>
+		// the buffer isn't big enough, so don't copy the data.
+		result = RADIO_RX_INVALID_ARGS;
+		doMove = 0;
+	}
+
+	if (doMove)
+    3304:	87 30       	cpi	r24, 0x07	; 7
+    3306:	79 f0       	breq	.+30     	; 0x3326 <Radio_Receive+0x46>
+	{
+		// Move the data payload into the local
+		send_instruction(R_RX_PAYLOAD, (uint8_t*)buffer, (uint8_t*)buffer, rx_pipe_widths[pipe_number]);
+    3308:	20 81       	ld	r18, Z
+    330a:	ae 01       	movw	r20, r28
+    330c:	be 01       	movw	r22, r28
+    330e:	81 e6       	ldi	r24, 0x61	; 97
+    3310:	0e 94 b0 1c 	call	0x3960	; 0x3960 <send_instruction>
+
+		status = get_status();
+    3314:	0e 94 93 1c 	call	0x3926	; 0x3926 <get_status>
+		pipe_number =  (status & 0xE) >> 1;
+
+		if (pipe_number != RADIO_PIPE_EMPTY)
+    3318:	8e 70       	andi	r24, 0x0E	; 14
+    331a:	8e 30       	cpi	r24, 0x0E	; 14
+    331c:	31 f4       	brne	.+12     	; 0x332a <Radio_Receive+0x4a>
+			result = RADIO_RX_MORE_PACKETS;
+		else
+			result = RADIO_RX_SUCCESS;
+    331e:	84 e0       	ldi	r24, 0x04	; 4
+    3320:	05 c0       	rjmp	.+10     	; 0x332c <Radio_Receive+0x4c>
+	}
+
+	if (rx_pipe_widths[pipe_number] > len)
+	{
+		// the buffer isn't big enough, so don't copy the data.
+		result = RADIO_RX_INVALID_ARGS;
+    3322:	80 e0       	ldi	r24, 0x00	; 0
+    3324:	03 c0       	rjmp	.+6      	; 0x332c <Radio_Receive+0x4c>
+    3326:	82 e0       	ldi	r24, 0x02	; 2
+    3328:	01 c0       	rjmp	.+2      	; 0x332c <Radio_Receive+0x4c>
+
+		status = get_status();
+		pipe_number =  (status & 0xE) >> 1;
+
+		if (pipe_number != RADIO_PIPE_EMPTY)
+			result = RADIO_RX_MORE_PACKETS;
+    332a:	83 e0       	ldi	r24, 0x03	; 3
+		else
+			result = RADIO_RX_SUCCESS;
+	}
+
+	CE_HIGH();
+    332c:	c3 9a       	sbi	0x18, 3	; 24
+
+	transmit_lock = 0;
+    332e:	10 92 74 00 	sts	0x0074, r1	; 0x800074 <__data_end>
+
+	//release_radio();
+
+	return result;
+}
+    3332:	df 91       	pop	r29
+    3334:	cf 91       	pop	r28
+    3336:	08 95       	ret
+
+00003338 <Radio_Flush>:
+
+
+void Radio_Flush()
+{
+	send_instruction(FLUSH_TX, NULL, NULL, 0);
+    3338:	20 e0       	ldi	r18, 0x00	; 0
+    333a:	40 e0       	ldi	r20, 0x00	; 0
+    333c:	50 e0       	ldi	r21, 0x00	; 0
+    333e:	60 e0       	ldi	r22, 0x00	; 0
+    3340:	70 e0       	ldi	r23, 0x00	; 0
+    3342:	81 ee       	ldi	r24, 0xE1	; 225
+    3344:	0e 94 b0 1c 	call	0x3960	; 0x3960 <send_instruction>
+	send_instruction(FLUSH_RX, NULL, NULL, 0);
+    3348:	20 e0       	ldi	r18, 0x00	; 0
+    334a:	40 e0       	ldi	r20, 0x00	; 0
+    334c:	50 e0       	ldi	r21, 0x00	; 0
+    334e:	60 e0       	ldi	r22, 0x00	; 0
+    3350:	70 e0       	ldi	r23, 0x00	; 0
+    3352:	82 ee       	ldi	r24, 0xE2	; 226
+    3354:	0c 94 b0 1c 	jmp	0x3960	; 0x3960 <send_instruction>
