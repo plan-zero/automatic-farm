@@ -87,8 +87,19 @@ uint16_t adc_read(uint8_t ch)
 	return (ADC);
 }
 
-#define TRANS2
-//#define REC
+
+void configure_timer() {
+	TCCR2 |= 1 << CS21 | 1 << CS20;
+	//while(ASSR >> TCR2UB);
+	TCNT2 = 0;
+	//while(ASSR >> TCN2UB);
+	
+	TIMSK |= 1 << TOIE2;
+	 
+}
+
+//#define TRANS2
+#define REC
 
 int main(){
 	
@@ -129,9 +140,9 @@ int main(){
 #endif
 #ifdef REC
 	uint8_t my_add[5] = { 0xE4, 0xE4, 0xE4, 0xE4, 0xE4 };
-	uint8_t address1[5] = { 0x98, 0x76, 0x54, 0x32, 0x11 }; 
-	uint8_t address2[5] = { 0x98, 0x76, 0x54, 0x32, 0x10 }; 
+	uint8_t address1[5] = { 0xE0, 0x70, 0x35, 0x01, 0xA1 }; 
 	Radio_Configure_Rx(RADIO_PIPE_1, my_add, ENABLE);
+	Radio_Set_Tx_Addr(address1);
 	
 	
 	buffer.payload.message.address[0] = 0xE4;
@@ -153,23 +164,16 @@ int main(){
 			Radio_Flush();
 			print_radiopacket(buffer);
 			rx_radio = 0;
-			if(buffer.payload.message.messagecontent[0] == 0xAA) {
-				buffer.payload.message.messagecontent[0] = 0xBB;
-				Radio_Transmit(&buffer, RADIO_WAIT_FOR_TX);//RADIO_WAIT_FOR_TX);
-				Radio_Flush();
-			}
 		}
 
 #ifdef REC
+
 		uart_printString("ACK Time test");
 		uart_sendByte(13);
 		uart_sendByte(10);
 		
 		buffer.payload.message.messagecontent[0] = 0xAA;
-		Radio_Set_Tx_Addr(address1);
-		Radio_Transmit(&buffer, RADIO_WAIT_FOR_TX);//RADIO_WAIT_FOR_TX);
-		Radio_Flush();
-		Radio_Set_Tx_Addr(address2);
+		
 		Radio_Transmit(&buffer, RADIO_WAIT_FOR_TX);//RADIO_WAIT_FOR_TX);
 		Radio_Flush();
 		_delay_ms(1000);
