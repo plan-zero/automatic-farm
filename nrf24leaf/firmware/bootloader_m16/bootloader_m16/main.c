@@ -19,7 +19,8 @@
 #define LED_PORT_PIN PINB0
 
 #define TURN_LED_ON		PORTB |= 1
-#define TURN_LED_OFF	PORTB &= 0xFE;
+#define TURN_LED_OFF	PORTB &= 0xFE
+#define TOGGLE_LED		PORTB ^= 1
 
 #define RADIO_RX_ADDRESS (const uint8_t*)0
 #define RADIO_RX_LENGTH	 5
@@ -30,61 +31,84 @@ void radio_rxhandler(uint8_t pipenumber){
 
 }
 radiopacket_t buffer;
-uint8_t EEMEM _rx_address[RADIO_RX_LENGTH];
+
+#define BOOTLOADER_IDLE			0
+#define BOOTLOADER_DOWNLOAD		1
+#define BOOTLOADER_CHECK_APP	2
+
+#define BOOTLOADER_TIMEOUT 5 //seconds
 
 int main(void)
 {
+	uint8_t wait_time = BOOTLOADER_TIMEOUT;
+	uint8_t bootloader_state = BOOTLOADER_IDLE;
     LED_PORT_DIR |= 1 << LED_PORT_PIN;
-	Radio_Init();
+
 	
-	uint8_t rx_address[RADIO_RX_LENGTH];
-	eeprom_read_block ((void*)&rx_address, (void*)&_rx_address, RADIO_RX_LENGTH);
+	uint8_t rx_address[RADIO_RX_LENGTH] = {0};
+	uint32_t eep_checksum = 0;
+	uint32_t flash_checksum = 0;
+	uint16_t nrf24_firmware_version = 0;
+	uint16_t application_version = 0;
+	uint16_t eep_version = 0;
+	uint16_t reserved = 0;
+	uint8_t download = 0;
+	uint8_t tx_address[RADIO_RX_LENGTH] = {0};
 	
-	Radio_Configure_Rx(RADIO_PIPE_1, rx_address, ENABLE);
+	//reading eeprom parameters
+
+	eeprom_read_block ((void*)&rx_address, (void*)0, RADIO_RX_LENGTH);
+	eep_checksum = eeprom_read_dword((uint32_t*)5);
+	flash_checksum = eeprom_read_dword((uint32_t*)9);
+	nrf24_firmware_version = eeprom_read_word((uint16_t*)13);
+	application_version = eeprom_read_word((uint16_t*)15);
+	eep_version = eeprom_read_word((uint16_t*)17);
+	reserved = eeprom_read_word((uint16_t*)19);
+	download = eeprom_read_byte((uint8_t*)21);
+	eeprom_read_block((void*)&tx_address, (void*)22, RADIO_RX_LENGTH);
 	
-	
-	buffer.payload.message.address[0] = 0xE0;
-	buffer.payload.message.address[1] = 0x70;
-	buffer.payload.message.address[2] = 0x35;
-	buffer.payload.message.address[3] = 0x01;
-	buffer.payload.message.address[4] = 0xA1;
-	
-	Radio_Configure(RADIO_2MBPS, RADIO_HIGHEST_POWER);
+	if( download == 0) {
+		bootloader_state = BOOTLOADER_DOWNLOAD;
+	}
 	
 
-	//for(uint8_t  offset = 0; offset < RADIO_RX_LENGTH; offset++)
-	//	*(buffer.payload.message.address + offset) = *(rx_address + offset);
-	//TURN_LED_ON;
-	/*if(rx_address[0] == 0xE0 &&
-		rx_address[1] == 0x70 &&
-		rx_address[2] == 0x35 &&
-		rx_address[3] == 0x01 &&
-		rx_address[4] == 0xA1
-	) {
-		TURN_LED_ON;
-	}*/
-	
-	//TURN_LED_ON;
-
-	sei();
-	
-	
-    while (1) 
-    {
-		if(rx_radio){
+	switch(bootloader_state){
+		case BOOTLOADER_IDLE:
 			
-			Radio_Receive(&buffer);
-			Radio_Flush();
-			rx_radio = 0;
 			
-			if( buffer.payload.message.messagecontent[0] == 0xAA )
-			{
-				TURN_LED_ON;
+			while(wait_time--){
+				_delay_ms(1000);
+				TOGGLE_LED;
 			}
-		}
-		
-    }
+			bootloader_state = BOOTLOADER_CHECK_APP;
+		break;
+		case BOOTLOADER_DOWNLOAD:
+			bootloader_state = BOOTLOADER_DOWNLOAD;
+			Radio_Init();
+			Radio_Configure_Rx(RADIO_PIPE_1, rx_address, ENABLE);
+			Radio_Set_Tx_Addr(tx_address);
+			
+			//copy the address to radio payload message
+			for(uint8_t idx; idx < RADIO_RX_ADDRESS; idx++)
+			buffer.payload.message.address[idx] = rx_address[idx];
+			
+			Radio_Configure(RADIO_2MBPS, RADIO_HIGHEST_POWER);
+			sei();
+			
+			while (1)
+			{
+				if(rx_radio){
+					TURN_LED_ON;
+				}
+				
+			}
+		break;
+	}
 	
+	
+	while(bootloader_state == BOOTLOADER_CHECK_APP){
+		TURN_LED_OFF;
+	}
 	//go to the application as soon as the code has downloaded
 	//asm("JMP 0");
 }
