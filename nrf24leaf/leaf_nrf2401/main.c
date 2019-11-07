@@ -33,10 +33,16 @@ void print_radiopacket(radiopacket_t packet){
 	//send address:
 	uart_printString(":ADDR:");
 	for(uint8_t idx = 0; idx < 5; idx ++){
-		uint8_t address1 = buffer.payload.message.address[idx] % 10;
-		uint8_t address2 = (buffer.payload.message.address[idx] / 10) % 10;
-		uart_sendByte(address2);
-		uart_sendByte(address1);
+		uint8_t  high = (buffer.payload.message.address[idx] & 0xF0)>>4;
+		uint8_t  low = buffer.payload.message.address[idx] & 0x0F;
+		if (high > 9)
+			uart_sendByte(high - 10 + 'A');
+		else
+			uart_sendByte(high + '0');
+		if (low > 9)
+			uart_sendByte(low - 10 + 'A');
+		else
+			uart_sendByte(low + '0');
 	}
 
 	//send message
