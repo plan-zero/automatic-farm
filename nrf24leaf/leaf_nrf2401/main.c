@@ -102,9 +102,11 @@ int main(){
 	sei();
 	while(1){
 		if(rx_radio){
-			Radio_Receive(&rec_buffer);
-			Radio_Flush();
-			print_radiopacket(&rec_buffer);
+			while(RADIO_RX_SUCCESS != Radio_Receive(&rec_buffer)){
+				print_radiopacket(&rec_buffer);
+			}
+			//Radio_Flush();
+			
 			rx_radio = 0;
 		}
 		
