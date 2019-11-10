@@ -67,7 +67,7 @@ typedef uint8_t radio_register_t;
 /// Auto-retransmit status (cf. REUSE_TX_PL instruction), Tx FIFO full/empty, Rx FIFO full/empty
 /// (The Rx FIFO is a 3-packet queue shared by all six pipes)
 #define FIFO_STATUS 0x17
-
+#define DYNPD	0x1C
 
 /*****							Register Bit Mask Shift Values (use with _BV())							*****/
 
