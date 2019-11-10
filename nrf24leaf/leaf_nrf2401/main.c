@@ -2,15 +2,31 @@
 
 #define F_CPU 4000000UL
 #include <util/delay.h>
+
+
 #include "radio.h"
-
-
 #include "uart.h"
 
 
 volatile int rx_radio = 0;
 
-radiopacket_t buffer;
+radiopacket_t send_buffer;
+radiopacket_t rec_buffer;
+
+#define RADIO_PAYLOAD_SIZE 23
+
+void RadioUtils_clearPayload(radiopacket_t *radiopck) {
+	for(uint8_t idx = 0; idx < RADIO_PAYLOAD_SIZE; idx++ )
+	radiopck->payload.message.messagecontent[idx] = 0;
+	radiopck->payload.message.messageid = 0;
+}
+
+void RadioUtils_CopyString(radiopacket_t *radiopck, char * str) {
+	if(strlen(str) <= RADIO_PAYLOAD_SIZE){
+		for(uint8_t idx = 0; idx < RADIO_PAYLOAD_SIZE; idx++ )
+		radiopck->payload.message.messagecontent[idx] = (uint8_t)*(str + idx);
+	}
+}
 
 void uart_printString(char *string){
 	char *idx = &string[0];
@@ -22,19 +38,19 @@ void uart_printString(char *string){
 
 }
 
-void print_radiopacket(radiopacket_t packet){
+void print_radiopacket(radiopacket_t *buffer){
 
 
 	//send message ID
 	uart_printString("ID:");
-	uint8_t msg_id = buffer.payload.message.messageid;
+	uint8_t msg_id = rec_buffer.payload.message.messageid;
 	uart_sendByte(msg_id);
 
 	//send address:
 	uart_printString(":ADDR:");
 	for(uint8_t idx = 0; idx < 5; idx ++){
-		uint8_t  high = (buffer.payload.message.address[idx] & 0xF0)>>4;
-		uint8_t  low = buffer.payload.message.address[idx] & 0x0F;
+		uint8_t  high = (rec_buffer.payload.message.address[idx] & 0xF0)>>4;
+		uint8_t  low = rec_buffer.payload.message.address[idx] & 0x0F;
 		if (high > 9)
 			uart_sendByte(high - 10 + 'A');
 		else
@@ -48,7 +64,7 @@ void print_radiopacket(radiopacket_t packet){
 	//send message
 	uart_printString(":MSG:");
 	for(uint8_t idx = 0; idx < 23; idx ++){
-		uart_sendByte(buffer.payload.message.messagecontent[idx]);
+		uart_sendByte(rec_buffer.payload.message.messagecontent[idx]);
 
 	}
 	uart_sendByte(13);
@@ -61,129 +77,41 @@ void radio_rxhandler(uint8_t pipenumber){
 }
 
 
-
-void adc_init()
-{
-	// AREF = AVcc
-	ADMUX = (1<<REFS0);
-
-	// ADC Enable and prescaler of 128
-	// 16000000/128 = 125000
-	ADCSRA = (1<<ADEN)|(1<<ADPS2)|(1<<ADPS1); //|(1<<ADPS0);
-}
-
-
-uint16_t adc_read(uint8_t ch)
-{
-	// select the corresponding channel 0~7
-	// ANDing with ’7' will always keep the value
-	// of ‘ch’ between 0 and 7
-	ch &= 0b00000111;  // AND operation with 7
-	ADMUX = (ADMUX & 0xF8)|ch; // clears the bottom 3 bits before ORing
-	
-	// start single convertion
-	// write ’1' to ADSC
-	ADCSRA |= (1<<ADSC);
-	
-	// wait for conversion to complete
-	// ADSC becomes ’0' again
-	// till then, run loop continuously
-	while(ADCSRA & (1<<ADSC));
-	
-	return (ADC);
-}
-
-
-void configure_timer() {
-	TCCR2 |= 1 << CS21 | 1 << CS20;
-	//while(ASSR >> TCR2UB);
-	TCNT2 = 0;
-	//while(ASSR >> TCN2UB);
-	
-	TIMSK |= 1 << TOIE2;
-	 
-}
-
-//#define TRANS2
-#define REC
-
 int main(){
-	
-	adc_init();
 
 	Radio_Init();
 	uart_init(BAUD9600);
 
-	//_delay_ms(1000);
+	_delay_ms(1000);
 	uart_printString("Radio Test");
-
-	
-	
-
-#ifdef TRANS1
-	uint8_t address[5] = { 0xE4, 0xE4, 0xE4, 0xE4, 0xE4 };
-	uint8_t my_add[5] = { 0x98, 0x76, 0x54, 0x32, 0x10 };
-	Radio_Configure_Rx(RADIO_PIPE_0, my_add, ENABLE);
-	Radio_Set_Tx_Addr(address);
-
-	buffer.payload.message.address[0] = 0x98;
-	buffer.payload.message.address[1] = 0x76;
-	buffer.payload.message.address[2] = 0x54;
-	buffer.payload.message.address[3] = 0x32;
-	buffer.payload.message.address[4] = 0x10;
-#endif
-#ifdef TRANS2  //REC
-	uint8_t address[5] = { 0xE4, 0xE4, 0xE4, 0xE4, 0xE4 };
-	uint8_t my_add[5] = { 0x98, 0x76, 0x54, 0x32, 0x11 };
-	Radio_Configure_Rx(RADIO_PIPE_0, my_add, ENABLE);
-	Radio_Set_Tx_Addr(address);
-
-	buffer.payload.message.address[0] = 0x98;
-	buffer.payload.message.address[1] = 0x76;
-	buffer.payload.message.address[2] = 0x54;
-	buffer.payload.message.address[3] = 0x32;
-	buffer.payload.message.address[4] = 0x11;
-#endif
-#ifdef REC
 	uint8_t my_add[5] = { 0xE4, 0xE4, 0xE4, 0xE4, 0xE4 };
 	uint8_t address1[5] = { 0xE0, 0x70, 0x35, 0x01, 0xA1 }; 
 	Radio_Configure_Rx(RADIO_PIPE_1, my_add, ENABLE);
 	Radio_Set_Tx_Addr(address1);
 	
 	
-	buffer.payload.message.address[0] = 0xE4;
-	buffer.payload.message.address[1] = 0xE4;
-	buffer.payload.message.address[2] = 0xE4;
-	buffer.payload.message.address[3] = 0xE4;
-	buffer.payload.message.address[4] = 0xE4;
-
-#endif
+	rec_buffer.payload.message.address[0] = 0xE4;
+	rec_buffer.payload.message.address[1] = 0xE4;
+	rec_buffer.payload.message.address[2] = 0xE4;
+	rec_buffer.payload.message.address[3] = 0xE4;
+	rec_buffer.payload.message.address[4] = 0xE4;
 
 	Radio_Configure(RADIO_2MBPS, RADIO_HIGHEST_POWER);
 	
 	GIFR = (1<<INTF0);
-	
 	sei();
 	while(1){
 		if(rx_radio){
-			Radio_Receive(&buffer);
+			Radio_Receive(&rec_buffer);
 			Radio_Flush();
-			print_radiopacket(buffer);
+			print_radiopacket(&rec_buffer);
 			rx_radio = 0;
 		}
-
-#ifdef REC
-
-		uart_printString("ACK Time test");
-		uart_sendByte(13);
-		uart_sendByte(10);
 		
-		buffer.payload.message.messagecontent[0] = 0xAA;
-		
-		Radio_Transmit(&buffer, RADIO_WAIT_FOR_TX);//RADIO_WAIT_FOR_TX);
-		Radio_Flush();
-		_delay_ms(1000);
-#endif
+		_delay_ms(500);
+		//Radio_Transmit(&send_buffer, RADIO_WAIT_FOR_TX);//RADIO_WAIT_FOR_TX);
+		//Radio_Flush();
+	
 	}
 
 
