@@ -219,7 +219,7 @@ static void configure_registers()
 }
 
 
-void Radio_Init()
+void Radio_Init(RADIO_USAGE radio_init_usage)
 {
 	transmit_lock = 0;
 
@@ -232,8 +232,11 @@ void Radio_Init()
 
 	// Enable radio interrupt.  This interrupt is triggered when data are received and when a transmission completes.
 	DDRD &= ~ (1 << PIND2);
-	//PORTD |= 1 << PIND2;
-	
+	if(RADIO_BOOTLOADER == radio_init_usage) {
+		GICR|=(1<<IVCE);
+		GICR=0x02;
+	}
+
 
 	GICR |= 1<<INT0;					// Enable INT0
 	MCUCR |= (1 << ISC01); //| 1<<ISC00;	// Trigger INT0 on rising edge
@@ -268,6 +271,7 @@ void Radio_Configure_Rx(RADIO_PIPE pipe, uint8_t* address, uint8_t enable)
 {
 	uint8_t value;
 	uint8_t use_aa = 1;
+	uint8_t use_dynp = 1;
 	uint8_t payload_width = 32;
 	if (payload_width < 1 || payload_width > 32 || pipe < RADIO_PIPE_0 || pipe > RADIO_PIPE_5) return;
 
@@ -297,6 +301,14 @@ void Radio_Configure_Rx(RADIO_PIPE pipe, uint8_t* address, uint8_t enable)
 	value = enable ? payload_width : 0;
 	set_register(RX_PW_P0 + pipe, &value, 1);
 	rx_pipe_widths[pipe] = value;
+	
+	//enable dynamic payload
+	get_register(DYNPD, &value, 1);
+	if (use_dynp)
+		value |= _BV(pipe);
+	else
+		value &= ~_BV(pipe);
+	set_register(DYNPD, &value, 1);
 
 	// Enable or disable the pipe.
 	get_register(EN_RXADDR, &value, 1);
@@ -424,21 +436,6 @@ RADIO_RX_STATUS Radio_Receive(radiopacket_t* buffer)
 	//release_radio();
 
 	return result;
-}
-
-// This is only accurate if all the failed packets were sent using auto-ack.
-uint8_t Radio_Success_Rate()
-{
-	uint16_t wh = tx_history;
-	uint8_t weight = 0;
-	while (wh != 0)
-	{
-		if ((wh & 1) != 0) weight++;
-		wh >>= 1;
-	}
-	wh = (16 - weight) * 100;
-	wh /= 16;
-	return wh;
 }
 
 void Radio_Flush()
