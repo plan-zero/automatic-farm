@@ -27,6 +27,11 @@
 
 #define RADIO_ADDRESS_LENGTH 5
 
+typedef enum _radio_usage {
+	RADIO_BOOTLOADER = 0,
+	RADIO_APPLICATION = 1,
+}RADIO_USAGE;
+
 typedef enum _radio_pipe {
 	RADIO_PIPE_0 = 0,
 	RADIO_PIPE_1 = 1,
@@ -76,7 +81,7 @@ typedef enum _ed {
 	ENABLE=1,
 } ON_OFF;		// there's got to be a better name for this.
 
-void Radio_Init();
+__attribute__((section(".shared")))  void Radio_Init(RADIO_USAGE radio_init_usage);
 
 
 /**
@@ -108,20 +113,20 @@ void Radio_Init();
  * 				...
  * \param enable Enable or disable the pipe.
  */
-void Radio_Configure_Rx(RADIO_PIPE pipe, uint8_t* address, ON_OFF enable);
+__attribute__((section(".shared"))) void Radio_Configure_Rx(RADIO_PIPE pipe, uint8_t* address, ON_OFF enable);
 
 /**
  * Configure the radio transceiver.
  * \param dr The data rate at which the radio will transmit and receive data (1 Mbps or 2 Mbps).
  * \param power The transmitter's power output.
  */
-void Radio_Configure(RADIO_DATA_RATE dr, RADIO_TX_POWER power);
+__attribute__((section(".shared"))) void Radio_Configure(RADIO_DATA_RATE dr, RADIO_TX_POWER power);
 
 /**
  * Set the radio transmitter's address.
  * \param The 5-byte address that packets will be sent to.
  */
-void Radio_Set_Tx_Addr(uint8_t* address);
+__attribute__((section(".shared"))) void Radio_Set_Tx_Addr(uint8_t* address);
 
 /**
  * Transmit some data to another station.
@@ -136,7 +141,7 @@ void Radio_Set_Tx_Addr(uint8_t* address);
  * 		(MAX_RT interrupt asserted, i.e. no ack was received and the maximum number of retries were sent), then
  * 		Radio_Transmit returns RADIO_TX_MAX_RT.
  */
-uint8_t Radio_Transmit(radiopacket_t* payload, RADIO_TX_WAIT wait);
+__attribute__((section(".shared"))) uint8_t Radio_Transmit(radiopacket_t* payload, RADIO_TX_WAIT wait);
 
 /**
  * Get the next packet from the Rx FIFO.
@@ -144,17 +149,11 @@ uint8_t Radio_Transmit(radiopacket_t* payload, RADIO_TX_WAIT wait);
  * 		If the FIFO is empty, then this structure will be left alone.
  * \return See enum RADIO_RX_STATUS for values.
  */
-RADIO_RX_STATUS Radio_Receive(radiopacket_t* buffer);
-
-/**
- * Calculate the radio's transmit success rate over the last 16 packets.  The return value is the percentage of packets
- * that were transmitted successfully, ranging from 0 to 100.
- */
-uint8_t Radio_Success_Rate();
+__attribute__((section(".shared"))) RADIO_RX_STATUS Radio_Receive(radiopacket_t* buffer);
 
 /**
  * Flush the radio's Rx and Tx FIFOs.
  */
-void Radio_Flush();
+__attribute__((section(".shared"))) void Radio_Flush();
 
 #endif /* RADIO_H_ */
