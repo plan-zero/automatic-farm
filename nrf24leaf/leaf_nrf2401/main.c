@@ -63,7 +63,7 @@ void print_radiopacket(radiopacket_t *buffer){
 
 	//send message
 	uart_printString(":MSG:");
-	for(uint8_t idx = 0; idx < 23; idx ++){
+	for(uint8_t idx = 0; idx < 1; idx ++){
 		uart_sendByte(rec_buffer.payload.message.messagecontent[idx]);
 
 	}
@@ -79,24 +79,24 @@ void radio_rxhandler(uint8_t pipenumber){
 
 int main(){
 
-	Radio_Init();
+	Radio_Init(RADIO_APPLICATION);
 	uart_init(BAUD9600);
 
 	_delay_ms(1000);
 	uart_printString("Radio Test");
-	uint8_t my_add[5] = { 0xE4, 0xE4, 0xE4, 0xE4, 0xE4 };
+	uint8_t my_add[5] = { 0xE0, 0x70, 0x35, 0x02, 0xA1 }; 
 	uint8_t address1[5] = { 0xE0, 0x70, 0x35, 0x01, 0xA1 }; 
 	Radio_Configure_Rx(RADIO_PIPE_1, my_add, ENABLE);
 	Radio_Set_Tx_Addr(address1);
 	
 	
-	rec_buffer.payload.message.address[0] = 0xE4;
-	rec_buffer.payload.message.address[1] = 0xE4;
-	rec_buffer.payload.message.address[2] = 0xE4;
-	rec_buffer.payload.message.address[3] = 0xE4;
-	rec_buffer.payload.message.address[4] = 0xE4;
+	rec_buffer.payload.message.address[0] = 0xE0;
+	rec_buffer.payload.message.address[1] = 0x70;
+	rec_buffer.payload.message.address[2] = 0x35;
+	rec_buffer.payload.message.address[3] = 0x02;
+	rec_buffer.payload.message.address[4] = 0xA1;
 
-	Radio_Configure(RADIO_2MBPS, RADIO_HIGHEST_POWER);
+	Radio_Configure(RADIO_1MBPS, RADIO_HIGHEST_POWER);
 	
 	GIFR = (1<<INTF0);
 	sei();
