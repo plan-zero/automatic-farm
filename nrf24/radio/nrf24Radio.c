@@ -12,7 +12,6 @@
 #include "stdint.h"
 #include <stddef.h>
 
-#include "uart.h"
 
 #define F_CPU 8000000
 #include <util/delay.h>
@@ -452,7 +451,6 @@ radio_error_code nrfRadio_ListeningMode() {
 	//the radio must be powered up before it enters in listening mode
 	if(RADIO_POWER_DOWN == _radio_instance.currentState)
 		return RADIO_ERR_INVALID;
-	uart_sendByte('I');
 	get_register(CONFIG, &value, 1);
 	
 	if ((value & _BV(PRIM_RX)) == 0) {
@@ -464,7 +462,6 @@ radio_error_code nrfRadio_ListeningMode() {
 		_delay_us(140);
 		CE_HIGH();
 		_radio_instance.currentState = RADIO_PRX;
-		uart_sendByte('L');
 		return RADIO_ERR_OK;
 		
 	}
@@ -511,7 +508,6 @@ radio_error_code nrfRadio_LoadMessages(uint8_t * payload, uint8_t payload_length
 	CE_LOW();
 	send_instruction(W_TX_PAYLOAD, payload, NULL, payload_length);
 
-	uart_sendByte('B');
 	return RADIO_ERR_OK;
 }
 
@@ -519,19 +515,15 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	uint8_t value;
 	
 	//if radio is already transmitting	
-	uart_sendByte('J');
 	if(RADIO_PTX == _radio_instance.currentState)
 		return RADIO_ERR_INVALID;
-	uart_sendByte('D');
 	//radio is powered up and ready to start the transmission
 	if(RADIO_STANDBY_1 != _radio_instance.currentState)
 		return RADIO_ERR_INVALID;
-	uart_sendByte('E');
 	get_register(FIFO_STATUS, &value, 1);
 	//if there is nothing to transmit then return
 	if( (value & _BV(TX_FIFO_EMPTY)) == 1)
 		return RADIO_ERR_INVALID;
-	uart_sendByte('F');
 	//set the PIPE0 to TX address for auto-ack
 	set_register(RX_ADDR_P0, (uint8_t*)tx_address, RADIO_MAX_ADDRESS); //TODO save the address length in radio instance when the radio is initialized
 	set_register(TX_ADDR, (uint8_t*)tx_address, RADIO_MAX_ADDRESS);
@@ -554,7 +546,6 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	else
 		_radio_instance.currentState = RADIO_PTX;
 	
-	uart_sendByte('C');
 	return RADIO_TX_OK;
 }
 
@@ -590,7 +581,6 @@ radio_error_code nrfRadio_Main() {
 		//the radio enters in standby mode when it is PTX and the CE ping is held high while the TX_FIFO_BUFFER is empty
 		case RADIO_STANDBY_2:
 		CE_LOW();
-		uart_sendByte('X');
 		//set back the RX pipe 0 address
 		set_register(RX_ADDR_P0, (uint8_t*)_radio_instance.rxAddressP0, RADIO_MAX_ADDRESS);
 		_radio_instance.currentState = RADIO_STANDBY_1;
@@ -638,7 +628,6 @@ radio_error_code nrfRadio_Main() {
 				//get the pipe number
 				uint8_t rec_buffer[32] = {0};
 				uint8_t pipe_number = (irq_status & 0xE) >> 1;
-				uint8_t status = 0;
 				while(pipe_number != RADIO_PIPE_EMPTY) {
 					send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
 					rx_callback(pipe_number, rec_buffer);
@@ -666,7 +655,6 @@ ISR(IRQ_HANDLER)
 {
 
 	GIFR = (1<<INTF0);
-	uart_sendByte('A');
 	irq_triggered++;
 	CSN_LOW();
 	irq_status = SPI_Write_Byte(NOP);
