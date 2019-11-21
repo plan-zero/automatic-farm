@@ -11,9 +11,9 @@
 
 #include "stdint.h"
 
-#ifndef 
+//#ifndef 
 #define NRF24_MEMORY __attribute__((section(".nrf24")))
-#endif
+//#endif
 
 
 typedef enum _crc {
@@ -410,6 +410,6 @@ NRF24_MEMORY radio_error_code nrfRadio_ChangeDataRate(radio_data_rate datarate);
 NRF24_MEMORY radio_error_code nrfRadio_ChangePower(radio_rf_power power);
 NRF24_MEMORY radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status));
 NRF24_MEMORY radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *));
-NRF24_MEMORY void nrfRadio_LoadAckPayload();
+NRF24_MEMORY void nrfRadio_LoadAckPayload(uint8_t * payload, uint8_t payload_length);
 
 #endif /* NRF24RADIO_H_ */

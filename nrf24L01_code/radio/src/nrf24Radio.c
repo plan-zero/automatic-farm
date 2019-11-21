@@ -549,15 +549,15 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	return RADIO_TX_OK;
 }
 
-void nrfRadio_LoadAckPayload()
+void nrfRadio_LoadAckPayload(uint8_t * payload, uint8_t payload_length)
 {
-	uint8_t ackPayload[5];
-	ackPayload[0] = 'A';
-	ackPayload[1] = 'B';
-	ackPayload[2] = 'C';
-	ackPayload[3] = 'D';
-	ackPayload[4] = 'E';
-	send_instruction(W_ACK_PAYLOAD, ackPayload, NULL, 5);
+	if(RADIO_PRX == _radio_instance.currentState) {
+		CE_LOW();
+		_delay_us(140);
+		send_instruction(W_ACK_PAYLOAD, payload, NULL, payload_length);	
+		CE_HIGH();
+		_delay_us(140);
+	}
 	
 }
 
@@ -581,6 +581,7 @@ radio_error_code nrfRadio_Main() {
 		//the radio enters in standby mode when it is PTX and the CE ping is held high while the TX_FIFO_BUFFER is empty
 		case RADIO_STANDBY_2:
 		CE_LOW();
+		_delay_us(140);
 		//set back the RX pipe 0 address
 		set_register(RX_ADDR_P0, (uint8_t*)_radio_instance.rxAddressP0, RADIO_MAX_ADDRESS);
 		_radio_instance.currentState = RADIO_STANDBY_1;
@@ -623,7 +624,7 @@ radio_error_code nrfRadio_Main() {
 			irq_triggered = 0;
 			
 			if(irq_status & _BV(RX_DR)) {
-				_delay_us(200); //make sure that the radio has already send the ACK TODO: wait just if the radio is using AA
+				_delay_us(140); //make sure that the radio has already send the ACK TODO: wait just if the radio is using AA
 				CE_LOW(); //disable the radio
 				//get the pipe number
 				uint8_t rec_buffer[32] = {0};

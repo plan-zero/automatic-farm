@@ -13,7 +13,7 @@
 #include <avr/eeprom.h> 
 #include <avr/interrupt.h>
 #include <stdint.h>
-#include "radio.h"
+
 
 #define LED_PORT_DIR DDRB
 #define LED_PORT_PIN PINB0
@@ -30,7 +30,7 @@ void radio_rxhandler(uint8_t pipenumber){
 	rx_radio = 1;
 
 }
-radiopacket_t buffer;
+//radiopacket_t buffer;
 
 #define BOOTLOADER_IDLE			0
 #define BOOTLOADER_DOWNLOAD		1
@@ -84,15 +84,10 @@ int main(void)
 		break;
 		case BOOTLOADER_DOWNLOAD:
 			bootloader_state = BOOTLOADER_DOWNLOAD;
-			Radio_Init();
-			Radio_Configure_Rx(RADIO_PIPE_0, rx_address, ENABLE);
-			Radio_Set_Tx_Addr(tx_address);
+			
 			
 			//copy the address to radio payload message
-			for(uint8_t idx = 0; idx < RADIO_RX_LENGTH; idx++)
-				buffer.payload.message.address[idx] = rx_address[idx];
 			
-			Radio_Configure(RADIO_2MBPS, RADIO_LOW_POWER);
 			sei();
 			uint8_t count = 0;
 			uint8_t blinking = 1;
@@ -105,22 +100,8 @@ int main(void)
 					rx_radio = 0;
 				}
 				
-				buffer.payload.message.messagecontent[0] = '0' + count;
-				count++;
-				_delay_ms(1000);
-				if(blinking)
-					TURN_LED_ON;
-				if(RADIO_TX_SUCCESS != Radio_Transmit(&buffer,RADIO_WAIT_FOR_TX)){
-					blinking = 0;
 				
-				}
-				if(count == 10){
-					count = 0;
-				}
-				
-				_delay_ms(300);
-				if(blinking)
-					TURN_LED_OFF;
+			
 			}
 		break;
 	}
