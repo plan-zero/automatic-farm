@@ -204,6 +204,7 @@ typedef uint8_t radio_register_t;
 /// Write transmit payload
 #define W_TX_PAYLOAD  0xA0
 #define W_ACK_PAYLOAD 0xA8
+#define R_RX_PL_WID	  0x60
 /// Flush transmit FIFO
 #define FLUSH_TX      0xE1
 /// Flush receive FIFO (should not be used while an ack is being transmitted)

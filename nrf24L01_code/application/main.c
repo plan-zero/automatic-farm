@@ -107,18 +107,18 @@ void printRadioInfo(radio_registers regs)
 	uart_printRegister(regs.feature);
 }
 
-void rx_handler(uint8_t pipe, uint8_t * data) {
+void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	
 	uart_printString("Data received on pipe:", 1);
 	uart_sendByte('0' + pipe);
 	char string[33] = {0};
 	string[32] = '\0';
-	for(uint8_t idx = 0; idx < 32; idx ++){
+	for(uint8_t idx = 0; idx < payload_length; idx ++){
 		string[idx] = data[idx];
 	}
 	uart_printString(string, 1);
 	uint8_t ack_payload [2] = {'A', 'F'};
-	nrfRadio_LoadAckPayload(ack_payload, 2);
+	nrfRadio_LoadAckPayload(RADIO_PIPE0, ack_payload, 2);
 }
 
 void tx_handler(radio_tx_status tx_status) {
@@ -174,7 +174,7 @@ int main(){
 	//nrfRadio_TransmitMode();
 	nrfRadio_ListeningMode();
 	uint8_t ack_payload [2] = {'A', 'F'};
-	nrfRadio_LoadAckPayload(ack_payload, 2);
+	nrfRadio_LoadAckPayload(RADIO_PIPE0, ack_payload, 2);
 	
 	sei();
 	uint8_t payload[5] = {'A','B','C','D','E'};
@@ -197,8 +197,8 @@ int main(){
 				uart_printString("Uart ack ok",1);
 			else
 				uart_printString("Uart ack not ok",1);
-		}
-			*/
+		}*/
+			
 		nrfRadio_Main();
 		//_delay_ms(500);
 	}
