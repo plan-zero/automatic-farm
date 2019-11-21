@@ -128,7 +128,7 @@ def manageLowBatteryShutdown():
 def manageRebootEvent():
 	global rebootCount
 	global triggerReboot
-	if triggerReboot:
+	if triggerReboot == 1:
 		rebootCount += 1
 		if rebootCount == 1:
 			for f in preshutdownCallback:

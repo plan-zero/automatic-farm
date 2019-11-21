@@ -12,12 +12,14 @@ import reboot_module as Reboot
 import util_module as Util
 import postdata_module as PostData
 
-
+modemerr = 0
+interfaceUp = 0
 usbDownThr = 0
 dailyRebootDone = 0
 def manageDailyReboot():
 	global usbDownThr
 	global dailyRebootDone
+
 	timestamp = strftime("%H:%M",localtime())
 	if timestamp == "12:00" and dailyRebootDone == 0:
 		try:
@@ -30,8 +32,11 @@ def manageDailyReboot():
 			e = sys.exc_info()
 			print(e)
 	elif timestamp == "12:05":
+		os.system('sudo rm /home/pi/farmview/messages.txt')
 		dailyRebootDone = 0
 
+def checkUsbInterface():
+	global interfaceUp
 	###check if usb0 interface still running
 	ifconf = open("tmp.txt", 'w')
 	subprocess.call(['ifconfig'], stdout=ifconf)
@@ -39,11 +44,13 @@ def manageDailyReboot():
 	with open("tmp.txt", 'r') as ifconf_out:
 		if "usb0" not in  ifconf_out.read():
 			usbDownThr = usbDownThr + 1
+			interfaceUp = 0
 			Logger.logMessage("Interface down, wait 5 minutes until reboot")
 			if usbDownThr == 60:
 				Logger.logMessage("Trigger reboot because usb0 is down")
 				Reboot.triggerReboot(1)
 		else:
+			interfaceUp = 1
 			Logger.logMessage("Interface up")
 			usbDownThr = 0
 		ifconf_out.close()
@@ -53,6 +60,22 @@ appInit = False
 modemInit = False
 phonebook = ["0743566434"]
 
+def checkModemState():
+	global modemerr
+        output = Util.executeShellScript('get_modem_state.sh',['modem_main_state'])
+        value = Util.extractResponse(output, 'modem_main_state')
+	Logger.logMessage("Modem state is: " + str(value) )
+        if value != 'modem_init_complete':
+		modemerr = modemerr + 1
+		if modemerr == 12:
+			modemerr = 0
+			Logger.logMessage("Trigger reboot because the modem is in error state")
+			Reboot.triggerReboot(1)
+	else:
+		Logger.logMessage("Modem is running")
+		modemerr = 0
+
+
 def RebootShutdownHandler():
 	Logger.logMessage("Shutdown...")
 
@@ -61,7 +84,6 @@ def RebootPreShutdownHandler():
 	for n in phonebook:
 		number = Gsm.formatNumber(n)
 		Gsm.sendSMS(number, "The system will shut down in few seconds")
-	os.system('sudo rm /home/pi/farmview/messages.txt')
 
 def HandlerCommand_getBattery(arg):
 	bat = Battery.getBatteryData()
@@ -75,12 +97,26 @@ def BatteryStatusHandler(warning, critical):
 
 Logger.logMessage("Application: initialization phase")
 
+timeout = 0
+while interfaceUp == 0:
+	time.sleep(10)
+	checkUsbInterface()
+	timeout = timeout + 1
+	if timeout == 180: #half of hour
+		os.system('sudo shutdown -r now') #reboot system since usb is down
+		timeout = 0
+timeout = 0
 while modemInit == False:
 	output = Util.executeShellScript('get_modem_state.sh',['modem_main_state'])
 	value = Util.extractResponse(output, 'modem_main_state')
 	Logger.logMessage("Modem state is: " + str(value) )
 	if value == 'modem_init_complete':
 		modemInit = True
+	else:
+		timeout = timeout + 1
+		if timeout == 90:
+			os.system('sudo shutdown -r now') #reboot system since usb is down
+			timeout = 0
 	time.sleep(1)
 Logger.logMessage("The modem is fully initialized")
 Logger.logMessage("Application: Sending greeting message")
@@ -128,7 +164,8 @@ while modemInit == True and appInit == True:
 	Reboot.manageRebootEvent()
 	Reboot.manageLowBatteryShutdown()
 ####################################################################
-
+	checkUsbInterface()
+	checkModemState()
 	manageDailyReboot()
 	Logger.logMessage("5 seconds passed, going to sleep")
 	time.sleep(5)
