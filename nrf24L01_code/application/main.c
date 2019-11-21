@@ -8,33 +8,6 @@
 
 #include "nrf24Radio.h"
 
-#define uartPrintHex(x) (x > 9 ? uart_sendByte('A' + (x - 10 ) ) : uart_sendByte('0' + x))
-#define uartNewLine() /*
-		*/ uart_sendByte(10); /*
-		*/ uart_sendByte(13)
-
-void uart_printString(char *string, char crlf){
-	char *idx = &string[0];
-
-	while(idx != NULL && *idx != '\0'){
-		uart_sendByte(*idx);
-		idx++;
-	}
-	if(crlf)
-		uartNewLine();
-}
-
-void uart_printRegister(unsigned char reg){
-	uart_sendByte('0');
-	uart_sendByte('x');
-	unsigned char n1 = reg >> 4;
-	unsigned char n2 = reg & 0x0F;
-	uartPrintHex(n1);
-	uartPrintHex(n2);
-	uart_sendByte(0x20);
-	
-}
-
 void printRadioInfo(radio_registers regs)
 { 
 	uart_printString("CONFIG register: ", 1);
