@@ -46,24 +46,24 @@ int main(void)
 
 	
 	uint8_t rx_address[RADIO_RX_LENGTH] = {0};
-	uint32_t eep_checksum = 0;
-	uint32_t flash_checksum = 0;
-	uint16_t nrf24_firmware_version = 0;
-	uint16_t application_version = 0;
-	uint16_t eep_version = 0;
-	uint16_t reserved = 0;
+	//uint32_t eep_checksum = 0;
+	//uint32_t flash_checksum = 0;
+	//uint16_t nrf24_firmware_version = 0;
+	//uint16_t application_version = 0;
+	//uint16_t eep_version = 0;
+	//uint16_t reserved = 0;
 	uint8_t download = 0;
 	uint8_t tx_address[RADIO_RX_LENGTH] = {0};
 	
 	//reading eeprom parameters
 
 	eeprom_read_block ((void*)&rx_address, (void*)0, RADIO_RX_LENGTH);
-	eep_checksum = eeprom_read_dword((uint32_t*)5);
-	flash_checksum = eeprom_read_dword((uint32_t*)9);
-	nrf24_firmware_version = eeprom_read_word((uint16_t*)13);
-	application_version = eeprom_read_word((uint16_t*)15);
-	eep_version = eeprom_read_word((uint16_t*)17);
-	reserved = eeprom_read_word((uint16_t*)19);
+	//eep_checksum = eeprom_read_dword((uint32_t*)5);
+	//flash_checksum = eeprom_read_dword((uint32_t*)9);
+	//nrf24_firmware_version = eeprom_read_word((uint16_t*)13);
+	//application_version = eeprom_read_word((uint16_t*)15);
+	//eep_version = eeprom_read_word((uint16_t*)17);
+	//reserved = eeprom_read_word((uint16_t*)19);
 	download = eeprom_read_byte((uint8_t*)21);
 	eeprom_read_block((void*)&tx_address, (void*)22, RADIO_RX_LENGTH);
 	
@@ -89,8 +89,8 @@ int main(void)
 			//copy the address to radio payload message
 			
 			sei();
-			uint8_t count = 0;
-			uint8_t blinking = 1;
+			//uint8_t count = 0;
+			//uint8_t blinking = 1;
 			
 			while (1)
 			{
