@@ -117,7 +117,8 @@ void rx_handler(uint8_t pipe, uint8_t * data) {
 		string[idx] = data[idx];
 	}
 	uart_printString(string, 1);
-	nrfRadio_LoadAckPayload();
+	uint8_t ack_payload [2] = {'A', 'F'};
+	nrfRadio_LoadAckPayload(ack_payload, 2);
 }
 
 void tx_handler(radio_tx_status tx_status) {
@@ -140,7 +141,7 @@ int main(){
 						 RADIO_RETRANSMIT_WAIT_3000US, 
 						 RADIO_RETRANSMIT_15, 
 						 CHANNEL_112,
-						 RADIO_2MBIT,
+						 RADIO_250KBIT,
 						 RADIO_CRC2_ENABLED,
 						 RADIO_COUNT_WAVE_DISABLED,
 						 RADIO_HIGHEST_0DBM,
@@ -172,7 +173,8 @@ int main(){
 	nrfRadio_PowerUp();
 	//nrfRadio_TransmitMode();
 	nrfRadio_ListeningMode();
-	nrfRadio_LoadAckPayload();
+	uint8_t ack_payload [2] = {'A', 'F'};
+	nrfRadio_LoadAckPayload(ack_payload, 2);
 	
 	sei();
 	uint8_t payload[5] = {'A','B','C','D','E'};
@@ -196,7 +198,7 @@ int main(){
 			else
 				uart_printString("Uart ack not ok",1);
 		}
-			*/	
+			*/
 		nrfRadio_Main();
 		//_delay_ms(500);
 	}
