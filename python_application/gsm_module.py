@@ -56,9 +56,9 @@ def decodeSMS(msg):
 			_content = re.findall(r"\"content\"\:\"([A-Fa-f0-9]+)\"", t)
 			_id = re.findall(r"\"id\"\:\"([0-9]+)\"", t)
 			temp_msg = open("tmp.txt", 'w')
-			_content = gsm7.decodeMessage(_content[0])
+			content = gsm7.decodeMessage(_content[0])
 			#print("HERE " + _content)
-			messages.append([_id[0],_number[0],_content ])
+			messages.append([_id[0],_number[0],content ])
 		return messages
 	except:
 		e = sys.exc_info()
