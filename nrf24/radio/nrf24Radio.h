@@ -84,11 +84,12 @@ typedef enum _retransmit_count{
 
 typedef enum _pipes {
 	RADIO_PIPE0 = 0,
-	RADIO_PIPE1,	
-	RADIO_PIPE2,
-	RADIO_PIPE3,
-	RADIO_PIPE4,
-	RADIO_PIPE5
+	RADIO_PIPE1 = 1,	
+	RADIO_PIPE2 = 2,
+	RADIO_PIPE3 = 3,
+	RADIO_PIPE4 = 4,
+	RADIO_PIPE5 = 5,
+	RADIO_PIPE_EMPTY = 7
 }radio_pipe;
 
 typedef enum _data_rate {
@@ -404,6 +405,7 @@ radio_error_code nrfRadio_ChangeDataRate(radio_data_rate datarate);
 radio_error_code nrfRadio_ChangePower(radio_rf_power power);
 
 radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status));
-radio_error_code nrfRadio_SetRxCallback(void (*callback)(radio_rx_status, uint8_t));
+radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *));
+void nrfRadio_LoadAckPayload();
 
 #endif /* NRF24RADIO_H_ */
