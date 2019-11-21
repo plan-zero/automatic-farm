@@ -1,7 +1,7 @@
 #include <avr/io.h>
 #include "uart.h"
 #include <avr/interrupt.h>
-
+#include <stdlib.h>
 
 
 #define UART_IDLE 		0x0
@@ -99,4 +99,27 @@ uint8_t uart_sendByteNotBlocking(uint8_t byte)
 	}
 
 	return retValue;
+}
+
+void uart_printString(char *string, char crlf){
+	char *idx = &string[0];
+
+	while(idx != NULL && *idx != '\0'){
+		uart_sendByte(*idx);
+		idx++;
+	}
+	if(crlf) {
+		uartNewLine();
+	}
+}
+
+void uart_printRegister(unsigned char reg){
+	uart_sendByte('0');
+	uart_sendByte('x');
+	unsigned char n1 = reg >> 4;
+	unsigned char n2 = reg & 0x0F;
+	uartPrintHex(n1);
+	uartPrintHex(n2);
+	uart_sendByte(0x20);
+	
 }
