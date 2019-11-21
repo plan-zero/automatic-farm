@@ -11,6 +11,11 @@
 
 #include "stdint.h"
 
+#ifndef 
+#define NRF24_MEMORY __attribute__((section(".nrf24")))
+#endif
+
+
 typedef enum _crc {
 	RADIO_CRC1_ENABLED,
 	RADIO_CRC2_ENABLED,
@@ -390,22 +395,21 @@ typedef struct _radio_context{
 
 
 
-radio_error_code nrfRadio_PowerDown();
-radio_error_code nrfRadio_GetInfo(radio_registers * reg);
-radio_error_code nrfRadio_Init(radio_config cfg);
-radio_error_code nrfRadio_PipeConfig(pipe_config pipe_cfg);
-radio_error_code nrfRadio_LoadMessages(uint8_t * payload, uint8_t payload_length);
-radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type trans_type);
-radio_error_code nrfRadio_Main();
-radio_error_code nrfRadio_TransmitMode();
-radio_error_code nrfRadio_ListeningMode();
-radio_error_code nrfRadio_PowerUp();
-radio_error_code nrfRadio_PowerDown();
-radio_error_code nrfRadio_ChangeDataRate(radio_data_rate datarate);
-radio_error_code nrfRadio_ChangePower(radio_rf_power power);
-
-radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status));
-radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *));
-void nrfRadio_LoadAckPayload();
+NRF24_MEMORY radio_error_code nrfRadio_PowerDown();
+NRF24_MEMORY radio_error_code nrfRadio_GetInfo(radio_registers * reg);
+NRF24_MEMORY radio_error_code nrfRadio_Init(radio_config cfg);
+NRF24_MEMORY radio_error_code nrfRadio_PipeConfig(pipe_config pipe_cfg);
+NRF24_MEMORY radio_error_code nrfRadio_LoadMessages(uint8_t * payload, uint8_t payload_length);
+NRF24_MEMORY radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type trans_type);
+NRF24_MEMORY radio_error_code nrfRadio_Main();
+NRF24_MEMORY radio_error_code nrfRadio_TransmitMode();
+NRF24_MEMORY radio_error_code nrfRadio_ListeningMode();
+NRF24_MEMORY radio_error_code nrfRadio_PowerUp();
+NRF24_MEMORY radio_error_code nrfRadio_PowerDown();
+NRF24_MEMORY radio_error_code nrfRadio_ChangeDataRate(radio_data_rate datarate);
+NRF24_MEMORY radio_error_code nrfRadio_ChangePower(radio_rf_power power);
+NRF24_MEMORY radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status));
+NRF24_MEMORY radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *));
+NRF24_MEMORY void nrfRadio_LoadAckPayload();
 
 #endif /* NRF24RADIO_H_ */
