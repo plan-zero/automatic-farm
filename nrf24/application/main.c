@@ -3,6 +3,7 @@
 
 #define F_CPU 8000000UL
 #include <util/delay.h>
+#include <avr/interrupt.h>
 #include "uart.h"
 
 #include "nrf24Radio.h"
@@ -106,6 +107,19 @@ void printRadioInfo(radio_registers regs)
 	uart_printRegister(regs.feature);
 }
 
+void rx_handler(uint8_t pipe, uint8_t * data) {
+	
+	uart_printString("Data received on pipe:", 1);
+	uart_sendByte('0' + pipe);
+	char string[33] = {0};
+	string[32] = '\0';
+	for(uint8_t idx = 0; idx < 32; idx ++){
+		string[idx] = data[idx];
+	}
+	uart_printString(string, 1);
+	nrfRadio_LoadAckPayload();
+}
+
 void tx_handler(radio_tx_status tx_status) {
 	uart_printString("Radio tx handler", 1);
 	if(RADIO_TX_OK == tx_status) {
@@ -121,7 +135,6 @@ int main(){
 	uart_init(BAUD9600);
 	_delay_ms(500);
 	
-	uart_printString("_______________________________", 1);
 	uart_printString("Radio Initialization", 1);
 	radio_config cfg = { RADIO_ADDRESS_5BYTES, 
 						 RADIO_RETRANSMIT_WAIT_3000US, 
@@ -131,19 +144,19 @@ int main(){
 						 RADIO_CRC2_ENABLED,
 						 RADIO_COUNT_WAVE_DISABLED,
 						 RADIO_HIGHEST_0DBM,
-						 RADIO_DYNAMIC_PAYLOAD_DISABLED,
-						 RADIO_ACK_PAYLOAD_DISABLED,
+						 RADIO_DYNAMIC_PAYLOAD_ENABLED,
+						 RADIO_ACK_PAYLOAD_ENABLED,
 						 RADIO_DYNAMIC_ACK_DISABLED,
 						 RADIO_APPLICATION };
 	nrfRadio_Init(cfg);
 	
 	uint8_t pipe0_address[5] = { 0xE0, 0xE0, 0xE0, 0xE2, 0xA2 };
-	pipe_config pipe_cfg = {	RADIO_PIPE1,
+	pipe_config pipe_cfg = {	RADIO_PIPE0,
 								pipe0_address,
-								10,
+								5,
 								RADIO_PIPE_RX_ENABLED,
-								RADIO_PIPE_AA_DISABLED,
-								RADIO_PIPE_DYNAMIC_PYALOAD_DISABLED
+								RADIO_PIPE_AA_ENABLED,
+								RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 							};
 	nrfRadio_PipeConfig(pipe_cfg);
 	
@@ -154,18 +167,38 @@ int main(){
 	
 	//uart_printString("TX done", 1);
 	
+	nrfRadio_SetRxCallback(rx_handler);
 	nrfRadio_SetTxCallback(tx_handler);
 	nrfRadio_PowerUp();
-	nrfRadio_TransmitMode();
-	uint8_t payload[5] = {1,2,3,4,5};
-	uint8_t tx_address[5] =  {0x1,0x2,0x3,0x4,0x5};
-	nrfRadio_LoadMessages(payload, 5);
-	nrfRadio_Transmit(tx_address, RADIO_RETURN_ON_TX);
+	//nrfRadio_TransmitMode();
+	nrfRadio_ListeningMode();
+	nrfRadio_LoadAckPayload();
+	
+	sei();
+	uint8_t payload[5] = {'A','B','C','D','E'};
+	uint8_t tx_address[5] =  { 0xE0, 0xE0, 0xE0, 0xE2, 0xA2 };
+
 	uart_printString("Done tx", 1);
 	
+	uint32_t transmit_count = 0;
 	
 	while(1){
+		transmit_count++;
+		/*
+		if(transmit_count == 100000) {
+			transmit_count = 0;
+			payload[0]++;
+			if (payload[0] == 'E')
+				payload[0] = 'A';
+			nrfRadio_LoadMessages(payload, 5);
+			if( RADIO_TX_OK == nrfRadio_Transmit(tx_address, RADIO_RETURN_ON_TX) )
+				uart_printString("Uart ack ok",1);
+			else
+				uart_printString("Uart ack not ok",1);
+		}
+			*/	
 		nrfRadio_Main();
+		//_delay_ms(500);
 	}
 
 

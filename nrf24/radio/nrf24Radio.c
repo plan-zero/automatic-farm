@@ -46,7 +46,7 @@
 volatile uint8_t irq_triggered = 0;
 volatile uint8_t irq_status = 0;
 void (*tx_callback)(radio_tx_status) = NULL;
-void (*rx_callback)(radio_rx_status, uint8_t) = NULL;
+void (*rx_callback)(uint8_t, uint8_t*) = NULL;
 
 //the instance that is used to store the radio details (states, pipes configuration and so on)
 radio_context _radio_instance = {
@@ -119,7 +119,7 @@ radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status)) {
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_SetRxCallback(void (*callback)(radio_rx_status, uint8_t)) {
+radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *)) {
 	rx_callback = callback;
 	return RADIO_ERR_OK;
 }
@@ -179,6 +179,7 @@ radio_error_code nrfRadio_Init(radio_config cfg)
 	CE_DDR |= _BV(CE_PIN);
 	CSN_DDR |= _BV(CSN_PIN);
 	INTERRUPT_DDR &= ~_BV(INTERRUPT_PIN);
+	PORTD |= _BV(INTERRUPT_PIN);
 		
 	//move the IRQ table to the bootloader starting section, which is different than the applicaiton usage (where it starts from 0x0)
 	if(RADIO_BOOTLOADER == cfg.usecase) {
@@ -267,7 +268,8 @@ radio_error_code nrfRadio_Init(radio_config cfg)
 	set_register(FEATURE, &value, 1);
 	
 	//clear any interrupt in Radio status
-	value = _BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT);
+	get_register(STATUS, &value, 1);
+	value |= (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
 	set_register(STATUS, &value, 1);
 	
 	//Flush FIFO buffers
@@ -275,7 +277,7 @@ radio_error_code nrfRadio_Init(radio_config cfg)
 	send_instruction(FLUSH_RX, NULL, NULL, 0);
 	
 	//enter in power down
-	sei();
+	
 	nrfRadio_PowerDown();
 	
 	return err;
@@ -450,10 +452,11 @@ radio_error_code nrfRadio_ListeningMode() {
 	//the radio must be powered up before it enters in listening mode
 	if(RADIO_POWER_DOWN == _radio_instance.currentState)
 		return RADIO_ERR_INVALID;
-	
+	uart_sendByte('I');
 	get_register(CONFIG, &value, 1);
 	
 	if ((value & _BV(PRIM_RX)) == 0) {
+		
 		value |= _BV(PRIM_RX);
 		send_instruction(FLUSH_RX, NULL, NULL, 0);
 		set_register(CONFIG, &value, 1);
@@ -461,7 +464,9 @@ radio_error_code nrfRadio_ListeningMode() {
 		_delay_us(140);
 		CE_HIGH();
 		_radio_instance.currentState = RADIO_PRX;
+		uart_sendByte('L');
 		return RADIO_ERR_OK;
+		
 	}
 	
 	return RADIO_ERR_INVALID;
@@ -529,9 +534,13 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	uart_sendByte('F');
 	//set the PIPE0 to TX address for auto-ack
 	set_register(RX_ADDR_P0, (uint8_t*)tx_address, RADIO_MAX_ADDRESS); //TODO save the address length in radio instance when the radio is initialized
+	set_register(TX_ADDR, (uint8_t*)tx_address, RADIO_MAX_ADDRESS);
 	
 	//start the transmission, we set the radio in PTX
 	CE_HIGH();	
+	_delay_us(100);
+	CE_LOW();
+	
 	if(RADIO_WAIT_TX == trans_type) {
 		while(irq_triggered == 0); //wait to transmit
 		irq_triggered = 0;
@@ -549,7 +558,17 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	return RADIO_TX_OK;
 }
 
-
+void nrfRadio_LoadAckPayload()
+{
+	uint8_t ackPayload[5];
+	ackPayload[0] = 'A';
+	ackPayload[1] = 'B';
+	ackPayload[2] = 'C';
+	ackPayload[3] = 'D';
+	ackPayload[4] = 'E';
+	send_instruction(W_ACK_PAYLOAD, ackPayload, NULL, 5);
+	
+}
 
 
 //the main radio task, this should be called in a loop
@@ -571,6 +590,7 @@ radio_error_code nrfRadio_Main() {
 		//the radio enters in standby mode when it is PTX and the CE ping is held high while the TX_FIFO_BUFFER is empty
 		case RADIO_STANDBY_2:
 		CE_LOW();
+		uart_sendByte('X');
 		//set back the RX pipe 0 address
 		set_register(RX_ADDR_P0, (uint8_t*)_radio_instance.rxAddressP0, RADIO_MAX_ADDRESS);
 		_radio_instance.currentState = RADIO_STANDBY_1;
@@ -582,9 +602,9 @@ radio_error_code nrfRadio_Main() {
 			
 			//we're transmitting so we expect to get the TX_DS or MAX_RT
 			if(irq_triggered > 0) {
-			
 				cli();
 				irq_triggered = 0;
+				sei();
 				_radio_instance.currentState = RADIO_STANDBY_2;
 				if(irq_status & _BV(TX_DS)) {
 					if(tx_callback != NULL)
@@ -593,22 +613,45 @@ radio_error_code nrfRadio_Main() {
 					if(tx_callback != NULL)
 						tx_callback(RADIO_TX_MAX_RT);
 				}
-				sei();
+				
+				//there is a ACK payload
+				if(irq_status & _BV(RX_DR)) {
+					uint8_t rec_buffer[32] = {0};
+					uint8_t pipe_number = (irq_status & 0xE) >> 1;
+					send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+					rx_callback(pipe_number, rec_buffer);
+				}
+				
 			}
+			
 		
 		break;
 		//the PWR_BIT must be set and CE pin must be high during RX operation
 		case RADIO_PRX:
 		if(irq_triggered > 0) {
 			cli();
+			irq_triggered = 0;
+			
 			if(irq_status & _BV(RX_DR)) {
-				_delay_us(200); //make sure that the radio has already send the ACK
+				_delay_us(200); //make sure that the radio has already send the ACK TODO: wait just if the radio is using AA
 				CE_LOW(); //disable the radio
-				
+				//get the pipe number
+				uint8_t rec_buffer[32] = {0};
+				uint8_t pipe_number = (irq_status & 0xE) >> 1;
+				uint8_t status = 0;
+				while(pipe_number != RADIO_PIPE_EMPTY) {
+					send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+					rx_callback(pipe_number, rec_buffer);
+					//get again the radio status
+					CSN_LOW();
+					irq_status = SPI_Write_Byte(NOP);
+					CSN_HIGH();
+					pipe_number = (irq_status & 0xE) >> 1;
+				}
+				CE_HIGH();
 			}
-			
-			
 			sei();
+			
 		}
 		break;
 		
@@ -621,18 +664,18 @@ radio_error_code nrfRadio_Main() {
 
 ISR(IRQ_HANDLER)
 {
-	_delay_ms(10);
+
 	GIFR = (1<<INTF0);
 	uart_sendByte('A');
-	CE_LOW();
 	irq_triggered++;
 	CSN_LOW();
 	irq_status = SPI_Write_Byte(NOP);
 	CSN_HIGH();
 	
-	
+	uint8_t value = 0;
 	// clear the interrupt flags.
-	uint8_t value = _BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT);
+	//get_register(STATUS, &value, 1);
+	value = (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
 	set_register(STATUS, &value, 1);
-
+	
 }
