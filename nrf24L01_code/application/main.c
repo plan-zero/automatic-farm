@@ -10,80 +10,81 @@
 
 void printRadioInfo(radio_registers regs)
 { 
-	uart_printString("CONFIG register: ", 1);
+	uart_printString("CONFIG register: ", 0);
 	uart_printRegister(regs.config);
 	uartNewLine();
-	uart_printString("EN_AA register: ", 1);
+	uart_printString("EN_AA register: ", 0);
 	uart_printRegister(regs.en_aa);
 	uartNewLine();
-	uart_printString("EN_RXADDR register: ", 1);
+	uart_printString("EN_RXADDR register: ", 0);
 	uart_printRegister(regs.en_rxaddr);
 	uartNewLine();
-	uart_printString("SETUP_AW register: ", 1);
+	uart_printString("SETUP_AW register: ", 0);
 	uart_printRegister(regs.setup_aw);
 	uartNewLine();
-	uart_printString("SETUP_RETR register: ", 1);
+	uart_printString("SETUP_RETR register: ", 0);
 	uart_printRegister(regs.setup_retr);
 	uartNewLine();
-	uart_printString("RF_CH register: ", 1);
+	uart_printString("RF_CH register: ", 0);
 	uart_printRegister(regs.rf_ch);
 	uartNewLine();
-	uart_printString("RF_SETUP register: ", 1);
+	uart_printString("RF_SETUP register: ", 0);
 	uart_printRegister(regs.rf_setup);
 	uartNewLine();
-	uart_printString("STATUS register: ", 1);
+	uart_printString("STATUS register: ", 0);
 	uart_printRegister(regs.status);
 	uartNewLine();
-	uart_printString("OBSERVE TX register: ", 1);
+	uart_printString("OBSERVE TX register: ", 0);
 	uart_printRegister(regs.observed_tx);
 	uartNewLine();
-	uart_printString("PIPE 0 address: ", 1);
+	uart_printString("PIPE 0 address: ", 0);
 	uart_printRegister(regs.rx_addr_p0_0);
 	uart_printRegister(regs.rx_addr_p0_1);
 	uart_printRegister(regs.rx_addr_p0_2);
 	uart_printRegister(regs.rx_addr_p0_3);
 	uart_printRegister(regs.rx_addr_p0_4);
 	uartNewLine();
-	uart_printString("PIPE 1 address: ", 1);
+	uart_printString("PIPE 1 address: ", 0);
 	uart_printRegister(regs.rx_addr_p1_0);
 	uart_printRegister(regs.rx_addr_p1_1);
 	uart_printRegister(regs.rx_addr_p1_2);
 	uart_printRegister(regs.rx_addr_p1_3);
 	uart_printRegister(regs.rx_addr_p1_4);
 	uartNewLine();
-	uart_printString("PIPE 2 address: ", 1);
+	uart_printString("PIPE 2 address: ", 0);
 	uart_printRegister(regs.rx_addr_p2);
 	uartNewLine();
-	uart_printString("PIPE 3 address: ", 1);
+	uart_printString("PIPE 3 address: ", 0);
 	uart_printRegister(regs.rx_addr_p3);
 	uartNewLine();
-	uart_printString("PIPE 4 address: ", 1);
+	uart_printString("PIPE 4 address: ", 0);
 	uart_printRegister(regs.rx_addr_p4);
 	uartNewLine();
-	uart_printString("PIPE 5 address: ", 1);
+	uart_printString("PIPE 5 address: ", 0);
 	uart_printRegister(regs.rx_addr_p5);
 	uartNewLine();
-	uart_printString("TX_ADDR address: ", 1);
+	uart_printString("TX_ADDR address: ", 0);
 	uart_printRegister(regs.tx_addr_0);
 	uart_printRegister(regs.tx_addr_1);
 	uart_printRegister(regs.tx_addr_2);
 	uart_printRegister(regs.tx_addr_3);
 	uart_printRegister(regs.tx_addr_4);
 	uartNewLine();
-	uart_printString("FIFO STATUS: ", 1);
+	uart_printString("FIFO STATUS: ", 0);
 	uart_printRegister(regs.fifo_status);
 	uartNewLine();
-	uart_printString("DYNPD: ", 1);
+	uart_printString("DYNPD: ", 0);
 	uart_printRegister(regs.dynpd);
 	uartNewLine();
-	uart_printString("FEATURE: ", 1);
+	uart_printString("FEATURE: ", 0);
 	uart_printRegister(regs.feature);
 }
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	
-	uart_printString("Data received on pipe:", 1);
+	uart_printString("Data received on pipe:", 0);
 	uart_sendByte('0' + pipe);
+	uartNewLine();
 	char string[33] = {0};
 	string[32] = '\0';
 	for(uint8_t idx = 0; idx < payload_length; idx ++){
@@ -91,11 +92,10 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	}
 	uart_printString(string, 1);
 	uint8_t ack_payload [2] = {'A', 'F'};
-	nrfRadio_LoadAckPayload(RADIO_PIPE0, ack_payload, 2);
+	nrfRadio_LoadAckPayload(RADIO_PIPE1, ack_payload, 2);
 }
 
 void tx_handler(radio_tx_status tx_status) {
-	uart_printString("Radio tx handler", 1);
 	if(RADIO_TX_OK == tx_status) {
 		uart_printString("TX received ack",1);
 	}
@@ -124,15 +124,34 @@ int main(){
 						 RADIO_APPLICATION };
 	nrfRadio_Init(cfg);
 	
-	uint8_t pipe0_address[5] = { 0xE0, 0xE0, 0xE0, 0xE2, 0xA2 };
-	pipe_config pipe_cfg = {	RADIO_PIPE0,
+	//NOTE: actually the first byte is setting the address because the NRF takes firstly the LSByte 
+	uint8_t pipe0_address[5] = { 0xE2, 0xE0, 0xE0, 0xE2, 0xA2 };
+	uint8_t pipe1_address[5] = { 0xE1, 0xE0, 0xE0, 0xE2, 0xA2 };
+	uint8_t pipe5_address[5] = {0xE0};
+	pipe_config pipe_cfg0 = {	RADIO_PIPE0,
 								pipe0_address,
 								5,
 								RADIO_PIPE_RX_ENABLED,
 								RADIO_PIPE_AA_ENABLED,
 								RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 							};
-	nrfRadio_PipeConfig(pipe_cfg);
+	pipe_config pipe_cfg1 = {	RADIO_PIPE1,
+		pipe1_address,
+		5,
+		RADIO_PIPE_RX_ENABLED,
+		RADIO_PIPE_AA_ENABLED,
+		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
+	};
+	pipe_config pipe_cfg2 = {	RADIO_PIPE3,
+		pipe5_address,
+		5,
+		RADIO_PIPE_RX_ENABLED,
+		RADIO_PIPE_AA_ENABLED,
+		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
+	};
+	nrfRadio_PipeConfig(pipe_cfg0);
+	nrfRadio_PipeConfig(pipe_cfg1);
+	nrfRadio_PipeConfig(pipe_cfg2);
 	
 	uart_printString("Read radio information", 1);
 	radio_registers regs = {0}; //init the register
@@ -153,7 +172,6 @@ int main(){
 	uint8_t payload[5] = {'A','B','C','D','E'};
 	uint8_t tx_address[5] =  { 0xE0, 0xE0, 0xE0, 0xE2, 0xA2 };
 
-	uart_printString("Done tx", 1);
 	
 	uint32_t transmit_count = 0;
 	
