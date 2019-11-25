@@ -7,6 +7,7 @@
 #include "uart.h"
 
 #include "nrf24Radio.h"
+#include "radio_fptr.h"
 
 void printRadioInfo(radio_registers regs)
 { 
@@ -122,7 +123,7 @@ int main(){
 						 RADIO_ACK_PAYLOAD_ENABLED,
 						 RADIO_DYNAMIC_ACK_DISABLED,
 						 RADIO_APPLICATION };
-	nrfRadio_Init(cfg);
+	(*fptr_nrfRadio_Init)(cfg);
 	
 	//NOTE: actually the first byte is setting the address because the NRF takes firstly the LSByte 
 	uint8_t pipe0_address[5] = { 0xE2, 0xE0, 0xE0, 0xE2, 0xA2 };
@@ -184,13 +185,14 @@ int main(){
 			if (payload[0] == 'E')
 				payload[0] = 'A';
 			nrfRadio_LoadMessages(payload, 5);
-			if( RADIO_TX_OK == nrfRadio_Transmit(tx_address, RADIO_WAIT_TX) )
+			if( RADIO_TX_OK == nrfRadio_Transmit(tx_address, RADIO_RETURN_ON_TX) )
 				uart_printString("ack ok",1);
 			else
 				uart_printString("ack not ok",1);
 		}
 			
-		nrfRadio_Main();
+		//nrfRadio_Main();
+		(*fptr_nrfRadio_Main)();
 		//_delay_ms(500);
 	}
 
