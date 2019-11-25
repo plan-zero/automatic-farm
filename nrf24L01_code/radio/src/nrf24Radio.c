@@ -521,6 +521,7 @@ radio_error_code nrfRadio_LoadMessages(uint8_t * payload, uint8_t payload_length
 
 radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type trans_type) {
 	uint8_t value;
+	radio_tx_status txerr = RADIO_TX_OK;
 	
 	//if radio is already transmitting	
 	if(RADIO_PTX == _radio_instance.currentState)
@@ -538,23 +539,41 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	
 	//start the transmission, we set the radio in PTX
 	CE_HIGH();	
-	_delay_us(100);
+	_delay_us(11);
 	CE_LOW();
 	
 	if(RADIO_WAIT_TX == trans_type) {
+		
 		while(irq_triggered == 0); //wait to transmit
 		irq_triggered = 0;
 		if(irq_status & _BV(TX_DS)) {
-			return RADIO_TX_OK;
+			txerr = RADIO_TX_OK;
 		}else if(irq_status & _BV(MAX_RT)) {
-			return RADIO_TX_MAX_RT;
+			txerr = RADIO_TX_MAX_RT;
+		}
+		//there is a ACK payload
+		if(irq_status & _BV(RX_DR)) {
+			uint8_t rec_buffer[32] = {0};
+			uint8_t pipe_number = (irq_status & 0xE) >> 1;
+			uint8_t tmp[1];
+			if(_radio_instance.dynamic_payload) {
+				send_instruction(R_RX_PL_WID, (uint8_t*)tmp, (uint8_t*)tmp, 1);
+				send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, tmp[0]);
+				rx_callback(pipe_number, rec_buffer, tmp[0]);
+			}
+			else {
+				send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+				rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+			}
 		}
 		_radio_instance.currentState = RADIO_STANDBY_2;
 	}
-	else
+	else {
+		txerr = RADIO_TX_OK;
 		_radio_instance.currentState = RADIO_PTX;
+	}
 	
-	return RADIO_TX_OK;
+	return txerr;
 }
 
 radio_error_code nrfRadio_LoadAckPayload(radio_pipe pipe, uint8_t * payload, uint8_t payload_length)
