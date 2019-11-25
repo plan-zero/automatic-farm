@@ -712,3 +712,10 @@ ISR(IRQ_HANDLER)
 	set_register(STATUS, &value, 1);
 	
 }
+
+
+fptr_t ptrs[] __attribute__((section(".radio_fptrs"))) = {
+	(fptr_t)nrfRadio_Main,
+	(fptr_t)nrfRadio_TransmitMode,
+	(fptr_t)nrfRadio_Init
+};

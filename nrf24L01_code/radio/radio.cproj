@@ -133,6 +133,9 @@
     <Compile Include="include\nrf24Radio.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\radio_fptr.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\spi.h">
       <SubType>compile</SubType>
     </Compile>
