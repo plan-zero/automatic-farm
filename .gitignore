@@ -2,7 +2,7 @@
 *.d
 *.srec
 *.map
-*.hex
+
 *.lss
 nrf24L01_code/*/Debug/
 .atsuo
