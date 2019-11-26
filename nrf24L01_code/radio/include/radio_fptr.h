@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include "nrf24Radio.h"
 
-#define NRF_LIB_HOOKS_BASE_ADDR	0x2FC0
+#define NRF_LIB_HOOKS_BASE_ADDR	0x2800
 
 radio_error_code (* const __flash *fptr_nrfRadio_Main)(void) = (radio_error_code(* const __flash *)(void))NRF_LIB_HOOKS_BASE_ADDR;
 radio_error_code (* const __flash *fptr_nrfRadio_TransmitMode)(void) = (radio_error_code(* const __flash *)(void))(NRF_LIB_HOOKS_BASE_ADDR + 2);
