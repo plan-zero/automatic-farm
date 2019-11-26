@@ -715,7 +715,7 @@ ISR(IRQ_HANDLER)
 }
 
 
-fptr_t ptrs[] __attribute__((section(".radio_fptrs"))) = {
+fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
 	(fptr_t)nrfRadio_Main,
 	(fptr_t)nrfRadio_TransmitMode,
 	(fptr_t)nrfRadio_Init,
