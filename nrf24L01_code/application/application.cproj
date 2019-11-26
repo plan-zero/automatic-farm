@@ -121,7 +121,7 @@
     </ListValues>
   </avrgcc.linker.libraries.LibrarySearchPaths>
   <avrgcc.linker.optimization.GarbageCollectUnusedSections>False</avrgcc.linker.optimization.GarbageCollectUnusedSections>
-  <avrgcc.linker.miscellaneous.LinkerFlags>-Wl,--section-start=.nrf24=0x3000 -Wl,--section-start=.radio_fptrs=0x2FE0</avrgcc.linker.miscellaneous.LinkerFlags>
+  <avrgcc.linker.miscellaneous.LinkerFlags>-Wl,--section-start=.nrf24=0x3000 -Wl,--section-start=.radio_fptrs=0x2FC0</avrgcc.linker.miscellaneous.LinkerFlags>
   <avrgcc.assembler.general.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.2.209\include</Value>

@@ -566,7 +566,9 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 				rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
 			}
 		}
-		_radio_instance.currentState = RADIO_STANDBY_2;
+		set_register(RX_ADDR_P0, (uint8_t*)_radio_instance.rxAddressP0, _radio_instance.address_length);
+		_radio_instance.currentState = RADIO_STANDBY_1;
+		_delay_us(140);
 	}
 	else {
 		txerr = RADIO_TX_OK;
@@ -698,7 +700,6 @@ radio_error_code nrfRadio_Main() {
 
 ISR(IRQ_HANDLER)
 {
-
 	GIFR = (1<<INTF0);
 	irq_triggered++;
 	CSN_LOW();
@@ -709,13 +710,25 @@ ISR(IRQ_HANDLER)
 	// clear the interrupt flags.
 	//get_register(STATUS, &value, 1);
 	value = (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
+
 	set_register(STATUS, &value, 1);
-	
 }
 
 
 fptr_t ptrs[] __attribute__((section(".radio_fptrs"))) = {
 	(fptr_t)nrfRadio_Main,
 	(fptr_t)nrfRadio_TransmitMode,
-	(fptr_t)nrfRadio_Init
+	(fptr_t)nrfRadio_Init,
+	(fptr_t)nrfRadio_PowerDown,
+	(fptr_t)nrfRadio_GetInfo,
+	(fptr_t)nrfRadio_PipeConfig,
+	(fptr_t)nrfRadio_LoadMessages,
+	(fptr_t)nrfRadio_Transmit,
+	(fptr_t)nrfRadio_ListeningMode,
+	(fptr_t)nrfRadio_PowerUp,
+	(fptr_t)nrfRadio_ChangeDataRate,
+	(fptr_t)nrfRadio_ChangePower,
+	(fptr_t)nrfRadio_SetTxCallback,
+	(fptr_t)nrfRadio_SetRxCallback,
+	(fptr_t)nrfRadio_LoadAckPayload
 };
