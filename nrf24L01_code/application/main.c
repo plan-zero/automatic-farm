@@ -123,7 +123,7 @@ int main(){
 						 RADIO_ACK_PAYLOAD_ENABLED,
 						 RADIO_DYNAMIC_ACK_DISABLED,
 						 RADIO_APPLICATION };
-	(*fptr_nrfRadio_Init)(cfg);
+	__nrfRadio_Init(cfg);
 	
 	//NOTE: actually the first byte is setting the address because the NRF takes firstly the LSByte 
 	uint8_t pipe0_address[5] = { 0xE2, 0xE0, 0xE0, 0xE2, 0xA2 };
@@ -150,24 +150,24 @@ int main(){
 		RADIO_PIPE_AA_ENABLED,
 		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 	};
-	nrfRadio_PipeConfig(pipe_cfg0);
-	nrfRadio_PipeConfig(pipe_cfg1);
-	nrfRadio_PipeConfig(pipe_cfg2);
+	__nrfRadio_PipeConfig(pipe_cfg0);
+	__nrfRadio_PipeConfig(pipe_cfg1);
+	__nrfRadio_PipeConfig(pipe_cfg2);
 	
 	uart_printString("Read radio information", 1);
 	radio_registers regs = {0}; //init the register
-	nrfRadio_GetInfo(&regs);
+	__nrfRadio_GetInfo(&regs);
 	printRadioInfo(regs);
 	
 	//uart_printString("TX done", 1);
 	
-	nrfRadio_SetRxCallback(rx_handler);
-	nrfRadio_SetTxCallback(tx_handler);
-	nrfRadio_PowerUp();
-	(*fptr_nrfRadio_TransmitMode)();
+	__nrfRadio_SetRxCallback(rx_handler);
+	__nrfRadio_SetTxCallback(tx_handler);
+	__nrfRadio_PowerUp();
+	__nrfRadio_TransmitMode();
 	//nrfRadio_ListeningMode();
 	uint8_t ack_payload [2] = {'A', 'F'};
-	nrfRadio_LoadAckPayload(RADIO_PIPE3, ack_payload, 2);
+	__nrfRadio_LoadAckPayload(RADIO_PIPE3, ack_payload, 2);
 	
 	sei();
 	uint8_t payload[5] = {'A','B','C','D','E'};
@@ -184,15 +184,15 @@ int main(){
 			payload[0]++;
 			if (payload[0] == 'E')
 				payload[0] = 'A';
-			nrfRadio_LoadMessages(payload, 5);
-			if( RADIO_TX_OK == nrfRadio_Transmit(tx_address, RADIO_RETURN_ON_TX) )
+			__nrfRadio_LoadMessages(payload, 5);
+			if( RADIO_TX_OK == __nrfRadio_Transmit(tx_address, RADIO_RETURN_ON_TX) )
 				uart_printString("ack ok",1);
 			else
 				uart_printString("ack not ok",1);
 		}
 			
 		//nrfRadio_Main();
-		(*fptr_nrfRadio_Main)();
+		__nrfRadio_Main();
 		//_delay_ms(500);
 	}
 
