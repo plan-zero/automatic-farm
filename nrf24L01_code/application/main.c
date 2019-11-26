@@ -164,8 +164,8 @@ int main(){
 	__nrfRadio_SetRxCallback(rx_handler);
 	__nrfRadio_SetTxCallback(tx_handler);
 	__nrfRadio_PowerUp();
-	__nrfRadio_TransmitMode();
-	//nrfRadio_ListeningMode();
+	//__nrfRadio_TransmitMode();
+	__nrfRadio_ListeningMode();
 	uint8_t ack_payload [2] = {'A', 'F'};
 	__nrfRadio_LoadAckPayload(RADIO_PIPE3, ack_payload, 2);
 	
@@ -178,7 +178,7 @@ int main(){
 	
 	while(1){
 		transmit_count++;
-		
+		/*
 		if(transmit_count == 100000) {
 			transmit_count = 0;
 			payload[0]++;
@@ -189,7 +189,7 @@ int main(){
 				uart_printString("ack ok",1);
 			else
 				uart_printString("ack not ok",1);
-		}
+		}*/
 			
 		//nrfRadio_Main();
 		__nrfRadio_Main();
