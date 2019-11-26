@@ -164,7 +164,7 @@ int main(){
 	nrfRadio_SetRxCallback(rx_handler);
 	nrfRadio_SetTxCallback(tx_handler);
 	nrfRadio_PowerUp();
-	nrfRadio_TransmitMode();
+	(*fptr_nrfRadio_TransmitMode)();
 	//nrfRadio_ListeningMode();
 	uint8_t ack_payload [2] = {'A', 'F'};
 	nrfRadio_LoadAckPayload(RADIO_PIPE3, ack_payload, 2);

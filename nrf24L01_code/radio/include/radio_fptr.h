@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include "nrf24Radio.h"
 
-radio_error_code (*fptr_nrfRadio_Main)(void) = (radio_error_code(*)(void))0x17F0;
-radio_error_code (*fptr_nrfRadio_TransmitMode)(void) = (radio_error_code(*)(void))0x17F1;
-radio_error_code (*fptr_nrfRadio_Init)(radio_config) = (radio_error_code(*)(radio_config))0x17F2;
+radio_error_code (* const __flash *fptr_nrfRadio_Main)(void) = (radio_error_code(* const __flash *)(void))0x2FE0;
+radio_error_code (* const __flash *fptr_nrfRadio_TransmitMode)(void) = (radio_error_code(* const __flash *)(void))0x2FE2;
+radio_error_code (* const __flash *fptr_nrfRadio_Init)(radio_config) = (radio_error_code(* const __flash *)(radio_config))0x2FE4;
 
 
 
