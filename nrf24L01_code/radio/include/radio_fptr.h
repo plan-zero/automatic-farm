@@ -29,6 +29,8 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_SetRxCallback)(void (*)(
 extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pipe, uint8_t*, uint8_t);
 
 
+// TODO: replace x,y,z with variable names (visual studio displays the names)
+
 #define __nrfRadio_Main() (*fptr_nrfRadio_Main)()
 #define __nrfRadio_TransmitMode() (*fptr_nrfRadio_TransmitMode)()
 #define __nrfRadio_Init(x) (*fptr_nrfRadio_Init)(x)
