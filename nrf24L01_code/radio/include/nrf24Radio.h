@@ -396,7 +396,6 @@ typedef struct _radio_context{
 
 
 
-NRF24_MEMORY radio_error_code nrfRadio_PowerDown();
 NRF24_MEMORY radio_error_code nrfRadio_GetInfo(radio_registers * reg);
 NRF24_MEMORY radio_error_code nrfRadio_Init(radio_config cfg);
 NRF24_MEMORY radio_error_code nrfRadio_PipeConfig(pipe_config pipe_cfg);
