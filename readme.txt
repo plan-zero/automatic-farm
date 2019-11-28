@@ -2,9 +2,13 @@ This project is working great with RPI 3 and atmega16/32 microcontrollers, feel 
 
 NRF24L01 code
 The code is developed and maintained using the Atmel Studio tool (7.0.122). The toolchain used to build the project is AVR GNU 8 BIT (gcc version 5.4.0, AVR_8_bit_GNU_Toolchain_3.6.1_1750).
+
 The NRF24 firmware is a new bootloader which is using the NRF24L01 Radio to download the application to the target. 
+
 Because the bootloader section is limited (the maximum allowed size for atmega16 is 2KB) I had to move the NRF24 library code below the bootloader section.
+
 Also I wanted to give access to both, application and bootloader, to the NRF24 library, so I created a table of pointers to the NRF24 APIs which is loaded a the beginning of NRF24 code.
+
 Find below the defined FLASH layer:
 
 ADDR	FLASH
@@ -37,35 +41,54 @@ For the bootloader section, the AVR microcontroller must have the Boot Reset vec
 
 The linker must include the following flag: -Wl,-section-start=.text=0x3800 (this is moving the compiled code to the 0x3800 address. Because the AVR is word addressable, this actually is 0x1C00, but the linker will do the math for you so you can use the byte unit for addressing.
 
-To put the NRF24 library at a specific address, I used the following section: -Wl,--section-start=.nrf24=0x2840. T
-
-Then I added the code to this section, therefore I defined the following macro: "#define NRF24_MEMORY __attribute__((section(".nrf24")))", so this should be added at the beginning of each function declaration that are added to .nrf24 section: e.g "NRF24_MEMORY radio_error_code nrfRadio_PowerDown();". 
+To put the NRF24 library at a specific address, I used the following section: -Wl,--section-start=.nrf24=0x2840. Then I added the code to this section, therefore I defined the following macro: "#define NRF24_MEMORY __attribute__((section(".nrf24")))", so this should be added at the beginning of each function declaration that is added to .nrf24 section: e.g "NRF24_MEMORY radio_error_code nrfRadio_PowerDown();". 
 
 If you want to place the section somewhere else, just change the 0x2840 address with another available flash location (0-16KB if atmega16 is used).
 
-The hooks actually are a simple array of function pointers and these are pointing to the NRF24 APIs. The purpose of using these pointers is to share these APIs between bootloader and user application. In this case, the section is defined as: -Wl,--section-start=.radio_fptrs=0x2800
+The hooks actually are a simple array of function pointers and these are pointing to the NRF24 APIs. The purpose of using these pointers is to share these APIs between bootloader and user application. In this case the section is defined as: -Wl,--section-start=.radio_fptrs=0x2800
 
 Each function address is 2 bytes long, so in this case we have enough space for 32 APIs (the section is 64 Bytes). If you want to change this section, also change the NRF_LIB_HOOKS_BASE_ADDR define, which should be the same as the starting address of your section. In this project both are set to 0x2800.
 
 The hooks are defined in radio_fptr.h file e.g: "radio_error_code (* const __flash *fptr_nrfRadio_Main)(void) = (radio_error_code(* const __flash *)(void))NRF_LIB_HOOKS_BASE_ADDR + OFFSET" where:
+
 NRF_LIB_HOOKS_BASE_ADDR - is the starting address of .radio_fptrs section
 OFFSET - is the address offset, which is a multiple of two - the address is two bytes long
 
-The pointers array is defined as and it can be checked in the bottom of nrf24Radio.c file:
+The pointers array is defined as "ptrs" and it can be checked in the bottom of nrf24Radio.c file:
+
 fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
-	(fptr_t)nrfRadio_Main,			//OFFSET is zero, the address is NRF_LIB_HOOKS_BASE_ADDR + 0
-	(fptr_t)nrfRadio_TransmitMode,	//OFFSET is 2, the address is NRF_LIB_HOOKS_BASE_ADDR + 2
-	(fptr_t)nrfRadio_Init,			//OFFSET is 4, the address is NRF_LIB_HOOKS_BASE_ADDR + 4
+	(fptr_t)nrfRadio_Main,          //OFFSET is zero, the address is NRF_LIB_HOOKS_BASE_ADDR + 0
+	(fptr_t)nrfRadio_TransmitMode,  //OFFSET is 2, the address is NRF_LIB_HOOKS_BASE_ADDR + 2
+	(fptr_t)nrfRadio_Init,          //OFFSET is 4, the address is NRF_LIB_HOOKS_BASE_ADDR + 4
 ...
 
 Also I used the following flag in linker: -Wl,--undefined=ptrs. Without this the linker will not add the .radio_fptrs section unless the garbage collect is disabled in linker optimization (which is not a good idea, some code that is not used will be added to flash).
 
-Another option resolve this problem is to reference the ptrs variable, so in this case the compiler will mark the variable as used - even I put the "used" attribute, the linker will still miss this due the compiler.
+Another option to resolve this problem is to reference the ptrs variable, so in this case the compiler will mark the variable as used - even I put the "used" attribute, the linker will still miss this due the compiler.
 NOTE: Before you use the hooks, make sure that your microcontroller has loaded the NRF24 library in FLASH memory, otherwise you'll jump to an empty FLASH and the CPU will execute NOP instructions until memory overflow or until it will hit some valid code, this can lead to undefined behavior.
 
 The Atmel solution contains the following projects:
 
-    - application: This is used as a stub for the high level and the goal is to test the NRF24 library. This will not be a part of firmware.
-    - bootloader: This is the firmware project, the NRF24 library is added to this project and it compiles both, the NRF24 code (including the hooks) and the bootloader code.
-    - radio: This is the NRF24 code, this is compiled as a static library and the solution can be added to any project.
-    - uart: This is a support library for UART and the goal is to provide a minimal interface for debugging over serial. This is compiled as a static library and it can be added to any project.
+   - application: This is used as a stub for the high level and the goal is to test the NRF24 library. This will not be a part of firmware.
+   
+   - bootloader: This is the firmware project, the NRF24 library is added to this project and it compiles both, the NRF24 code (including the hooks) and the bootloader code.
+
+   - radio: This is the NRF24 code, this is compiled as a static library and the solution can be added to any project.
+
+   - uart: This is a support library for UART and the goal is to provide a minimal interface for debugging over serial. This is compiled as a static library and it can be added to any project.
+
+To flash the executable to the target I used the avrdude and USBASP programmer. In this case I configured the following external tools in Atmel Studio:
+    - program application:
+        - command: <PATH_TO_AVRDUDE_BIN>\avrdude.exe
+        - arguments: -c usbasp -p m16 -P usb -U flash:w:application.hex
+        - directory: $(BinDir)
+
+    - program bootloader:
+        - command: <PATH_TO_AVRDUDE_BIN>\avrdude.exe
+        - arguments: -c usbasp -p m16 -P usb -U flash:w:bootloader.hex
+        - directory: $(BinDir)
+
+    - program eeprom:
+        - command: <PATH_TO_AVRDUDE_BIN>\avrdude.exe
+        - arguments: -c usbasp -p m16 -P usb -U eeprom:w:m16.hex:i
+        - directory: $(ProjectDir)
