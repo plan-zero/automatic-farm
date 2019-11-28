@@ -9,29 +9,29 @@ Above are defined the FLASH sections:
 
 ADDR	FLASH
 		 _______________________
-0x4000	| 						|
-		| Bootloader			|
-		| 2KB					|
-0x3800	|_______________________|
-		|						|
-		| NRF24 Library			|
-		| 3.93KB (4032B)		|
-		|						|
-		|						|
-		|						|
-0x2840	|_______________________|
-0x2800	| NRF24 APIs HOOKs 64B	|
-		|_______________________|
-		|						|
-		|						|
-		|						|
-		|  USER APPLICATION		|
-		|	10KB				|
-		|						|
-		|						|
-		|						|
-		|						|
-		|_______________________|
+0x4000  |                       |
+        | Bootloader            |
+        | 2KB                   |
+0x3800  |_______________________|
+        |                       |
+        | NRF24 Library	        |
+        | 3.93KB (4032B)        |
+        |                       |
+        |                       |
+        |                       |
+0x2840  |_______________________|
+0x2800  | NRF24 APIs HOOKs 64B  |
+        |_______________________|
+        |                       |
+        |                       |
+        |                       |
+        |  USER APPLICATION     |
+        |  10KB                 |
+        |                       |
+        |                       |
+        |                       |
+        |                       |
+        |_______________________|
 
 For the bootloader section, the AVR microcontroler must have the Boot Reset vector enabled (the BOOTRST bit is zero in fusebits) and the size have to be set to 1024 Words (2KB, BOOTSZ = 00).
 The linker must include the following flag: -Wl,-section-start=.text=0x3800 (this is moving the compiled code to the 0x3800 address, this actually is 0x1C00 because the AVR is word addressable, but the linker will do the math for you if the byte unit is used.
