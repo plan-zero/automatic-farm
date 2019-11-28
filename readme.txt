@@ -8,7 +8,7 @@ Also I wanted to give access to both, application and bootloader, to the NRF24 l
 Above are defined the FLASH sections:
 
 ADDR	FLASH
-		 _______________________
+         _______________________
 0x4000  |                       |
         | Bootloader            |
         | 2KB                   |
