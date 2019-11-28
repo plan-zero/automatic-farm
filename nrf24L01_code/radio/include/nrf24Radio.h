@@ -154,7 +154,8 @@ typedef enum {
 
 typedef enum {
 	RADIO_TX_OK,
-	RADIO_TX_MAX_RT
+	RADIO_TX_MAX_RT,
+	RADIO_TX_OK_ACK_PYL
 }radio_tx_status;
 
 typedef enum {

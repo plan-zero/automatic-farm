@@ -519,7 +519,8 @@ radio_error_code nrfRadio_LoadMessages(uint8_t * payload, uint8_t payload_length
 	return RADIO_ERR_OK;
 }
 
-radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type trans_type) {
+radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type trans_type) 
+{
 	uint8_t value;
 	radio_tx_status txerr = RADIO_TX_OK;
 	
@@ -542,35 +543,51 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	_delay_us(11);
 	CE_LOW();
 	
-	if(RADIO_WAIT_TX == trans_type) {
+	if(RADIO_WAIT_TX == trans_type) 
+	{
 		
 		while(irq_triggered == 0); //wait to transmit
 		irq_triggered = 0;
-		if(irq_status & _BV(TX_DS)) {
+		if(irq_status & _BV(TX_DS)) 
+		{
 			txerr = RADIO_TX_OK;
-		}else if(irq_status & _BV(MAX_RT)) {
+		}
+		else if(irq_status & _BV(MAX_RT)) 
+		{
 			txerr = RADIO_TX_MAX_RT;
 		}
 		//there is a ACK payload
-		if(irq_status & _BV(RX_DR)) {
+		if(irq_status & _BV(RX_DR)) 
+		{
 			uint8_t rec_buffer[32] = {0};
 			uint8_t pipe_number = (irq_status & 0xE) >> 1;
 			uint8_t tmp[1];
-			if(_radio_instance.dynamic_payload) {
+			if(_radio_instance.dynamic_payload) 
+			{
 				send_instruction(R_RX_PL_WID, (uint8_t*)tmp, (uint8_t*)tmp, 1);
 				send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, tmp[0]);
-				rx_callback(pipe_number, rec_buffer, tmp[0]);
+				if (rx_callback)
+				{
+					txerr = RADIO_TX_OK_ACK_PYL;
+					rx_callback(pipe_number, rec_buffer, tmp[0]);					
+				}
 			}
-			else {
+			else 
+			{
 				send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
-				rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+				if (rx_callback)
+				{
+					txerr = RADIO_TX_OK_ACK_PYL;
+					rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+				}
 			}
 		}
 		set_register(RX_ADDR_P0, (uint8_t*)_radio_instance.rxAddressP0, _radio_instance.address_length);
 		_radio_instance.currentState = RADIO_STANDBY_1;
 		_delay_us(140);
 	}
-	else {
+	else 
+	{
 		txerr = RADIO_TX_OK;
 		_radio_instance.currentState = RADIO_PTX;
 	}
@@ -643,6 +660,7 @@ radio_error_code nrfRadio_Main() {
 					if(_radio_instance.dynamic_payload) {
 						send_instruction(R_RX_PL_WID, (uint8_t*)tmp, (uint8_t*)tmp, 1);
 						send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, tmp[0]);
+						// TODO: check rx_callback for NULL
 						rx_callback(pipe_number, rec_buffer, tmp[0]);
 					}
 					else {
