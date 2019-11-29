@@ -64,10 +64,10 @@ void process_uart_data(uint8_t * data, uint8_t len)
 	//static uint8_t leng_num = 0;
 	for(uint8_t idx = 0; idx < len; idx ++)
 	{
+		uart_sendByte(data[idx]);
 		switch(uart_state)
 		{
 			case UART_S0:
-				uart_sendByte('0');
 				command_type = 0;
 				command_len = 0;
 				tmp_len = 0;
@@ -79,7 +79,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 					uart_state = UART_S0;
 			break;
 			case UART_CMD_1:
-				uart_sendByte('1');
 				if(data[idx] == 'C')
 				{
 					uart_state = UART_CMD_2;
@@ -88,7 +87,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 					uart_state = UART_S0;
 			break;
 			case UART_CMD_2:
-				uart_sendByte('2');
 				if(data[idx] == 'M')
 				{
 					uart_state = UART_CMD_3;
@@ -97,7 +95,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 					uart_state = UART_S0;
 			break;
 			case UART_CMD_3:
-				uart_sendByte('3');
 				if(data[idx] == 'D')
 				{
 					uart_state = UART_END_CMD;
@@ -106,7 +103,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 					uart_state = UART_S0;
 			break;
 			case UART_END_CMD:
-				uart_sendByte('4');
 				if(data[idx] == '>')
 				{
 					uart_state = UART_CMD_READ;
@@ -120,7 +116,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 				uart_state = UART_DATA_LEN_1;
 			break;
 			case UART_DATA_LEN_1:
-				uart_sendByte('6');
 				if(data[idx] <= '9' && data[idx] >= '0') {
 					tmp_len = (data[idx] - '0') * 10;
 					uart_state = UART_DATA_LEN_2;
@@ -129,7 +124,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 					uart_state = UART_S0;
 			break;
 			case UART_DATA_LEN_2:
-				uart_sendByte('6');
 				if(data[idx] <= '9' && data[idx] >= '0') {
 					tmp_len += (data[idx] - '0');
 					uart_state = UART_DATA_READ;
@@ -148,7 +142,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 				}
 			break;
 			case UART_END:
-				uart_sendByte('8');
 				if(data[idx] == 13 ){
 					cmd_available = 1;
 					uart_state = UART_S0;
@@ -166,7 +159,7 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
-	uart_init(BAUD9600);
+	uart_init(UART_115200BAUD, UART_8MHZ, UART_PARITY_NONE);
 	uart_printString("NRF24L01 programmer",1);
 	
 	//initilize the NRF 
