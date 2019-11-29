@@ -36,7 +36,20 @@
 #define BOOTLOADER_TIMEOUT 5 //seconds
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
-
+	uint8_t ack[2] = {'A','B'};
+	__nrfRadio_LoadAckPayload(RADIO_PIPE0, ack, 2);
+	
+	char msg[33];
+	msg[payload_length] = '\0';
+	for(int i = 0; i < payload_length; i++)
+	{
+		msg[i] = data[i];
+	}
+	
+	uart_printString("Data received on pipe:",0);
+	uart_printRegister(pipe);
+	uartNewLine();
+	uart_printString(msg,1);
 }
 
 void tx_handler(radio_tx_status tx_status) {
@@ -45,6 +58,7 @@ void tx_handler(radio_tx_status tx_status) {
 
 int main(void)
 {
+
 	uint8_t wait_time = BOOTLOADER_TIMEOUT;
 	uint8_t bootloader_state = BOOTLOADER_IDLE;
     LED_PORT_DIR |= 1 << LED_PORT_PIN;
@@ -106,6 +120,9 @@ int main(void)
 								RADIO_BOOTLOADER };
 			__nrfRadio_Init(cfg);
 			
+			uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
+			uart_printString("Testing bootloader",1);
+			
 			pipe_config pipe_cfg0 = {	RADIO_PIPE0,
 								rx_address,
 								5,
@@ -118,9 +135,12 @@ int main(void)
 			__nrfRadio_SetRxCallback(rx_handler);
 			__nrfRadio_SetTxCallback(tx_handler);
 			__nrfRadio_PowerUp();
-			__nrfRadio_TransmitMode();
+			//__nrfRadio_TransmitMode();
+			__nrfRadio_ListeningMode();
 			uint8_t payload[5] = {'A','B','C','D','E'};
 			uint32_t transmit_count = 0;
+			uint8_t ack[2] = {'a','b'};
+			//__nrfRadio_LoadAckPayload(RADIO_PIPE0, ack, 2);
 			
 			sei();
 			
@@ -128,7 +148,7 @@ int main(void)
 			{
 				
 				transmit_count++;
-				
+				/*
 				if(transmit_count == 100000) {
 					transmit_count = 0;
 					payload[0]++;
@@ -140,7 +160,7 @@ int main(void)
 					else
 						TURN_LED_OFF;
 					TOGGLE_LED;
-				}
+				}*/
 				
 				__nrfRadio_Main();
 			}
