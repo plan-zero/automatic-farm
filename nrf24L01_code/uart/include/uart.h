@@ -4,6 +4,7 @@
 #include "stdint.h"
 
 #define UART_RX_MAX 40
+#define UART_RX_ERR 255
 
 #define UART_1MHZ 0
 #define UART_2MHZ 1
@@ -37,8 +38,12 @@ typedef enum {
 extern uart_err uart_init(uint8_t baud, uint8_t cpu_freq, uint8_t uart_parity);
 extern void uart_sendByte(uint8_t byte);
 extern uint8_t uart_sendByteNotBlocking(uint8_t byte);
-extern uint8_t uart_rx_flush(uint8_t *buffer);
+extern uint8_t uart_rx_flush(uint8_t *buffer, uint8_t *rx_error);
 extern void uart_printRegister(unsigned char reg);
 extern void uart_printString(char *string, char crlf);
+
+extern volatile uint8_t uart_rx_err_state;
+
+#define uart_is_parity_error() 
 
 #endif//_UART_H

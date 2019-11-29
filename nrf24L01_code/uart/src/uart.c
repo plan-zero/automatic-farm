@@ -9,6 +9,7 @@
 #define UART_RECEIVE 	0x2
 #define UART_OK			0x4
 #define UART_NOK		0x5
+#define UART_RX_ERROR   0x6
 
 
 
@@ -21,7 +22,7 @@ uint8_t uart_rx_state;
 uint8_t uart_rx_buffer[UART_RX_MAX];
 uint8_t uart_rx_index;
 
-
+volatile uint8_t uart_rx_err_state;
 
 int16_t uart_values[UART_COUNT_MHZ][UART_COUNT_BAUD] = 
 {
@@ -35,20 +36,32 @@ int16_t uart_values[UART_COUNT_MHZ][UART_COUNT_BAUD] =
 ISR(USART_TXC_vect)
 {
 	uart_tx_state = UART_IDLE;
+	
 }
 
 ISR(USART_RXC_vect)
 {
-	uart_rx_state = UART_RECEIVE;
-	uart_rx_buffer[uart_rx_index++] = UDR;
 
-	if(uart_rx_index >= UART_RX_MAX)
+	if ( ((UCSRA & 0x1C) >> 2) != 0)
 	{
-		uart_rx_index = 0;
+		uart_rx_err_state = (UCSRA & 0x1C) >> 2;
+		uart_rx_state = UART_RX_ERROR;
+		UCSRA &= ~0x1C;
 	}
+	else 
+	{
+		uart_rx_state = UART_RECEIVE;
+		uart_rx_buffer[uart_rx_index++] = UDR;
+
+		if(uart_rx_index >= UART_RX_MAX)
+		{
+			uart_rx_index = 0;
+		}
+	}
+
 }
 
-uint8_t uart_rx_flush(uint8_t *buffer)
+uint8_t uart_rx_flush(uint8_t *buffer, uint8_t *rx_error)
 {
 	cli();
 	uint8_t uart_available = 0;
@@ -62,6 +75,15 @@ uint8_t uart_rx_flush(uint8_t *buffer)
 		uart_available = uart_rx_index;
 		uart_rx_index = 0;
 		uart_rx_state = UART_IDLE;
+	}
+	else if(uart_rx_state == UART_RX_ERROR)
+	{
+		//reset the uart buffer
+		uart_rx_index = 0;
+		uart_rx_state = UART_IDLE;
+		(*rx_error) = uart_rx_err_state;
+		uart_rx_err_state = 0;
+		uart_available = UART_RX_ERR;
 	}
 	sei();
 
