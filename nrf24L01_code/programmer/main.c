@@ -34,20 +34,20 @@ uint8_t command_len;
 uint8_t cmd[MAX_CMD_LEN];
 uint8_t cmd_available = 0;
 
-#define CMD_SET_TX_ADDR '0'
-#define CMD_SET_RX_ADDR	'1'
-#define CMD_CONFIGURE_RADIO '2'
-#define CMD_SEND_TX	'3'
+#define CMD_SET_TX_ADDR 'A'
+#define CMD_SET_RX_ADDR	'B'
+#define CMD_CONFIGURE_RADIO 'C'
+#define CMD_SEND_TX	'D'
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	uart_printString("<rx_pipe>:",0);
 	uart_printRegister(pipe);
 	uartNewLine();
 	char msg[33] = {0};
-	msg[32] = '\0';
+	msg[payload_length] = '\0';
 	for(int i = 0; i < payload_length; i++)
 	{
-		msg[0] = data[i];
+		msg[i] = data[i];
 	}
 	uart_printString(msg, 1);
 	
@@ -111,7 +111,6 @@ void process_uart_data(uint8_t * data, uint8_t len)
 					uart_state = UART_S0;
 			break;
 			case UART_CMD_READ:
-				uart_sendByte('5');
 				command_type = data[idx];
 				uart_state = UART_DATA_LEN_1;
 			break;
@@ -127,27 +126,32 @@ void process_uart_data(uint8_t * data, uint8_t len)
 				if(data[idx] <= '9' && data[idx] >= '0') {
 					tmp_len += (data[idx] - '0');
 					uart_state = UART_DATA_READ;
+					command_len = tmp_len;
 				}
 				else
 					uart_state = UART_S0;
 			break;
 			case UART_DATA_READ:
-				uart_sendByte('7');
-				if(tmp_len != 0) {
-					cmd[command_len - tmp_len] = data[idx];
-					tmp_len--;
+				if((int)tmp_len != 0) {
+					if( data[idx] == 13)
+					{
+						uart_state = UART_S0;
+					}
+					else
+					{
+						uart_state = UART_DATA_READ;
+						cmd[command_len - tmp_len] = data[idx];
+						tmp_len--;
+					}
+				}
+				else if (data[idx] == 13) {
+					uart_state = UART_S0;
+					cmd_available = 1;
+					
 				}
 				else {
-					uart_state = UART_END;
-				}
-			break;
-			case UART_END:
-				if(data[idx] == 13 ){
-					cmd_available = 1;
 					uart_state = UART_S0;
 				}
-					else
-					uart_state = UART_S0;
 			break;
 			default:
 
@@ -159,7 +163,7 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
-	uart_init(UART_115200BAUD, UART_8MHZ, UART_PARITY_NONE);
+	uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
 	uart_printString("NRF24L01 programmer",1);
 	
 	//initilize the NRF 
@@ -168,30 +172,59 @@ int main(void)
 	uint8_t tx_addr[5] = {0};
 	uint8_t rx_addr[5] = {0};
 	uint8_t init = 1;
+	uint8_t uart_rx_err;
 	
     while (init) 
     {
-		uart_data_len = uart_rx_flush(uart_data);
-		process_uart_data(uart_data, uart_data_len);
+		uart_data_len = uart_rx_flush(uart_data, &uart_rx_err);
+		if(UART_RX_ERR != uart_data_len)
+			process_uart_data(uart_data, uart_data_len);
+		else 
+		{
+			uart_printString("UART rx error", 0);
+			uart_printRegister(uart_rx_err);
+			uartNewLine();
+		}
 		
 		if(cmd_available)
 		{
 			uart_printString("cmd executing...",1);
-			switch(command_type) {
+			switch(command_type) 
+			{
 				case CMD_SET_TX_ADDR:
-					for(uint8_t idx = 0; idx < uart_data_len; idx ++){
-						tx_addr[idx] = cmd[idx];
+					if(command_len == 5)
+					{
+						uart_printString("Set tx address to ",0);
+						char tmp[6];
+						for(uint8_t idx = 0; idx < command_len; idx ++){
+							tx_addr[idx] = cmd[idx];
+							tmp[idx] = cmd[idx];
+						}
+						tmp[5] = '\0';
+						uart_printString(tmp,1);
 					}
+					else
+						uart_printString("TX address must be 5 bytes long", 1);
 				break;
 				
 				case CMD_SET_RX_ADDR:
-					for(uint8_t idx = 0; idx < uart_data_len; idx ++){
-						rx_addr[idx] = cmd[idx];
+					if(command_len == 5)
+					{
+						uart_printString("Set rx address to ",0);
+						char tmp[6];
+						for(uint8_t idx = 0; idx < command_len; idx ++){
+							rx_addr[idx] = cmd[idx];
+							tmp[idx] = cmd[idx];
+						}
+						tmp[5] = '\0';
+						uart_printString(tmp,1);
 					}
+					else
+						uart_printString("RX address must be 5 bytes long", 1);
 				break;
 				
 				case CMD_CONFIGURE_RADIO:
-					init = 0; //we go to the next loop
+					uart_printString("Configure radio...", 1);
 					radio_config cfg = 
 					{ 
 						RADIO_ADDRESS_5BYTES,
@@ -223,44 +256,42 @@ int main(void)
 					__nrfRadio_SetTxCallback(tx_handler);
 					__nrfRadio_PowerUp();
 					__nrfRadio_TransmitMode();
+					uart_printString("Configuration done. Starting TX",1);
+				break;
+				case CMD_SEND_TX:
+					if(command_len <= UART_RX_MAX)
+					{
+						uart_printString("Send TX payload:",0);
+						uint8_t payload[33] = {0};
+						for(uint8_t idx = 0; idx < command_len; idx++)
+						{
+							payload[idx] = cmd[idx];
+						}
+						payload[32] = '\0';
+						uart_printString((char*)payload,1);
+						__nrfRadio_LoadMessages(payload, command_len);
+						uint8_t status = __nrfRadio_Transmit(tx_addr, RADIO_WAIT_TX);
+						if( status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL)
+						{
+							uart_printString("<ACK>",1);
+						}
+						else
+						{
+							uart_printString("<NACK>",1);
+						}
+					}
+					else
+					{
+						uart_printString("Payload exceed the maximum NRF24 size [32]", 1);
+					}
+				break;
 				
+				default:
+					uart_printString("Command not available", 1);
 				break;
 			}
 			cmd_available = 0;
 		}
     }
-	
-	while(1) 
-	{
-		uart_data_len = uart_rx_flush(uart_data);
-		process_uart_data(uart_data, uart_data_len);
-		
-		if(cmd_available)
-			if(command_type == CMD_SEND_TX)
-			{
-				if(command_len <= UART_RX_MAX)
-				{
-					uint8_t payload[32] = {0};
-					for(uint8_t idx = 0; idx < command_len; idx++)
-					{
-						payload[idx] = cmd[command_len];
-					}
-					
-					__nrfRadio_LoadMessages(cmd, command_len);
-					uint8_t status = __nrfRadio_Transmit(tx_addr, RADIO_WAIT_TX);
-					if( status == RADIO_TX_OK) 
-					{
-						uart_printString("<ACK>",1);
-					}
-					else
-					{
-						uart_printString("<NACK>",1);
-					}
-				}
-				else {
-					uart_printString("Payload exceed the maximum NRF24 size [32]", 1);
-				}
-			}
-	}
 }
 
