@@ -8,21 +8,43 @@
 #include "radio_fptr.h"
 #include "GenericLib.h"
 
+#include <avr/interrupt.h>
+#include <avr/boot.h>
+#include <avr/io.h>
+
 
 
 #define BUFFER_LENGTH				((uint8_t) 32)
+#define PAGE_SIZE					((uint8_t) SPM_PAGESIZE)
 #define MSG_REC_TIMEOUT				((uint32_t) 100000)
 #define MSG_RECEIVED				((uint8_t) 0xAA)
+#define MSG_NO_DATA					((uint8_t) 0x00)
 
 
+
+
+
+// Flashing state machine
 #define BOOTLOADER_INIT_NRF			((uint8_t) 0x00)
 #define BOOTLOADER_FLASH_INIT		((uint8_t) 0x01)
 #define BOOTLOADER_REC_DATA			((uint8_t) 0x02)
+#define BOOTLOADER_FLASH_DATA		((uint8_t) 0x03)
+#define BOOTLOADER_FLASH_PAGE_DONE	((uint8_t) 0x04)
+#define BOOTLOADER_CHECK_CKS		((uint8_t) 0x05)
 
 #define BOOTLOADER_FLASH_END		((uint8_t) 0xFE)
 #define BOOTLOADER_FLASH_ERROR		((uint8_t) 0xFF)
 
 
+// Flashing commands
+#define COMM_GET_STATE				((uint8_t) 0x00)
+#define COMM_START_FLASH_PROCEDURE	((uint8_t) 0x01)
+#define COMM_SEND_CHUNCK			((uint8_t) 0x02)
+#define COMM_FLASH_PAGE				((uint8_t) 0x03)
+#define COMM_NEXT_PAGE				((uint8_t) 0x04)
+#define COMM_CHECK_CKS				((uint8_t) 0x05)
+
+#define COMM_NO_COMMAND				((uint8_t) 0xFF)
 
 char bootloader_state = BOOTLOADER_INIT_NRF;
 
@@ -30,17 +52,20 @@ char bootloader_state = BOOTLOADER_INIT_NRF;
 typedef struct rxDataStruct
 {
 	uint8_t data[BUFFER_LENGTH];
+	uint8_t command;
 	uint8_t length;
 	uint8_t hasMessage;
 }rxDataStruct;
 
 rxDataStruct rxData;
+uint8_t flashPipe = 0;
 
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
-	memcpy(rxData.data, data, payload_length);
-	rxData.length = payload_length;	
-	rxData.hasMessage = 1;
+	rxData.command = data[0];
+	memcpy(rxData.data, data + 1, payload_length - 1);	
+	rxData.length = payload_length - 1;	
+	rxData.hasMessage = MSG_RECEIVED;
 }
 void tx_handler(radio_tx_status tx_status) {
 	
@@ -86,7 +111,8 @@ void waitRx()
 {
 	uint32_t timeoutCounter;
 	timeoutCounter = MSG_REC_TIMEOUT;
-	rxData.hasMessage = 0;	
+	rxData.hasMessage = MSG_NO_DATA;	
+	rxData.command = COMM_NO_COMMAND;
 	do{
 		timeoutCounter--;
 		__nrfRadio_Main();
@@ -94,54 +120,211 @@ void waitRx()
 	}while (!rxData.hasMessage && (timeoutCounter > 0));
 	
 	if (!rxData.hasMessage || (timeoutCounter == 0))
-		rxData.hasMessage = 0;		
+		rxData.hasMessage = MSG_NO_DATA;		
+}
+
+
+// Bootloader flash
+void boot_program_page (uint32_t page, uint8_t *buf)
+{
+	uint16_t i;
+	uint8_t sreg;
+	// Disable interrupts.
+	sreg = SREG;
+	cli();
+	eeprom_busy_wait ();
+	boot_page_erase (page);
+	boot_spm_busy_wait (); // Wait until the memory is erased.
+	for (i=0; i<SPM_PAGESIZE; i+=2)
+	{
+		// Set up little-endian word.
+		uint16_t w = *buf++;
+		w += (*buf++) << 8;
+		boot_page_fill (page + i, w);
+	}
+	boot_page_write (page); // Store buffer in flash page.
+	boot_spm_busy_wait(); // Wait until the memory is written.
+	// Reenable RWW-section again. We need this if we want to jump back
+	// to the application after bootloading.
+	boot_rww_enable ();
+	// Re-enable interrupts (if they were ever enabled).
+	SREG = sreg;
 }
 
 
 void startFlash(uint8_t * rx_address)
 {
-	uint8_t ackResponse [BUFFER_LENGTH];	
+	uint8_t ackResponse [BUFFER_LENGTH];			
+	uint8_t pageData [PAGE_SIZE];
+	uint8_t bytesReceived = 0;
+	uint16_t currentPage = 0;
+	uint16_t recvCKS = 0;
 	do 
 	{
 		switch(bootloader_state)
 		{
 			case BOOTLOADER_INIT_NRF:				
-				rxData.length = 0xFF;
-				rxData.hasMessage = 0;
+			{
+				rxData.length = 0x00;
+				rxData.hasMessage = MSG_NO_DATA;
 				initNrf(rx_address);
 				sei();
 				bootloader_state = BOOTLOADER_FLASH_INIT;
-			break;
+				break;
+			}
 			case BOOTLOADER_FLASH_INIT:
-				ackResponse[0] = BOOTLOADER_FLASH_INIT;
-				__nrfRadio_LoadAckPayload(3, (uint8_t*)ackResponse, 1);
-				
+			{				
 				waitRx();
 				
-				if (!rxData.hasMessage)
+				if (rxData.hasMessage)
 				{
+					if (rxData.command == COMM_START_FLASH_PROCEDURE)
+						bootloader_state = BOOTLOADER_REC_DATA;
+					else if (rxData.command == COMM_GET_STATE)
+					{
+						memset(ackResponse, 0x00, BUFFER_LENGTH);
+						ackResponse[0] = BOOTLOADER_FLASH_INIT;
+						__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, BUFFER_LENGTH);
+						
+						waitRx();
+						// We remain in this state
+						bootloader_state = BOOTLOADER_FLASH_INIT;
+					}
+					else
+						bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}
+				else
+				{
+					bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}
+				rxData.hasMessage = MSG_NO_DATA;
+				break;
+			}
+			case BOOTLOADER_REC_DATA:
+			{												
+				do{	
+					waitRx();
+					if (rxData.hasMessage)
+					{
+						if (rxData.command == COMM_SEND_CHUNCK)
+						{
+							if ((bytesReceived + rxData.length) < PAGE_SIZE)
+							{								
+								memcpy((uint8_t*) &pageData[bytesReceived],	rxData.data, rxData.length);
+								bytesReceived += rxData.length;
+								rxData.hasMessage = MSG_NO_DATA;
+							}
+							else
+							{								
+								bootloader_state = BOOTLOADER_FLASH_ERROR;
+							}
+						}
+						else if (rxData.command == COMM_GET_STATE)
+						{
+							memset(ackResponse, 0x00, BUFFER_LENGTH);
+							ackResponse[0] = BOOTLOADER_REC_DATA;
+							__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 1);
+							
+							waitRx();
+							// We remain in this state
+							bootloader_state = BOOTLOADER_REC_DATA;
+						}
+						else
+							bootloader_state = BOOTLOADER_FLASH_ERROR;
+					}					
+					else
+					{
+						bootloader_state = BOOTLOADER_FLASH_ERROR;
+					}
+				}while((bytesReceived < PAGE_SIZE) && (bootloader_state != BOOTLOADER_FLASH_ERROR));				
+				if (bootloader_state != BOOTLOADER_FLASH_ERROR)
+					bootloader_state = BOOTLOADER_FLASH_DATA;
+				break;
+			}
+			case BOOTLOADER_FLASH_DATA:
+			{
+				waitRx();
+				if (rxData.hasMessage)
+				{
+					if (rxData.command == COMM_FLASH_PAGE)
+					{
+						memset(ackResponse, 0x00, BUFFER_LENGTH);
+						ackResponse[0] = BOOTLOADER_FLASH_DATA;
+						ackResponse[1] = currentPage;
+						__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);
+						
+						boot_program_page(currentPage, (uint8_t*) &pageData[0]);
+						
+						bootloader_state = BOOTLOADER_FLASH_PAGE_DONE;
+					}
+					else if (rxData.command == COMM_GET_STATE)
+					{
+						memset(ackResponse, 0x00, BUFFER_LENGTH);
+						ackResponse[0] = BOOTLOADER_FLASH_DATA;
+						ackResponse[1] = currentPage;
+						__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);
+						waitRx();
+						// We remain in this state
+						bootloader_state = BOOTLOADER_FLASH_DATA;
+					}
+					else
+						bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}
+				else
+				{
+					bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}
+				
+				break;
+			}
+			case BOOTLOADER_FLASH_PAGE_DONE:
+			{	
+				waitRx();				
+				
+				if (rxData.hasMessage)
+				{
+					if (rxData.command == COMM_NEXT_PAGE)
+					{
+						currentPage++;
+						memset(pageData, 0x00, PAGE_SIZE);
+						bootloader_state = BOOTLOADER_REC_DATA;
+					}
+					else if (rxData.command == COMM_CHECK_CKS)
+					{
+						recvCKS = (rxData.data[0] << 8) | (rxData.data[1]);
+						bootloader_state = BOOTLOADER_CHECK_CKS;
+					}
+					else if (rxData.command == COMM_GET_STATE)
+					{
+						memset(ackResponse, 0x00, BUFFER_LENGTH);
+						ackResponse[0] = BOOTLOADER_FLASH_PAGE_DONE;
+						ackResponse[1] = currentPage;
+						__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);
+						waitRx();
+						// We remain in this state
+						bootloader_state = BOOTLOADER_FLASH_PAGE_DONE;
+					}
+					else
 					bootloader_state = BOOTLOADER_FLASH_ERROR;
 				}
 				else
 				{
-					bootloader_state = BOOTLOADER_REC_DATA;
-				}
-			rxData.hasMessage = 0;
-			break;
-			case BOOTLOADER_REC_DATA:
-				do{
-					ackResponse[0] = BOOTLOADER_FLASH_INIT;
-					__nrfRadio_LoadAckPayload(3, (uint8_t*)ackResponse, 1);
-					
-				}while(1);
+					bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}				
+				break;
+			}
+			case BOOTLOADER_CHECK_CKS:
+			{
+				waitRx();
 				
-			break;
+				
+				break;
+			}
 			default:
 				bootloader_state = BOOTLOADER_FLASH_ERROR;
 		}		
 				
 	} while ((bootloader_state != BOOTLOADER_FLASH_END) && (bootloader_state != BOOTLOADER_FLASH_ERROR));
-		
 		
 		
 	if (bootloader_state == BOOTLOADER_FLASH_ERROR)
