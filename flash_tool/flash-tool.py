@@ -101,6 +101,15 @@ def flash_device(hexFilePath):
 		
 
 def main():	
+
+	# TODO:
+	# 	Option 2: Open COM port selected (not hardcoded)
+	#			  Store into a global variable the comm port
+	#	Option 3: Implement file to selecte
+	#			  Read data & create data structure for flash protocol
+	#			  Implement flashing SW
+
+
 	while (1):
 		print('''
 		1. Show all COM ports
