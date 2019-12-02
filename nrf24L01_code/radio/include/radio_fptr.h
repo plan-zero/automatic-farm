@@ -28,9 +28,6 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_SetTxCallback)(void (*)(
 extern radio_error_code (* const __flash *fptr_nrfRadio_SetRxCallback)(void (*)(uint8_t, uint8_t *, uint8_t));
 extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pipe, uint8_t*, uint8_t);
 
-
-// TODO: replace x,y,z with variable names (visual studio displays the names)
-
 //**************************
 // The main routine of Radio library which is used for asynchronous operations
 // Method:	__nrfRadio_Main
@@ -81,9 +78,9 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pi
 //**************************
 // Send the payload to the given TX address. The radio must be in transmitting mode before this API is used.
 // Method:		__nrfRadio_Transmit
-// Returns:		radio_tx_status, TX_OK if ack is received, TX_MAX_RT if the ack is not received (after all retransmisions) and TX_OK_ACK_PYL if the ACK has a payload attached
+// Returns:		radio_tx_status, TX_OK if ACK is received, TX_MAX_RT if the ACK is not received (after all retransmissions) and TX_OK_ACK_PYL if the ACK has a payload attached
 // txaddr:		uint8_t*, the address of destination node, the maximum allowed length is 5
-// txtrans:		radio_transmision_type, the transmission can be asynchronously (the __nrfRadio_Main have to be executed in this case and ack is reported via CB), or synchronously  
+// txtrans:		radio_transmision_type, the transmission can be asynchronously (the __nrfRadio_Main have to be executed in this case and ACK is reported via CB), or synchronously (blocks until transmission is done) 
 //**************************
 #define __nrfRadio_Transmit(txaddr,txtrans) (*fptr_nrfRadio_Transmit)(txaddr,txtrans)
 //**************************
@@ -105,10 +102,35 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pi
 // datarate:	radio_data_rate
 //**************************
 #define __nrfRadio_ChangeDataRate(datarate) (*fptr_nrfRadio_ChangeDataRate)(datarate)
-#define __nrfRadio_ChangePower(x) (*fptr_nrfRadio_ChangePower)(x)
-#define __nrfRadio_SetTxCallback(x) (*fptr_nrfRadio_SetTxCallback)(x)
-#define __nrfRadio_SetRxCallback(x) (*fptr_nrfRadio_SetRxCallback)(x)
-#define __nrfRadio_LoadAckPayload(x,y,z) (*fptr_nrfRadio_LoadAckPayload)(x,y,z)
-
+//**************************
+// Change the radio transmission power. This must be called when the radio is in power down
+// Method:		__nrfRadio_ChangePower
+// Returns:		radio_error_code
+// pwr:			radio_rf_power
+//**************************
+#define __nrfRadio_ChangePower(pwr) (*fptr_nrfRadio_ChangePower)(pwr)
+//**************************
+// Set the callback for TX. This is called during nrfRadio_Main execution when the transmission is complete
+// Method:		__nrfRadio_SetTxCallback
+// Returns:		radio_error_code
+// pwr:			void (*)(radio_tx_status)
+//**************************
+#define __nrfRadio_SetTxCallback(tx_cb) (*fptr_nrfRadio_SetTxCallback)(tx_cb)
+//**************************
+// Set the callback for RX. This is called during nrfRadio_Main execution when the reception is complete
+// Method:		__nrfRadio_SetRxCallback
+// Returns:		radio_error_code
+// pwr:			void (*)(uint8_t, uint8_t *, uint8_t)
+//**************************
+#define __nrfRadio_SetRxCallback(rx_cb) (*fptr_nrfRadio_SetRxCallback)(rx_cb)
+//**************************
+// Upload the ACK payload in advance, so when the radio receives the message, the payload should be already prepared.
+// Method:		__nrfRadio_LoadAckPayload
+// Returns:		radio_error_code
+// ackpipe:		radio_pipe, the pipe which the ack payload is sent e.g. if the message was received on PIPE3 then the ack payload have to be already loaded for PIPE3
+// ackpayload:	uint8_t*, the pointer to the ACK payload message
+// ackpayload_length: uint8_t, the size of ACK payload
+//**************************
+#define __nrfRadio_LoadAckPayload(ackpipe,ackpayload,ackpayload_length) (*fptr_nrfRadio_LoadAckPayload)(pipe,ackpayload_length,ackpayload_length)
 
 #endif /* RADIO_FPTR_H_ */
