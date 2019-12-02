@@ -17,10 +17,6 @@
 #define TURN_LED_OFF	PORTB &= 0xFE
 #define TOGGLE_LED		PORTB ^= 1
 
-#define RADIO_RX_ADDRESS (const uint8_t*)0
-#define RADIO_RX_LENGTH	 5
-
-
 int main(void)
 {
 	// Wait after power on in order to stabilize the tension
@@ -28,27 +24,27 @@ int main(void)
 	LED_PORT_DIR |= 1 << LED_PORT_PIN;
 
 	uint8_t rx_address[RADIO_RX_LENGTH] = {0};
-	//uint32_t eep_checksum = 0;
-	//uint32_t flash_checksum = 0;
-	//uint16_t nrf24_firmware_version = 0;
-	//uint16_t application_version = 0;
-	//uint16_t eep_version = 0;
-	//uint16_t reserved = 0;
+	/*uint32_t eep_checksum = 0;
+	uint32_t flash_checksum = 0;
+	uint16_t nrf24_firmware_version = 0;
+	uint16_t application_version = 0;
+	uint16_t eep_version = 0;
+	//uint16_t reserved = 0;*/
 	uint8_t download = 0;
 	uint8_t tx_address[RADIO_RX_LENGTH] = {0};
 	
 	//reading eeprom parameters
-
-	eeprom_read_block ((void*)&rx_address, (void*)0, RADIO_RX_LENGTH);
-	//eep_checksum = eeprom_read_dword((uint32_t*)5);
-	//flash_checksum = eeprom_read_dword((uint32_t*)9);
-	//nrf24_firmware_version = eeprom_read_word((uint16_t*)13);
-	//application_version = eeprom_read_word((uint16_t*)15);
-	//eep_version = eeprom_read_word((uint16_t*)17);
-	//reserved = eeprom_read_word((uint16_t*)19);
-	download = eeprom_read_byte((uint8_t*)21);
-	eeprom_read_block((void*)&tx_address, (void*)22, RADIO_RX_LENGTH);
 	
+	eeprom_read_block ((void*)&rx_address,				(void*)RADIO_RX_ADDRESS,			RADIO_RX_LENGTH);
+	/*eeprom_read_block ((void*)&eep_checksum,			(void*)E2P_CKS_ADDRESS,				E2P_CKS_LENGTH);
+	eeprom_read_block ((void*)&flash_checksum,			(void*)FLASH_CKS_ADDRESS,			FLASH_CKS_LENGTH);
+	eeprom_read_block ((void*)&nrf24_firmware_version,	(void*)NRF_VERS_ADDRESS,			NRF_VERS_LENGTH);
+	eeprom_read_block ((void*)&application_version,		(void*)APP_VERS_ADDRESS,			APP_VERS_LENGTH);
+	eeprom_read_block ((void*)&eep_version,				(void*)E2P_VERS_ADDRESS,			E2P_VERS_LENGTH);*/
+	eeprom_read_block ((void*)&download,				(void*)DOWNLOAD_FLAG_ADDRESS,		DOWNLOAD_FLAG_LENGTH);
+	eeprom_read_block ((void*)&tx_address,				(void*)PROGRAMMER_ADDR_ADDRESS,		PROGRAMMER_ADDR_LENGTH);
+
+		
 	if( download == 0xAA) {
 		startFlash(rx_address);
 	}
