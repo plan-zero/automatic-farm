@@ -11,6 +11,8 @@ Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "radio", "radio\radio.cproj"
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "uart", "uart\uart.cproj", "{2AE4A978-E2E4-4635-BDCA-C74D482B0014}"
 EndProject
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "programmer", "programmer\programmer.cproj", "{F01E2166-B91A-4ECA-94CD-0E9DB7A6BB80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AVR = Debug|AVR
@@ -33,6 +35,10 @@ Global
 		{2AE4A978-E2E4-4635-BDCA-C74D482B0014}.Debug|AVR.Build.0 = Debug|AVR
 		{2AE4A978-E2E4-4635-BDCA-C74D482B0014}.Release|AVR.ActiveCfg = Release|AVR
 		{2AE4A978-E2E4-4635-BDCA-C74D482B0014}.Release|AVR.Build.0 = Release|AVR
+		{F01E2166-B91A-4ECA-94CD-0E9DB7A6BB80}.Debug|AVR.ActiveCfg = Debug|AVR
+		{F01E2166-B91A-4ECA-94CD-0E9DB7A6BB80}.Debug|AVR.Build.0 = Debug|AVR
+		{F01E2166-B91A-4ECA-94CD-0E9DB7A6BB80}.Release|AVR.ActiveCfg = Release|AVR
+		{F01E2166-B91A-4ECA-94CD-0E9DB7A6BB80}.Release|AVR.Build.0 = Release|AVR
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -9,6 +9,7 @@
 #define UART_RECEIVE 	0x2
 #define UART_OK			0x4
 #define UART_NOK		0x5
+#define UART_RX_ERROR   0x6
 
 
 
@@ -21,24 +22,46 @@ uint8_t uart_rx_state;
 uint8_t uart_rx_buffer[UART_RX_MAX];
 uint8_t uart_rx_index;
 
+volatile uint8_t uart_rx_err_state;
+
+int16_t uart_values[UART_COUNT_MHZ][UART_COUNT_BAUD] = 
+{
+	{12, 6, 1, 0, -1 },
+	{25, 12, 3, 1, 0},
+	{51, 25, 8, 3, 1 },
+	{103, 51, 16, 8, 3 },
+	{207, 103, 34, 16, 7 }
+};
 
 ISR(USART_TXC_vect)
 {
 	uart_tx_state = UART_IDLE;
+	
 }
 
 ISR(USART_RXC_vect)
 {
-	uart_rx_state = UART_RECEIVE;
-	uart_rx_buffer[uart_rx_index++] = UDR;
 
-	if(uart_rx_index >= UART_RX_MAX)
+	if ( ((UCSRA & 0x1C) >> 2) != 0)
 	{
-		uart_rx_index = 0;
+		uart_rx_err_state = (UCSRA & 0x1C) >> 2;
+		uart_rx_state = UART_RX_ERROR;
+		UCSRA &= ~0x1C;
 	}
+	else 
+	{
+		uart_rx_state = UART_RECEIVE;
+		uart_rx_buffer[uart_rx_index++] = UDR;
+
+		if(uart_rx_index >= UART_RX_MAX)
+		{
+			uart_rx_index = 0;
+		}
+	}
+
 }
 
-uint8_t uart_rx_flush(uint8_t *buffer)
+uint8_t uart_rx_flush(uint8_t *buffer, uint8_t *rx_error)
 {
 	cli();
 	uint8_t uart_available = 0;
@@ -53,6 +76,15 @@ uint8_t uart_rx_flush(uint8_t *buffer)
 		uart_rx_index = 0;
 		uart_rx_state = UART_IDLE;
 	}
+	else if(uart_rx_state == UART_RX_ERROR)
+	{
+		//reset the uart buffer
+		uart_rx_index = 0;
+		uart_rx_state = UART_IDLE;
+		(*rx_error) = uart_rx_err_state;
+		uart_rx_err_state = 0;
+		uart_available = UART_RX_ERR;
+	}
 	sei();
 
 	return uart_available;
@@ -60,8 +92,10 @@ uint8_t uart_rx_flush(uint8_t *buffer)
 
 
 
-void uart_init(uint8_t baud) // 1Mhz baud, 8 data, 1 stop, none parity
+uart_err uart_init(uint8_t baud, uint8_t cpu_freq, uint8_t uart_parity) // 1Mhz baud, 8 data, 1 stop, none parity
 {
+	if( (baud > UART_250000BAUD) | (cpu_freq > UART_16MHZ) )
+		return UART_INVALID_ARG;
 
 	uart_rx_index = 0;
 	uart_tx_state = UART_IDLE;
@@ -70,9 +104,20 @@ void uart_init(uint8_t baud) // 1Mhz baud, 8 data, 1 stop, none parity
     UCSRA  = (0x1 << U2X);
 	UCSRB  = (0x1 << TXEN) | (0x1 << RXEN) | (0x1 << RXCIE) | (0x1 << TXCIE);
 	UCSRC  = (0x1 << URSEL) | (0x1 << UCSZ0) | (0x1 << UCSZ1);
-	UBRRL =  baud;
+
+	if( uart_values[cpu_freq][baud] != -1)
+		UBRRL =  (uint8_t)uart_values[cpu_freq][baud];
+	else
+		return UART_BAUD_NOT_SUPPORTED;
+
+	if(uart_parity == UART_PARITY_EVEN)
+		UCSRC |= (0x1) << UPM1;
+	else if (uart_parity == UART_PARITY_ODD)
+		UCSRC |= (0x1) << UPM1 | (0x1) << UPM0;
 
 	sei();
+	
+	return UART_CONFIG_OK;
 }
 
 void uart_sendByte(uint8_t byte)

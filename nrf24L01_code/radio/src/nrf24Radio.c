@@ -42,10 +42,10 @@
 #define MIN_PAYLOAD_WIDTH 1
 
 //the IRQ flag used to see if the interrupt has been triggered
-volatile uint8_t irq_triggered = 0;
+/*volatile uint8_t irq_triggered = 0;
 volatile uint8_t irq_status = 0;
 void (*tx_callback)(radio_tx_status) = NULL;
-void (*rx_callback)(uint8_t, uint8_t*, uint8_t) = NULL;
+void (*rx_callback)(uint8_t, uint8_t*, uint8_t) = NULL;*/
 
 //the instance that is used to store the radio details (states, pipes configuration and so on)
 radio_context _radio_instance = {
@@ -60,7 +60,11 @@ radio_context _radio_instance = {
 	{ 0xc5 }, //default pipe 4 RX
 	{ 0xc6 }, //default pipe 5 RX
 	{32, 0, 0, 0, 0, 0},
-	0xFFFF //default TX history
+	0xFFFF, //default TX history
+	0, //IRQ flag
+	0, //IRQ status
+	NULL, //tx_callback
+	NULL //rx_callback
 };
 
 
@@ -115,12 +119,12 @@ static void send_instruction(uint8_t instruction, uint8_t* data, uint8_t* buffer
 }
 
 radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status)) {
-	tx_callback = callback;
+	_radio_instance.tx_callback = callback;
 	return RADIO_ERR_OK;
 }
 
 radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *, uint8_t)) {
-	rx_callback = callback;
+	_radio_instance.rx_callback = callback;
 	return RADIO_ERR_OK;
 }
 
@@ -546,39 +550,39 @@ radio_tx_status nrfRadio_Transmit(uint8_t * tx_address, radio_transmision_type t
 	if(RADIO_WAIT_TX == trans_type) 
 	{
 		
-		while(irq_triggered == 0); //wait to transmit
-		irq_triggered = 0;
-		if(irq_status & _BV(TX_DS)) 
+		while(_radio_instance.irq_triggered == 0); //wait to transmit
+		_radio_instance.irq_triggered = 0;
+		if(_radio_instance.irq_status & _BV(TX_DS)) 
 		{
 			txerr = RADIO_TX_OK;
 		}
-		else if(irq_status & _BV(MAX_RT)) 
+		else if(_radio_instance.irq_status & _BV(MAX_RT)) 
 		{
 			txerr = RADIO_TX_MAX_RT;
 		}
 		//there is a ACK payload
-		if(irq_status & _BV(RX_DR)) 
+		if(_radio_instance.irq_status & _BV(RX_DR)) 
 		{
 			uint8_t rec_buffer[32] = {0};
-			uint8_t pipe_number = (irq_status & 0xE) >> 1;
+			uint8_t pipe_number = (_radio_instance.irq_status & 0xE) >> 1;
 			uint8_t tmp[1];
 			if(_radio_instance.dynamic_payload) 
 			{
 				send_instruction(R_RX_PL_WID, (uint8_t*)tmp, (uint8_t*)tmp, 1);
 				send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, tmp[0]);
-				if (rx_callback)
+				if (_radio_instance.rx_callback)
 				{
 					txerr = RADIO_TX_OK_ACK_PYL;
-					rx_callback(pipe_number, rec_buffer, tmp[0]);					
+					_radio_instance.rx_callback(pipe_number, rec_buffer, tmp[0]);					
 				}
 			}
 			else 
 			{
 				send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
-				if (rx_callback)
+				if (_radio_instance.rx_callback)
 				{
 					txerr = RADIO_TX_OK_ACK_PYL;
-					rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+					_radio_instance.rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
 				}
 			}
 		}
@@ -639,33 +643,33 @@ radio_error_code nrfRadio_Main() {
 		case RADIO_PTX:
 			
 			//we're transmitting so we expect to get the TX_DS or MAX_RT
-			if(irq_triggered > 0) {
+			if(_radio_instance.irq_triggered > 0) {
 				cli();
-				irq_triggered = 0;
+				_radio_instance.irq_triggered = 0;
 				sei();
 				_radio_instance.currentState = RADIO_STANDBY_2;
-				if(irq_status & _BV(TX_DS)) {
-					if(tx_callback != NULL)
-						tx_callback(RADIO_TX_OK);
-				}else if(irq_status & _BV(MAX_RT)) {
-					if(tx_callback != NULL)
-						tx_callback(RADIO_TX_MAX_RT);
+				if(_radio_instance.irq_status & _BV(TX_DS)) {
+					if(_radio_instance.tx_callback != NULL)
+						_radio_instance.tx_callback(RADIO_TX_OK);
+				}else if(_radio_instance.irq_status & _BV(MAX_RT)) {
+					if(_radio_instance.tx_callback != NULL)
+						_radio_instance.tx_callback(RADIO_TX_MAX_RT);
 				}
 				
 				//there is a ACK payload
-				if(irq_status & _BV(RX_DR)) {
+				if(_radio_instance.irq_status & _BV(RX_DR)) {
 					uint8_t rec_buffer[32] = {0};
-					uint8_t pipe_number = (irq_status & 0xE) >> 1;
+					uint8_t pipe_number = (_radio_instance.irq_status & 0xE) >> 1;
 					uint8_t tmp[1];
 					if(_radio_instance.dynamic_payload) {
 						send_instruction(R_RX_PL_WID, (uint8_t*)tmp, (uint8_t*)tmp, 1);
 						send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, tmp[0]);
 						// TODO: check rx_callback for NULL
-						rx_callback(pipe_number, rec_buffer, tmp[0]);
+						_radio_instance.rx_callback(pipe_number, rec_buffer, tmp[0]);
 					}
 					else {
 						send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
-						rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+						_radio_instance.rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
 					}
 				}
 				
@@ -675,32 +679,32 @@ radio_error_code nrfRadio_Main() {
 		break;
 		//the PWR_BIT must be set and CE pin must be high during RX operation
 		case RADIO_PRX:
-		if(irq_triggered > 0) {
+		if(_radio_instance.irq_triggered > 0) {
 			cli();
-			irq_triggered = 0;
+			_radio_instance.irq_triggered = 0;
 			
-			if(irq_status & _BV(RX_DR)) {
+			if(_radio_instance.irq_status & _BV(RX_DR)) {
 				_delay_us(200); //make sure that the radio has already send the ACK TODO: wait just if the radio is using AA
 				CE_LOW(); //disable the radio
 				//get the pipe number
 				uint8_t rec_buffer[32] = {0};
-				uint8_t pipe_number = (irq_status & 0xE) >> 1;
+				uint8_t pipe_number = (_radio_instance.irq_status & 0xE) >> 1;
 				while(pipe_number != RADIO_PIPE_EMPTY) {
 					uint8_t tmp[1];
 					if(_radio_instance.dynamic_payload) {
 						send_instruction(R_RX_PL_WID, (uint8_t*)tmp, (uint8_t*)tmp, 1);
 						send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, tmp[0]);
-						rx_callback(pipe_number, rec_buffer, tmp[0]);
+						_radio_instance.rx_callback(pipe_number, rec_buffer, tmp[0]);
 					} 
 					else {
 						send_instruction(R_RX_PAYLOAD, (uint8_t*)rec_buffer, (uint8_t*)rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
-						rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
+						_radio_instance.rx_callback(pipe_number, rec_buffer, _radio_instance.rx_pipe_widths[pipe_number]);
 					}
 					//get again the radio status
 					CSN_LOW();
-					irq_status = SPI_Write_Byte(NOP);
+					_radio_instance.irq_status = SPI_Write_Byte(NOP);
 					CSN_HIGH();
-					pipe_number = (irq_status & 0xE) >> 1;
+					pipe_number = (_radio_instance.irq_status & 0xE) >> 1;
 				}
 				CE_HIGH();
 			}
@@ -719,9 +723,9 @@ radio_error_code nrfRadio_Main() {
 ISR(IRQ_HANDLER)
 {
 	GIFR = (1<<INTF0);
-	irq_triggered++;
+	_radio_instance.irq_triggered++;
 	CSN_LOW();
-	irq_status = SPI_Write_Byte(NOP);
+	_radio_instance.irq_status = SPI_Write_Byte(NOP);
 	CSN_HIGH();
 	
 	uint8_t value = 0;

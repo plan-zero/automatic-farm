@@ -107,7 +107,7 @@ void tx_handler(radio_tx_status tx_status) {
 int main(){
 
 	
-	uart_init(BAUD9600);
+	uart_init(UART_115200BAUD, UART_8MHZ, UART_PARITY_NONE);
 	_delay_ms(500);
 	
 	uart_printString("Radio Initialization", 1);
@@ -127,8 +127,6 @@ int main(){
 	
 	//NOTE: actually the first byte is setting the address because the NRF takes firstly the LSByte 
 	uint8_t pipe0_address[5] = { 0xE2, 0xE0, 0xE0, 0xE2, 0xA2 };
-	uint8_t pipe1_address[5] = { 0xE1, 0xE0, 0xE0, 0xE2, 0xA2 };
-	uint8_t pipe5_address[5] = {0xE0};
 	pipe_config pipe_cfg0 = {	RADIO_PIPE0,
 								pipe0_address,
 								5,
@@ -136,23 +134,8 @@ int main(){
 								RADIO_PIPE_AA_ENABLED,
 								RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 							};
-	pipe_config pipe_cfg1 = {	RADIO_PIPE1,
-		pipe1_address,
-		5,
-		RADIO_PIPE_RX_ENABLED,
-		RADIO_PIPE_AA_ENABLED,
-		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
-	};
-	pipe_config pipe_cfg2 = {	RADIO_PIPE3,
-		pipe5_address,
-		5,
-		RADIO_PIPE_RX_ENABLED,
-		RADIO_PIPE_AA_ENABLED,
-		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
-	};
+
 	__nrfRadio_PipeConfig(pipe_cfg0);
-	__nrfRadio_PipeConfig(pipe_cfg1);
-	__nrfRadio_PipeConfig(pipe_cfg2);
 	
 	uart_printString("Read radio information", 1);
 	radio_registers regs = {0}; //init the register
@@ -191,9 +174,8 @@ int main(){
 				uart_printString("ack not ok",1);
 		}*/
 			
-		//nrfRadio_Main();
 		__nrfRadio_Main();
-		//_delay_ms(500);
+
 	}
 
 
