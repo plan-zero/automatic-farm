@@ -131,6 +131,6 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pi
 // ackpayload:	uint8_t*, the pointer to the ACK payload message
 // ackpayload_length: uint8_t, the size of ACK payload
 //**************************
-#define __nrfRadio_LoadAckPayload(ackpipe,ackpayload,ackpayload_length) (*fptr_nrfRadio_LoadAckPayload)(pipe,ackpayload_length,ackpayload_length)
+#define __nrfRadio_LoadAckPayload(ackpipe,ackpayload,ackpayload_length) (*fptr_nrfRadio_LoadAckPayload)(ackpipe, ackpayload, ackpayload_length)
 
 #endif /* RADIO_FPTR_H_ */
