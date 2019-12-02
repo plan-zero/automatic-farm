@@ -165,6 +165,6 @@ void uart_printRegister(unsigned char reg){
 	unsigned char n2 = reg & 0x0F;
 	uartPrintHex(n1);
 	uartPrintHex(n2);
-	uart_sendByte(0x20);
+	//uart_sendByte(0x20);
 	
 }
