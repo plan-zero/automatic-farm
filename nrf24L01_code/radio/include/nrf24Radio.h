@@ -391,8 +391,10 @@ typedef struct _radio_context{
 	uint8_t rxAddressP5[1];
 	uint8_t rx_pipe_widths[RADIO_MAX_PIPES];
 	uint16_t txHistory;
-	//pipe_config pipesConfig[RADIO_MAX_PIPES];
-	//radio_config radioConfig;
+	volatile uint8_t irq_triggered;
+	volatile uint8_t irq_status;
+	void (*tx_callback)(radio_tx_status);
+	void (*rx_callback)(uint8_t, uint8_t*, uint8_t);
 }radio_context;
 
 
