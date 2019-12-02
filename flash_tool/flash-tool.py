@@ -49,7 +49,7 @@ def connect_to_com_port(comPort):
 					 #and discard all that is in buffer
 
 			#write data
-			ser.write("AT+CSQ")
+			ser.write(str.encode('AT+CSQ'))
 			print("write data: AT+CSQ")
 
 			time.sleep(0.5)  #give the serial port sometime to receive the data
@@ -59,7 +59,7 @@ def connect_to_com_port(comPort):
 			while True:
 				print("trace2")
 				response = ser.readline()
-				print("read data: " + response)
+				print("read data: " + response.decode("utf-8"))
 
 				numOfLines = numOfLines + 1
 
@@ -67,8 +67,8 @@ def connect_to_com_port(comPort):
 					break
 
 			ser.close()
-		except:
-			print ("error communicating...")
+		except Exception as e:
+			print ("error communicating..." + e)
 
 	else:
 		print ("cannot open serial port ")
