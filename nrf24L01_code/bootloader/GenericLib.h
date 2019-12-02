@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "E2P_Layout.h"
 
 
 #endif /* INCFILE1_H_ */

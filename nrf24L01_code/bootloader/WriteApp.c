@@ -43,7 +43,9 @@
 #define COMM_FLASH_PAGE				((uint8_t) 0x03)
 #define COMM_NEXT_PAGE				((uint8_t) 0x04)
 #define COMM_CHECK_CKS				((uint8_t) 0x05)
+#define COMM_FINISH_FLASH			((uint8_t) 0x06)
 
+#define COMM_ABORT					((uint8_t) 0xFE)
 #define COMM_NO_COMMAND				((uint8_t) 0xFF)
 
 char bootloader_state = BOOTLOADER_INIT_NRF;
@@ -159,6 +161,7 @@ void startFlash(uint8_t * rx_address)
 	uint8_t bytesReceived = 0;
 	uint16_t currentPage = 0;
 	uint16_t recvCKS = 0;
+
 	do 
 	{
 		switch(bootloader_state)
@@ -315,9 +318,38 @@ void startFlash(uint8_t * rx_address)
 			}
 			case BOOTLOADER_CHECK_CKS:
 			{
+				/*
+				memset(ackResponse, 0x00, BUFFER_LENGTH);
+				ackResponse[0] = BOOTLOADER_CHECK_CKS;
+				ackResponse[1] = 0xAA;
+				__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);
 				waitRx();
-				
-				
+						
+				if (rxData.hasMessage)
+				{
+					if (rxData.command == COMM_FINISH_FLASH)
+					{
+						uint8_t dummy = 0;
+						eeprom_write_block ((void*)&dummy, (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
+					}					
+					else if (rxData.command == COMM_GET_STATE)
+					{
+						memset(ackResponse, 0x00, BUFFER_LENGTH);
+						ackResponse[0] = BOOTLOADER_CHECK_CKS;
+						ackResponse[1] = 0xAA;
+						__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);
+						waitRx();
+						// We remain in this state
+						bootloader_state = BOOTLOADER_CHECK_CKS;
+					}
+					else
+						bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}
+				else
+				{
+					bootloader_state = BOOTLOADER_FLASH_ERROR;
+				}		
+				*/
 				break;
 			}
 			default:
@@ -327,8 +359,17 @@ void startFlash(uint8_t * rx_address)
 	} while ((bootloader_state != BOOTLOADER_FLASH_END) && (bootloader_state != BOOTLOADER_FLASH_ERROR));
 		
 		
+	
+	
 	if (bootloader_state == BOOTLOADER_FLASH_ERROR)
 	{
+		/*do{
+			memset(ackResponse, 0x00, BUFFER_LENGTH);
+			ackResponse[0] = BOOTLOADER_FLASH_ERROR;
+			ackResponse[1] = 0xAA;
+			__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);			
+			waitRx();
+		}while (1);*/
 		// KAPUT
 	}
 }
