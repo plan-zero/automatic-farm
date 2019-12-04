@@ -210,7 +210,6 @@ void startFlash(uint8_t * rx_address)
 					{
 						if (rxData.command == COMM_SEND_CHUNCK)
 						{							
-							if ((bytesReceived + rxData.length) < PAGE_SIZE)
 							if ((bytesReceived + rxData.length) <= PAGE_SIZE)
 							{	
 								memcpy((uint8_t*) &pageData[bytesReceived],	rxData.data, rxData.length);
@@ -241,8 +240,7 @@ void startFlash(uint8_t * rx_address)
 						bootloader_state = BOOTLOADER_FLASH_ERROR;
 					}
 				}while((bytesReceived < PAGE_SIZE) && (bootloader_state != BOOTLOADER_FLASH_ERROR));	
-				
-				waitRx();		
+					
 				if (bootloader_state != BOOTLOADER_FLASH_ERROR)
 					bootloader_state = BOOTLOADER_FLASH_DATA;
 				break;
