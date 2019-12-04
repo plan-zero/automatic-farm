@@ -20,6 +20,12 @@
 #include <string.h>
 
 #include "E2P_Layout.h"
+#define LED_PORT_DIR DDRB
+#define LED_PORT_PIN PINB0
+
+#define TURN_LED_ON		PORTB |= 1
+#define TURN_LED_OFF	PORTB &= 0xFE
+#define TOGGLE_LED		PORTB ^= 1
 
 
 #endif /* INCFILE1_H_ */
