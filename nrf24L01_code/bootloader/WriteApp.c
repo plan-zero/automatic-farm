@@ -8,11 +8,6 @@
 #include "radio_fptr.h"
 #include "GenericLib.h"
 
-#include <avr/interrupt.h>
-#include <avr/boot.h>
-#include <avr/io.h>
-
-
 
 #define BUFFER_LENGTH				((uint8_t) 32)
 #define PAGE_SIZE					((uint8_t) SPM_PAGESIZE)
@@ -216,6 +211,7 @@ void startFlash(uint8_t * rx_address)
 						if (rxData.command == COMM_SEND_CHUNCK)
 						{							
 							if ((bytesReceived + rxData.length) < PAGE_SIZE)
+							if ((bytesReceived + rxData.length) <= PAGE_SIZE)
 							{	
 								memcpy((uint8_t*) &pageData[bytesReceived],	rxData.data, rxData.length);
 								bytesReceived += rxData.length;
@@ -244,11 +240,7 @@ void startFlash(uint8_t * rx_address)
 					{
 						bootloader_state = BOOTLOADER_FLASH_ERROR;
 					}
-				}while((bytesReceived < PAGE_SIZE) && (bootloader_state != BOOTLOADER_FLASH_ERROR));		
-				memset(ackResponse, 0x00, BUFFER_LENGTH);
-				ackResponse[0] = bootloader_state;
-				ackResponse[1] = '0' + bytesReceived / 16;
-				__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);
+				}while((bytesReceived < PAGE_SIZE) && (bootloader_state != BOOTLOADER_FLASH_ERROR));	
 				
 				waitRx();		
 				if (bootloader_state != BOOTLOADER_FLASH_ERROR)
