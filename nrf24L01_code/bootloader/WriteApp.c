@@ -210,7 +210,7 @@ void startFlash(uint8_t * rx_address)
 						{
 							ackResponse[1] = '0' + currentPage;
 							cli();
-							boot_program_page(currentPage, (uint8_t*) &pageData[0]);
+							boot_program_page(currentPage*128, (uint8_t*) &pageData[0]);
 							sei();
 
 							bootloader_state = BOOTLOADER_FLASH_PAGE_DONE;
@@ -227,6 +227,7 @@ void startFlash(uint8_t * rx_address)
 						if (rxData.command == COMM_NEXT_PAGE)
 						{
 							currentPage++;
+							bytesReceived = 0;
 							memset(pageData, 0x00, PAGE_SIZE);
 							bootloader_state = BOOTLOADER_REC_DATA;
 						}
