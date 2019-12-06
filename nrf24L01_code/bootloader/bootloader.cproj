@@ -131,7 +131,16 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GenericLib.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="WriteApp.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="WriteApp.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

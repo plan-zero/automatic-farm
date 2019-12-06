@@ -115,7 +115,6 @@ uart_err uart_init(uint8_t baud, uint8_t cpu_freq, uint8_t uart_parity) // 1Mhz 
 	else if (uart_parity == UART_PARITY_ODD)
 		UCSRC |= (0x1) << UPM1 | (0x1) << UPM0;
 
-	sei();
 	
 	return UART_CONFIG_OK;
 }
@@ -165,6 +164,6 @@ void uart_printRegister(unsigned char reg){
 	unsigned char n2 = reg & 0x0F;
 	uartPrintHex(n1);
 	uartPrintHex(n2);
-	uart_sendByte(0x20);
+	//uart_sendByte(0x20);
 	
 }
