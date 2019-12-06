@@ -2,6 +2,9 @@
 *.d
 *.srec
 *.map
+*.cproject
+*.project
+*.settings.xml
 
 *.lss
 nrf24L01_code/*/Debug/
