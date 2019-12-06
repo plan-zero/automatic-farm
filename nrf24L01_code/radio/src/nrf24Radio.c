@@ -69,7 +69,7 @@ radio_context _radio_instance = {
 
 
 
-static uint8_t set_register(radio_register_t reg, uint8_t* value, uint8_t len)
+NRF24_MEMORY static uint8_t set_register(radio_register_t reg, uint8_t* value, uint8_t len)
 {
 	uint8_t status;
 	CSN_LOW();
@@ -82,7 +82,7 @@ static uint8_t set_register(radio_register_t reg, uint8_t* value, uint8_t len)
 	return status;
 }
 
-static uint8_t get_register(radio_register_t reg, uint8_t* buffer, uint8_t len)
+NRF24_MEMORY static uint8_t get_register(radio_register_t reg, uint8_t* buffer, uint8_t len)
 {
 	uint8_t status, i;
 	for (i = 0; i < len; i++)
@@ -101,7 +101,7 @@ static uint8_t get_register(radio_register_t reg, uint8_t* buffer, uint8_t len)
 	return status;
 }
 
-static void send_instruction(uint8_t instruction, uint8_t* data, uint8_t* buffer, uint8_t len)
+NRF24_MEMORY static void send_instruction(uint8_t instruction, uint8_t* data, uint8_t* buffer, uint8_t len)
 {
 	CSN_LOW();
 	// send the instruction
@@ -720,7 +720,7 @@ radio_error_code nrfRadio_Main() {
 	return RADIO_ERR_OK;
 }
 
-ISR(IRQ_HANDLER)
+NRF24_MEMORY ISR(IRQ_HANDLER)
 {
 	GIFR = (1<<INTF0);
 	_radio_instance.irq_triggered++;
