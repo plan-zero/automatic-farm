@@ -728,8 +728,7 @@ radio_error_code nrfRadio_Main() {
 	return RADIO_ERR_OK;
 }
 
-
-NRF24_MEMORY ISR(INT0_vect)
+NRF24_MEMORY ISR(IRQ_HANDLER)
 {
 		GIFR = (1<<INTF0);
 		_radio_instance.irq_triggered++;
