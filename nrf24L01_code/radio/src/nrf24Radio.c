@@ -728,20 +728,21 @@ radio_error_code nrfRadio_Main() {
 	return RADIO_ERR_OK;
 }
 
-NRF24_MEMORY void isr_routine(void)
-{
-	GIFR = (1<<INTF0);
-	_radio_instance.irq_triggered++;
-	CSN_LOW();
-	_radio_instance.irq_status = SPI_Write_Byte(NOP);
-	CSN_HIGH();
-		
-	uint8_t value = 0;
-	// clear the interrupt flags.
-	//get_register(STATUS, &value, 1);
-	value = (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
 
-	set_register(STATUS, &value, 1);
+NRF24_MEMORY ISR(INT0_vect)
+{
+		GIFR = (1<<INTF0);
+		_radio_instance.irq_triggered++;
+		CSN_LOW();
+		_radio_instance.irq_status = SPI_Write_Byte(NOP);
+		CSN_HIGH();
+		
+		uint8_t value = 0;
+		// clear the interrupt flags.
+		//get_register(STATUS, &value, 1);
+		value = (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
+
+		set_register(STATUS, &value, 1);
 }
 
 fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
@@ -759,6 +760,5 @@ fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
 	(fptr_t)nrfRadio_ChangePower,
 	(fptr_t)nrfRadio_SetTxCallback,
 	(fptr_t)nrfRadio_SetRxCallback,
-	(fptr_t)nrfRadio_LoadAckPayload,
-	(fptr_t)isr_routine
+	(fptr_t)nrfRadio_LoadAckPayload
 };
