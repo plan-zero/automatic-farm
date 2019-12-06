@@ -30,6 +30,7 @@
 #define INTERRUPT_PIN	PIND2
 #define IRQ_EN			INT0
 #define IRQ_EDGE		ISC01 //rising edge
+#define IRQ_HANDLER		INT0_vect
 
 
 // Definitions for selecting and enabling the radio
