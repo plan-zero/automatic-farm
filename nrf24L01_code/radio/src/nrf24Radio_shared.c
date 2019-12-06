@@ -26,9 +26,3 @@ radio_error_code (* const __flash *fptr_nrfRadio_ChangePower)(radio_rf_power) = 
 radio_error_code (* const __flash *fptr_nrfRadio_SetTxCallback)(void (*)(radio_tx_status)) = (radio_error_code(* const __flash *)(void (*)(radio_tx_status)))(NRF_LIB_HOOKS_BASE_ADDR + 24);
 radio_error_code (* const __flash *fptr_nrfRadio_SetRxCallback)(void (*)(uint8_t, uint8_t *, uint8_t)) = (radio_error_code(* const __flash *)(void (*)(uint8_t, uint8_t *, uint8_t)))(NRF_LIB_HOOKS_BASE_ADDR + 26);
 radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pipe, uint8_t*, uint8_t) = (radio_error_code(* const __flash *)(radio_pipe, uint8_t*, uint8_t))(NRF_LIB_HOOKS_BASE_ADDR + 28);
-void (* const __flash *fptr_isr_routine)(void) = (void(* const __flash *)(void))NRF_LIB_HOOKS_BASE_ADDR + 30;
-
-ISR(IRQ_HANDLER)
-{
-	(*fptr_isr_routine)();
-}
