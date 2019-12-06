@@ -111,12 +111,10 @@
     <ListValues>
       <Value>libm</Value>
       <Value>libuart</Value>
-      <Value>libradio</Value>
     </ListValues>
   </avrgcc.linker.libraries.Libraries>
   <avrgcc.linker.libraries.LibrarySearchPaths>
     <ListValues>
-      <Value>../../radio/Debug</Value>
       <Value>../../uart/Debug</Value>
     </ListValues>
   </avrgcc.linker.libraries.LibrarySearchPaths>
@@ -132,6 +130,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="nrf24Radio_shared.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
