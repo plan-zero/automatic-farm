@@ -734,15 +734,21 @@ NRF24_MEMORY ISR(IRQ_HANDLER)
 		GIFR = (1<<INTF0);
 		_radio_instance.irq_triggered++;
 		CSN_LOW();
-		_radio_instance.irq_status = SPI_Write_Byte(NOP);
+		//load status
+		SPI_LOAD(NOP);
+		SPI_WAIT();
+		_radio_instance.irq_status = SPI_DATA;
 		CSN_HIGH();
 		
-		uint8_t value = 0;
-		// clear the interrupt flags.
-		//get_register(STATUS, &value, 1);
-		value = (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
 
-		set_register(STATUS, &value, 1);
+		CSN_LOW();
+		//clear interrupt
+		SPI_LOAD(W_REGISTER | (REGISTER_MASK & STATUS));
+		SPI_WAIT();
+		SPI_LOAD( (uint8_t)(_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT)) );
+		SPI_WAIT();
+		
+		CSN_HIGH();
 }
 
 fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
