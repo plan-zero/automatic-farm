@@ -19,7 +19,7 @@
 #define SPI_SS PINB4	// SS pin (Slave Select)
 
 // wait for an SPI read/write operation to complete
-#define SPI_WAIT()              while ((SPSR & _BV(SPIF)) == 0);
+
 
 void SPI_Init()
 {
