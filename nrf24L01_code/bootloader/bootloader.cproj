@@ -129,7 +129,7 @@
         <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
       </AvrGcc>
     </ToolchainSettings>
-    <PostBuildEvent>$(MSBuildProjectDirectory)\..\postbuild_scripts\cat_img.sh</PostBuildEvent>
+    <PostBuildEvent>$(MSBuildProjectDirectory)\..\postbuild_scripts\create_firmware_img.sh</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GenericLib.h">
