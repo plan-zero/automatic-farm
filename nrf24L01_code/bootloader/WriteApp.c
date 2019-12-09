@@ -163,7 +163,7 @@ void startFlash(uint8_t * rx_address)
 		{
 			// Clear response
 			memset(ackResponse, 0x00, RESPONSE_SIZE);
-			ackResponse[1] = 0;
+			ackResponse[1] = '0';
 			if ((rxData.command == COMM_NO_COMMAND) || (rxData.command == COMM_GET_STATE))
 			{
 				// I love goats
@@ -246,7 +246,14 @@ void startFlash(uint8_t * rx_address)
 					}
 					case BOOTLOADER_CHECK_CKS:
 					{
+
+
 						bootloader_state = BOOTLOADER_FLASH_END;
+
+						break;
+					}
+					case BOOTLOADER_FLASH_END:
+					{
 						uint8_t dummy = 0;
 						cli();
 						eeprom_write_block ((void*)&dummy, (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
