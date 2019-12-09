@@ -45,7 +45,10 @@ fi
 done < bootloader.hex
 
 echo Create firmware image...
-cat $OUT_PATH/nrf24_bootloader.hex $OUT_PATH/nrf24_radio.hex > $OUT_PATH/nrf24_firmware.hex
+cat $OUT_PATH/nrf24_radio.hex $OUT_PATH/nrf24_bootloader.hex > $OUT_PATH/nrf24_firmware.hex
+
+echo create E2P file...
+cp ./../m16.hex $OUT_PATH/nrf24_firmware_e2p.hex
 
 read -p "Press any key to exit..."
 exit 0
