@@ -414,6 +414,7 @@ NRF24_MEMORY radio_error_code nrfRadio_ChangePower(radio_rf_power power);
 NRF24_MEMORY radio_error_code nrfRadio_SetTxCallback(void (*callback)(radio_tx_status));
 NRF24_MEMORY radio_error_code nrfRadio_SetRxCallback(void (*callback)(uint8_t, uint8_t *, uint8_t));
 NRF24_MEMORY radio_error_code nrfRadio_LoadAckPayload(radio_pipe pipe, uint8_t * payload, uint8_t payload_length);
+NRF24_MEMORY void isr_routine(void);
 
 typedef void(*fptr_t)(void);
 

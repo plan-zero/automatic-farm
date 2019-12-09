@@ -9,3 +9,4 @@
 *.lss
 nrf24L01_code/*/Debug/
 .atsuo
+nrf24L01_code/out/*
