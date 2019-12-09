@@ -48,3 +48,4 @@ echo Create firmware image...
 cat $OUT_PATH/nrf24_bootloader.hex $OUT_PATH/nrf24_radio.hex > $OUT_PATH/nrf24_firmware.hex
 
 read -p "Press any key to exit..."
+exit 0
