@@ -7,6 +7,8 @@
 #include "WriteApp.h"
 #include "radio_fptr.h"
 #include "GenericLib.h"
+#include <util/crc16.h>
+#include <avr/pgmspace.h>
 
 
 #define BUFFER_LENGTH				((uint8_t) 32)
@@ -108,8 +110,6 @@ void initNrf(uint8_t * rx_address)
 	__nrfRadio_PowerUp();
 	__nrfRadio_ListeningMode();
 }
-
-
 
 // Bootloader flash
 void boot_program_page (uint32_t page, uint8_t *buf)
@@ -247,8 +247,15 @@ void startFlash(uint8_t * rx_address)
 					}
 					case BOOTLOADER_CHECK_CKS:
 					{
-
-
+						uint8_t flash_byte = 0;
+						uint16_t crc = 0;
+						//read application byte by byte
+						for(uint32_t addr = 0; addr < APP_ADDR_START; addr < APP_ADDR_END)
+						{
+							flash_byte = pgm_read_byte(addr);
+							crc = _crc16_update(crc, flash_byte);
+						}
+						
 						bootloader_state = BOOTLOADER_FLASH_END;
 
 						break;
