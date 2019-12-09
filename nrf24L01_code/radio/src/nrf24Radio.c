@@ -32,6 +32,7 @@
 #define IRQ_EDGE		ISC01 //rising edge
 #define IRQ_HANDLER		INT0_vect
 
+
 // Definitions for selecting and enabling the radio
 #define CSN_HIGH()	CSN_PORT |=  _BV(CSN_PIN);
 #define CSN_LOW()	CSN_PORT &= ~_BV(CSN_PIN);
@@ -47,26 +48,31 @@ volatile uint8_t irq_status = 0;
 void (*tx_callback)(radio_tx_status) = NULL;
 void (*rx_callback)(uint8_t, uint8_t*, uint8_t) = NULL;*/
 
-//the instance that is used to store the radio details (states, pipes configuration and so on)
-radio_context _radio_instance = {
-	RADIO_STARTUP,
-	5, //address length
-	0, //payload length, if zero then is used dynamic payload
-	{ 0xe7, 0xe7, 0xe7, 0xe7, 0xe7 }, //default TX address
-	{ 0xe7, 0xe7, 0xe7, 0xe7, 0xe7 }, //default pipe 0 RX address used for ACK feature
-	{ 0xe7, 0xe7, 0xe7, 0xe7, 0xe7 }, //default pipe 1
-	{ 0xc3 }, //default pipe 2 RX
-	{ 0xc4 }, //default pipe 3 RX
-	{ 0xc5 }, //default pipe 4 RX
-	{ 0xc6 }, //default pipe 5 RX
-	{32, 0, 0, 0, 0, 0},
-	0xFFFF, //default TX history
-	0, //IRQ flag
-	0, //IRQ status
-	NULL, //tx_callback
-	NULL //rx_callback
-};
-
+//the instance that is used to store the radio details (states, pipes configuration and so on)  
+radio_context _radio_instance __attribute__((section(".radio_data")));
+NRF24_MEMORY static void init_radio_context()
+{
+	_radio_instance.currentState = RADIO_STARTUP;
+	_radio_instance.address_length = 5;
+	_radio_instance.dynamic_payload = 0;
+	for(uint8_t i = 0; i < 5; i ++)
+	{
+		_radio_instance.txAddress[i] = 0xe7;
+		_radio_instance.rxAddressP0[i] = 0xe7;
+		_radio_instance.rxAddressP1[i] = 0xe7;
+	}
+	_radio_instance.rx_pipe_widths[0] = 32;
+	for(uint8_t i = 1; i < 5; i ++)
+	{
+		_radio_instance.rx_pipe_widths[i] = 0;
+	}
+	_radio_instance.txHistory = 0xFFFF;
+	_radio_instance.irq_status = 0;
+	_radio_instance.irq_triggered = 0;
+	_radio_instance.rx_callback = NULL;
+	_radio_instance.tx_callback = NULL;
+	
+}
 
 
 NRF24_MEMORY static uint8_t set_register(radio_register_t reg, uint8_t* value, uint8_t len)
@@ -179,13 +185,16 @@ radio_error_code nrfRadio_Init(radio_config cfg)
 	radio_error_code err = RADIO_ERR_OK;
 	uint8_t value;
 	
+	//initialize the RAM section where the _radio_instance is placed with default values
+	init_radio_context();
+	
 	//set the MCU registers
 	CE_DDR |= _BV(CE_PIN);
 	CSN_DDR |= _BV(CSN_PIN);
 	INTERRUPT_DDR &= ~_BV(INTERRUPT_PIN);
 	PORTD |= _BV(INTERRUPT_PIN);
 		
-	//move the IRQ table to the bootloader starting section, which is different than the applicaiton usage (where it starts from 0x0)
+	//move the IRQ table to the bootloader starting section, which is different than the application usage (where it starts from 0x0)
 	if(RADIO_BOOTLOADER == cfg.usecase) {
 		GICR |= (1 << IVCE);
 		GICR = 0x2;
@@ -722,36 +731,25 @@ radio_error_code nrfRadio_Main() {
 
 NRF24_MEMORY ISR(IRQ_HANDLER)
 {
-	GIFR = (1<<INTF0);
-	_radio_instance.irq_triggered++;
-	CSN_LOW();
-	_radio_instance.irq_status = SPI_Write_Byte(NOP);
-	CSN_HIGH();
-	
-	uint8_t value = 0;
-	// clear the interrupt flags.
-	//get_register(STATUS, &value, 1);
-	value = (_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT));
+		GIFR = (1<<INTF0);
+		_radio_instance.irq_triggered++;
+		CSN_LOW();
+		//load status
+		SPI_LOAD(NOP);
+		SPI_WAIT();
+		_radio_instance.irq_status = SPI_DATA;
+		CSN_HIGH();
+		
 
-	set_register(STATUS, &value, 1);
+		CSN_LOW();
+		//clear interrupt
+		SPI_LOAD(W_REGISTER | (REGISTER_MASK & STATUS));
+		SPI_WAIT();
+		SPI_LOAD( (uint8_t)(_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT)) );
+		SPI_WAIT();
+		
+		CSN_HIGH();
 }
-
-#define NRF_LIB_HOOKS_BASE_ADDR	0x2800
-radio_error_code (* const __flash *fptr_nrfRadio_Main)(void) = (radio_error_code(* const __flash *)(void))NRF_LIB_HOOKS_BASE_ADDR;
-radio_error_code (* const __flash *fptr_nrfRadio_TransmitMode)(void) = (radio_error_code(* const __flash *)(void))(NRF_LIB_HOOKS_BASE_ADDR + 2);
-radio_error_code (* const __flash *fptr_nrfRadio_Init)(radio_config) = (radio_error_code(* const __flash *)(radio_config))(NRF_LIB_HOOKS_BASE_ADDR + 4);
-radio_error_code (* const __flash *fptr_nrfRadio_PowerDown)(void) = (radio_error_code(* const __flash *)(void))(NRF_LIB_HOOKS_BASE_ADDR + 6);
-radio_error_code (* const __flash *fptr_nrfRadio_GetInfo)(radio_registers*) = (radio_error_code(* const __flash *)(radio_registers*))(NRF_LIB_HOOKS_BASE_ADDR + 8);
-radio_error_code (* const __flash *fptr_nrfRadio_PipeConfig)(pipe_config) = (radio_error_code(* const __flash *)(pipe_config))(NRF_LIB_HOOKS_BASE_ADDR + 10);
-radio_error_code (* const __flash *fptr_nrfRadio_LoadMessages)(uint8_t*, uint8_t) = (radio_error_code(* const __flash *)(uint8_t*, uint8_t))(NRF_LIB_HOOKS_BASE_ADDR + 12);
-radio_tx_status (* const __flash *fptr_nrfRadio_Transmit)(uint8_t*, radio_transmision_type) = (radio_tx_status(* const __flash *)(uint8_t*, radio_transmision_type))(NRF_LIB_HOOKS_BASE_ADDR + 14);
-radio_error_code (* const __flash *fptr_nrfRadio_ListeningMode)(void) = (radio_error_code(* const __flash *)(void))(NRF_LIB_HOOKS_BASE_ADDR + 16);
-radio_error_code (* const __flash *fptr_nrfRadio_PowerUp)(void) = (radio_error_code(* const __flash *)(void))(NRF_LIB_HOOKS_BASE_ADDR + 18);
-radio_error_code (* const __flash *fptr_nrfRadio_ChangeDataRate)(radio_data_rate) = (radio_error_code(* const __flash *)(radio_data_rate))(NRF_LIB_HOOKS_BASE_ADDR + 20);
-radio_error_code (* const __flash *fptr_nrfRadio_ChangePower)(radio_rf_power) = (radio_error_code(* const __flash *)(radio_rf_power))(NRF_LIB_HOOKS_BASE_ADDR + 22);
-radio_error_code (* const __flash *fptr_nrfRadio_SetTxCallback)(void (*)(radio_tx_status)) = (radio_error_code(* const __flash *)(void (*)(radio_tx_status)))(NRF_LIB_HOOKS_BASE_ADDR + 24);
-radio_error_code (* const __flash *fptr_nrfRadio_SetRxCallback)(void (*)(uint8_t, uint8_t *, uint8_t)) = (radio_error_code(* const __flash *)(void (*)(uint8_t, uint8_t *, uint8_t)))(NRF_LIB_HOOKS_BASE_ADDR + 26);
-radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_pipe, uint8_t*, uint8_t) = (radio_error_code(* const __flash *)(radio_pipe, uint8_t*, uint8_t))(NRF_LIB_HOOKS_BASE_ADDR + 28);
 
 fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
 	(fptr_t)nrfRadio_Main,

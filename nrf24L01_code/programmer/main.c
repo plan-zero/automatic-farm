@@ -183,6 +183,7 @@ int main(void)
 	
     while (1) 
     {
+		__nrfRadio_Main();
 		uart_data_len = uart_rx_flush(uart_data, &uart_rx_err);
 		if(UART_RX_ERR != uart_data_len)
 			process_uart_data(uart_data, uart_data_len);

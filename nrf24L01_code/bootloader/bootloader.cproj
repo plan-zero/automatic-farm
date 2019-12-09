@@ -120,7 +120,7 @@
             <Value>../../uart/Debug</Value>
           </ListValues>
         </avrgcc.linker.libraries.LibrarySearchPaths>
-        <avrgcc.linker.miscellaneous.LinkerFlags>-Wl,-section-start=.text=0x3800 -Wl,--section-start=.nrf24=0x2840 -Wl,--section-start=.radio_fptrs=0x2800  -Wl,--undefined=ptrs</avrgcc.linker.miscellaneous.LinkerFlags>
+        <avrgcc.linker.miscellaneous.LinkerFlags>-Wl,-section-start=.text=0x3800 -Wl,--section-start=.nrf24=0x2840 -Wl,--section-start=.radio_fptrs=0x2800  -Wl,--undefined=ptrs -Wl,--section-start=.radio_data=0x800060 -Wl,--section-start=.data=0x800090</avrgcc.linker.miscellaneous.LinkerFlags>
         <avrgcc.assembler.general.IncludePaths>
           <ListValues>
             <Value>%24(PackRepoDir)\atmel\ATmega_DFP\1.2.209\include</Value>
@@ -129,6 +129,7 @@
         <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
       </AvrGcc>
     </ToolchainSettings>
+    <PostBuildEvent>$(MSBuildProjectDirectory)\..\postbuild_scripts\create_firmware_img.sh</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="GenericLib.h">
