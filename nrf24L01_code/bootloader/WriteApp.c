@@ -27,6 +27,7 @@
 #define BOOTLOADER_FLASH_DATA		((uint8_t) 'F')
 #define BOOTLOADER_FLASH_PAGE_DONE	((uint8_t) 'G')
 #define BOOTLOADER_CHECK_CKS		((uint8_t) 'H')
+#define BOOTLOADER_WAIT_FLASH_END	((uint8_t) 'K')
 
 #define BOOTLOADER_FLASH_END		((uint8_t) 'K')
 #define BOOTLOADER_FLASH_ERROR		((uint8_t) 'L')
@@ -252,18 +253,27 @@ void startFlash(uint8_t * rx_address)
 
 						break;
 					}
-					case BOOTLOADER_FLASH_END:
+					case BOOTLOADER_WAIT_FLASH_END:
 					{
-						uint8_t dummy = 0;
-						cli();
-						eeprom_write_block ((void*)&dummy, (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
-						sei();
+						if (rxData.command == COMM_FINISH_FLASH)
+						{
+							uint8_t dummy[5] = {0};
+							cli();
+							eeprom_write_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
+							eeprom_write_block ((void*)&dummy, (void*)PROGRAMMER_ADDR_ADDRESS, PROGRAMMER_ADDR_LENGTH);
+							sei();
+						}
+						else
+						{
+							bootloader_state = BOOTLOADER_FLASH_ERROR;
+							ackResponse[1] = '5';
+						}
 						break;
 					}
 					default:
 					{
 						bootloader_state = BOOTLOADER_FLASH_ERROR;
-						ackResponse[1] = '5';
+						ackResponse[1] = '6';
 					}
 				}
 			}
