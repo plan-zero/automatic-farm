@@ -128,7 +128,7 @@ def send_command(command):
 			while countRetries < noOfRetries:
 				
 				response = ser.read()
-				time.sleep(0.5)  #give the serial port sometime to receive the data
+				time.sleep(1)  #give the serial port sometime to receive the data
 				response += ser.read(ser.in_waiting)
 				response = response.decode("utf-8")
 				if response != "":
@@ -203,11 +203,14 @@ def send_Stop_Write_Page():
 
 def send_HEX_Data():
 	counterLinesOfPage = 0
-	for line in hexFileData:
-		command = CMD_PREFIX + CMD_16BIT_OF_PAGE + line 
+	for data in hexFileData:
+		#data = ''.join([chr(int(''.join(c), 16)) for c in zip(data[0::2],data[1::2])])
+		data = '1234567891234567'
+		command = CMD_PREFIX + CMD_16BIT_OF_PAGE + data
 		resp = send_command(command)
 
 		if "<EXECUTE_CMD:0x44>" not in resp and "<SEND_TX:ACK>" not in resp:
+			print("no more ack: " + resp)
 			return 1
 		
 		counterLinesOfPage += 1
