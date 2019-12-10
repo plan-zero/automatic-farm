@@ -4,7 +4,7 @@ import sys
 
 comPorts = []
 hexFileData = []
-
+ser = serial.Serial()
 
 HEX_LINE_LENGHT = 16  # Length in bytes
 
@@ -35,7 +35,6 @@ def connect_to_com_port(comPort):
 	#    2. 0: non-blocking mode, return immediately
 	#    3. x, x is bigger than 0, float allowed, timeout block call
 
-	ser = serial.Serial()
 	ser.port = "COM5"
 	#ser.port = comPort
 	ser.baudrate = 9600
@@ -52,41 +51,18 @@ def connect_to_com_port(comPort):
 
 	try: 
 		ser.open()
+		print(f"Serial connection with {ser.port} is open")
 	except:
-		print ("Error open serial port")
-		exit()
+		print (f"Error open {ser.port} serial port")
 
 	if ser.isOpen():
 
 		try:
 			ser.flushInput() #flush input buffer, discarding all its contents
 			ser.flushOutput()#flush output buffer, aborting current output 
-					 #and discard all that is in buffer
-
-			#write data
-			ser.write(str.encode('AT+CSQ'))
-			print("write data: AT+CSQ")
-
-			time.sleep(0.5)  #give the serial port sometime to receive the data
-
-			numOfLines = 0
-
-			while True:
-				print("trace2")
-				response = ser.readline()
-				print("read data: " + response.decode("utf-8"))
-
-				numOfLines = numOfLines + 1
-
-				if (numOfLines >= 5):
-					break
-
-			ser.close()
+			print("Serial buffers flushed")
 		except Exception as e:
 			print ("error communicating..." + e)
-
-	else:
-		print ("cannot open serial port ")
 
 
 def read_flash_data(hexFilePath):
@@ -126,28 +102,64 @@ def read_flash_data(hexFilePath):
 		print(line)
 		
 def send_command(command):
-	""
-	# need to implement this
+	if ser.isOpen():
+
+		try:
+			#write data
+			ser.write(str.encode(command))
+			print(f"write data: {command}")
+
+			noOfRetries = 5
+			countRetries = 0
+
+			while countRetries < noOfRetries:
+				time.sleep(0.1)  #give the serial port sometime to receive the data
+				response = ser.readline()
+				response = response.decode("utf-8")
+				if response != "":
+					return response
+				countRetries += 1
+			else:
+				print("no response")
+
+		except Exception as e:
+			print ("error communicating..." + e)
+
+	else:
+		print (f"cannot open {ser.port} serial port")
+	
+	return "NRC"
 	
 		
 		
 def send_TX_address():
 	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT + CMD_CRLF
-	send_command(command)	
-	# async wait
+	resp = send_command(command)	
 	
-	return 0
+	if (resp == "<ACK>"):
+		print("OK")
+		return 0
+
+	return 1
 		
 def flash_data(state):
 	read_flash_data("")
-	'''
-	while (state != 0):
+
+	while (state != 99):
 		if (state == 1):		# set TX address
 			retValue = send_TX_address()
-			if (retValue != 0):
-				state = 0
-				break
-		'''
+			if (retValue == 0):
+				state = 99
+			else:
+				state = 99
+
+		if (state == 2):		# set TX address
+			retValue = send_TX_address()
+			if (retValue == 0):
+				state = 99
+			else:
+				state = 99
+
 
 def main():	
 
@@ -181,7 +193,7 @@ def main():
 			flash_data(1)
 			
 		if (option == "4"):
-			break
+			exit()
 
 			
 
