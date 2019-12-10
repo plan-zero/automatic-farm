@@ -9,7 +9,7 @@ ser = serial.Serial()
 HEX_LINE_LENGHT = 16  # Length in bytes
 
 CMD_PREFIX = "<CMD>"
-CMD_CRLF = "\r\n"
+CMD_CRLF = b"\x0d"
 CMD_TX_ADDR_DEFAULT = "A05ABCDE"
 CMD_INIT_NRF = "C00"
 CMD_START_WRITE = "D01w"
@@ -37,7 +37,7 @@ def connect_to_com_port(comPort):
 
 	ser.port = "COM5"
 	#ser.port = comPort
-	ser.baudrate = 9600
+	ser.baudrate = 250000
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 	ser.parity = serial.PARITY_NONE #set parity check: no parity
 	ser.stopbits = serial.STOPBITS_ONE #number of stop bits
@@ -136,8 +136,7 @@ def send_TX_address():
 	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT + CMD_CRLF
 	resp = send_command(command)	
 	
-	if (resp == "<ACK>"):
-		print("OK")
+	if "<SET_TX:" in resp and "<EXECUTE_CMD:0x41>" in resp:
 		return 0
 
 	return 1
