@@ -17,6 +17,7 @@ CMD_16BIT_OF_PAGE = "D17e"
 CMD_R = "D01r"
 CMD_WRITE_NEXT_PAGE = "D01t"
 CMD_STOP_WRITE_PAGE = "D01y"
+CMD_STOP_FLASH_CONFIRM = "D01u"
 
 
 
@@ -212,6 +213,19 @@ def send_Stop_Write_Page():
 
 	return 1
 
+
+
+def send_Stop_Flash_Confirm():
+	command = CMD_PREFIX + CMD_STOP_FLASH_CONFIRM 
+	resp = send_command(command)	
+	
+	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+
+	return 1
+
+
+
 def send_HEX_Data():
 	counterLinesOfPage = 0
 	for data in hexFileData:
@@ -270,6 +284,13 @@ def flash_data(state):
 			retValue = send_HEX_Data()
 			if (retValue == 0):
 				state = 5
+			else:
+				state = 99
+
+		if (state == 5):		# stop flash
+			retValue = send_Stop_Flash_Confirm()
+			if (retValue == 0):
+				state = 99
 			else:
 				state = 99
 
