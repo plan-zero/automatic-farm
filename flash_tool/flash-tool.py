@@ -9,7 +9,7 @@ ser = serial.Serial()
 HEX_LINE_LENGHT = 16  # Length in bytes
 
 CMD_PREFIX = "<CMD>"
-CMD_CRLF = "\r\n"
+CMD_CRLF = "\r"
 CMD_TX_ADDR_DEFAULT = "A05ABCDE"
 CMD_INIT_NRF = "C00"
 CMD_START_WRITE = "D01w"
@@ -37,9 +37,9 @@ def connect_to_com_port(comPort):
 	#    2. 0: non-blocking mode, return immediately
 	#    3. x, x is bigger than 0, float allowed, timeout block call
 
-	ser.port = "COM5"
+	ser.port = "COM12"
 	#ser.port = comPort
-	ser.baudrate = 9600
+	ser.baudrate = 250000
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 	ser.parity = serial.PARITY_NONE #set parity check: no parity
 	ser.stopbits = serial.STOPBITS_ONE #number of stop bits
@@ -119,6 +119,7 @@ def send_command(command):
 		try:
 			#write data
 			ser.write(str.encode(command))
+			ser.write('\r'.encode())
 			print(f"write data: {command}")
 
 			noOfRetries = 5
@@ -127,7 +128,7 @@ def send_command(command):
 			while countRetries < noOfRetries:
 				
 				response = ser.read()
-				time.sleep(0.1)  #give the serial port sometime to receive the data
+				time.sleep(0.5)  #give the serial port sometime to receive the data
 				response += ser.read(ser.in_waiting)
 				response = response.decode("utf-8")
 				if response != "":
@@ -138,7 +139,7 @@ def send_command(command):
 				print("no response")
 
 		except Exception as e:
-			print ("error communicating..." + e)
+			print ("error communicating..." + str(e))
 
 	else:
 		print (f"cannot open {ser.port} serial port")
@@ -148,7 +149,7 @@ def send_command(command):
 		
 		
 def send_TX_Address():
-	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT + CMD_CRLF
+	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT
 	resp = send_command(command)	
 	
 	if "<SET_TX:" in resp and "<EXECUTE_CMD:0x41>" in resp:
@@ -159,7 +160,7 @@ def send_TX_Address():
 
 
 def send_Init_NRF():
-	command = CMD_PREFIX + CMD_INIT_NRF + CMD_CRLF
+	command = CMD_PREFIX + CMD_INIT_NRF 
 	resp = send_command(command)	
 	
 	if "<EXECUTE_CMD:0x43>" in resp and "<NRF_CONFIG:STARTING>" in resp and "<NRF_CONFIG:DONE>" in resp:
@@ -170,7 +171,7 @@ def send_Init_NRF():
 
 
 def send_Start_Write():
-	command = CMD_PREFIX + CMD_START_WRITE + CMD_CRLF
+	command = CMD_PREFIX + CMD_START_WRITE 
 	resp = send_command(command)	
 	
 	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
@@ -181,7 +182,7 @@ def send_Start_Write():
 
 
 def send_Write_Next_Page():
-	command = CMD_PREFIX + CMD_WRITE_NEXT_PAGE + CMD_CRLF
+	command = CMD_PREFIX + CMD_WRITE_NEXT_PAGE 
 	resp = send_command(command)	
 	
 	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
@@ -192,7 +193,7 @@ def send_Write_Next_Page():
 
 
 def send_Stop_Write_Page():
-	command = CMD_PREFIX + CMD_STOP_WRITE_PAGE + CMD_CRLF
+	command = CMD_PREFIX + CMD_STOP_WRITE_PAGE 
 	resp = send_command(command)	
 	
 	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
@@ -203,7 +204,7 @@ def send_Stop_Write_Page():
 def send_HEX_Data():
 	counterLinesOfPage = 0
 	for line in hexFileData:
-		command = CMD_PREFIX + CMD_16BIT_OF_PAGE + line + CMD_CRLF
+		command = CMD_PREFIX + CMD_16BIT_OF_PAGE + line 
 		resp = send_command(command)
 
 		if "<EXECUTE_CMD:0x44>" not in resp and "<SEND_TX:ACK>" not in resp:
