@@ -185,7 +185,18 @@ def send_Write_Next_Page():
 	command = CMD_PREFIX + CMD_WRITE_NEXT_PAGE 
 	resp = send_command(command)	
 	
-	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
+	if "<EXECUTE_CMD:0x44>" in resp and "<RX_DATA:G0>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+
+	return 1
+
+
+
+def send_Write_In_Flash():
+	command = CMD_PREFIX + CMD_R 
+	resp = send_command(command)	
+	
+	if "<EXECUTE_CMD:0x44>" in resp and "<RX_DATA:F8>" in resp and "<SEND_TX:ACK>" in resp:
 		return 0
 
 	return 1
@@ -196,7 +207,7 @@ def send_Stop_Write_Page():
 	command = CMD_PREFIX + CMD_STOP_WRITE_PAGE 
 	resp = send_command(command)	
 	
-	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
+	if "<EXECUTE_CMD:0x44>" in resp and "<RX_DATA:G1>" in resp and "<SEND_TX:ACK>" in resp:
 		return 0
 
 	return 1
@@ -216,10 +227,13 @@ def send_HEX_Data():
 		counterLinesOfPage += 1
 
 		if counterLinesOfPage % 8 == 0:
-			resp = send_Write_Next_Page()
-			counterLinesOfPage = 0
+			resp = send_Write_In_Flash()
 			if resp != 0:
 				return 1
+			if (counterLinesOfPage != len(hexFileData)):	
+				resp = send_Write_Next_Page()
+				if resp != 0:
+					return 1
 	
 	resp = send_Stop_Write_Page()
 	if resp == 0:
