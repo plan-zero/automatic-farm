@@ -142,6 +142,19 @@ int main(int argc, char *argv[])
 					{
 						line_data[byteidx++] = buffer[i];
 					}
+					else if( linechar_idx == 8) // take the address
+					{
+						char addr[5] = {0};
+						for(int k = 0; k < 4; k++)
+						{
+							addr[k] = buffer[ (i - 5) + k ];
+						}
+						addr[4] = '\0';
+						if(verbose)
+							printf("<%s>", addr);
+						if(write_file)
+							fprintf(outputfile, "<%s>", addr);
+					}
 					
 					//end of line (in windows this is reading as 10 LF
 					if(buffer[i] == 10)
