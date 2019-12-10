@@ -3,6 +3,21 @@ import serial, time
 import sys
 
 comPorts = []
+hexFileData = []
+
+
+HEX_LINE_LENGHT = 16  # Length in bytes
+
+CMD_PREFIX = "<CMD>"
+CMD_CRLF = "\r\n"
+CMD_TX_ADDR_DEFAULT = "A05ABCDE"
+CMD_INIT_NRF = "C00"
+CMD_START_WRITE = "D01w"
+CMD_16BIT_OF_PAGE = "D17e"
+CMD_R = "D01r"
+CMD_WRITE_NEXT_PAGE = "D01t"
+CMD_STOP_WRITE_PAGE = "D01y"
+
 
 def display_com_ports():
 	comlist = serial.tools.list_ports.comports()
@@ -10,7 +25,8 @@ def display_com_ports():
 	for element in comlist:
 		comPorts.append(element.device)
 	print("Available COM ports: " + str(comPorts))
-	
+
+
 def connect_to_com_port(comPort):
 	
 	#initialization and open the port
@@ -73,31 +89,62 @@ def connect_to_com_port(comPort):
 	else:
 		print ("cannot open serial port ")
 
-def flash_device(hexFilePath):
-	buffer = []
+
+def read_flash_data(hexFilePath):
 
 	with open("c:\\Users\\Teban\\Desktop\\programmer.hex",'rb') as f:
-	#	buff = f.read()
 		for line in f:
 			line = line[1:(len(line)-2)]
-			print(line)
-			buffer.append(line.decode("utf-8"))
+			hexFileData.append(line.decode("utf-8"))
+			
+	for line in hexFileData:
+		print(line)
 
-	myStr = []
-	for e in buffer:
-		line = 0
-		column = 0
-		sublist = []
-		while len(e) > 0:
-			sublist.append(int(('0x' + e[0:2]), 16))
-			e = e[2:len(e)]
-		myStr.append(sublist)
+	counterLine = 0
+	for line in hexFileData:
+		line = line[10:]
+		hexFileData[counterLine] = line
+		counterLine += 1
 		
-	for l in myStr:
-		hexList = []
-		for i in l:
-			hexList.append(hex(i))
-		print(hexList)
+	for line in hexFileData:
+		print(line)
+	
+	counterLine = 0
+	for line in hexFileData:
+		lineLenght = len(line)
+		if (HEX_LINE_LENGHT * 2 > lineLenght):
+			line = line + ("F" * (HEX_LINE_LENGHT * 2 - lineLenght))
+		if (hexFileData[counterLine] == ""):
+			hexFileData.remove("")
+		else:
+			hexFileData[counterLine] = line
+		counterLine += 1
+	
+	for line in hexFileData:
+		print(line)
+		
+def send_command(command):
+	""
+	# need to implement this
+	
+		
+		
+def send_TX_address():
+	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT + CMD_CRLF
+	send_command(command)	
+	# async wait
+	
+	return 0
+		
+def flash_data(state):
+	read_flash_data("")
+	
+	while (state != 0):
+		if (state == 1):		# set TX address
+			retValue = send_TX_address()
+			if (retValue != 0):
+				state = 0
+				break
 		
 
 def main():	
@@ -131,7 +178,7 @@ def main():
 			
 		if (option == "3"):
 			hexFilePath = ""
-			flash_device(hexFilePath)
+			flash_data(1)
 			
 		if (option == "4"):
 			break
