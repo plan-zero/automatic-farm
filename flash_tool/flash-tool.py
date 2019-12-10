@@ -21,7 +21,6 @@ CMD_STOP_WRITE_PAGE = "D01y"
 
 def display_com_ports():
 	comlist = serial.tools.list_ports.comports()
-	connected = []
 	for element in comlist:
 		comPorts.append(element.device)
 	print("Available COM ports: " + str(comPorts))
@@ -92,22 +91,25 @@ def connect_to_com_port(comPort):
 
 def read_flash_data(hexFilePath):
 
-	with open("c:\\Users\\Teban\\Desktop\\programmer.hex",'rb') as f:
+	with open("programmer.hex",'rb') as f:
 		for line in f:
 			line = line[1:(len(line)-2)]
 			hexFileData.append(line.decode("utf-8"))
 			
 	for line in hexFileData:
-		print(line)
+		pass
+		#print(line)
 
 	counterLine = 0
 	for line in hexFileData:
-		line = line[10:]
+		line = line[8:]
+		line = line[:-2]
 		hexFileData[counterLine] = line
 		counterLine += 1
 		
 	for line in hexFileData:
-		print(line)
+		pass
+		#print(line)
 	
 	counterLine = 0
 	for line in hexFileData:
@@ -138,14 +140,14 @@ def send_TX_address():
 		
 def flash_data(state):
 	read_flash_data("")
-	
+	'''
 	while (state != 0):
 		if (state == 1):		# set TX address
 			retValue = send_TX_address()
 			if (retValue != 0):
 				state = 0
 				break
-		
+		'''
 
 def main():	
 
@@ -168,7 +170,6 @@ def main():
 		option = input("Opt: ")
 		
 		if (option == "1"):
-			comPorts = []
 			display_com_ports()
 			
 		if (option == "2"):
@@ -177,7 +178,6 @@ def main():
 			connect_to_com_port(str(comSelect))
 			
 		if (option == "3"):
-			hexFilePath = ""
 			flash_data(1)
 			
 		if (option == "4"):
