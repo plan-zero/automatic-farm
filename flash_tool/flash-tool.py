@@ -9,7 +9,7 @@ ser = serial.Serial()
 HEX_LINE_LENGHT = 16  # Length in bytes
 
 CMD_PREFIX = "<CMD>"
-CMD_CRLF = b"\x0d"
+CMD_CRLF = "\r\n"
 CMD_TX_ADDR_DEFAULT = "A05ABCDE"
 CMD_INIT_NRF = "C00"
 CMD_START_WRITE = "D01w"
@@ -39,7 +39,7 @@ def connect_to_com_port(comPort):
 
 	ser.port = "COM5"
 	#ser.port = comPort
-	ser.baudrate = 250000
+	ser.baudrate = 9600
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 	ser.parity = serial.PARITY_NONE #set parity check: no parity
 	ser.stopbits = serial.STOPBITS_ONE #number of stop bits
@@ -54,8 +54,8 @@ def connect_to_com_port(comPort):
 	try: 
 		ser.open()
 		print(f"Serial connection with {ser.port} is open")
-	except:
-		print (f"Error open {ser.port} serial port")
+	except Exception as e:
+		print ("error communicating..." + e)
 
 	if ser.isOpen():
 
@@ -70,7 +70,7 @@ def connect_to_com_port(comPort):
 
 def read_flash_data(hexFilePath):
 
-	with open("programmer.hex",'rb') as f:
+	with open("blink_led.hex",'rb') as f:
 		for line in f:
 			line = line[1:(len(line)-2)]
 			hexFileData.append(line.decode("utf-8"))
@@ -258,7 +258,7 @@ def flash_data(state):
 
 def main():	
 
-	# TODO:
+	# TODO:4
 	# 	Option 2: Open COM port selected (not hardcoded)
 	#			  Store into a global variable the comm port
 	#	Option 3: Implement file to selecte
@@ -285,7 +285,7 @@ def main():
 			connect_to_com_port(str(comSelect))
 			
 		if (option == "3"):
-			flash_data(99)
+			flash_data(1)
 			
 		if (option == "4"):
 			exit()
