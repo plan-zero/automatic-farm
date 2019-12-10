@@ -113,10 +113,13 @@ def send_command(command):
 			countRetries = 0
 
 			while countRetries < noOfRetries:
+				
+				response = ser.read()
 				time.sleep(0.1)  #give the serial port sometime to receive the data
-				response = ser.readline()
+				response += ser.read(ser.in_waiting)
 				response = response.decode("utf-8")
 				if response != "":
+					print(str(response))
 					return response
 				countRetries += 1
 			else:
