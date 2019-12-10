@@ -19,11 +19,13 @@ CMD_WRITE_NEXT_PAGE = "D01t"
 CMD_STOP_WRITE_PAGE = "D01y"
 
 
+
 def display_com_ports():
 	comlist = serial.tools.list_ports.comports()
 	for element in comlist:
 		comPorts.append(element.device)
 	print("Available COM ports: " + str(comPorts))
+
 
 
 def connect_to_com_port(comPort):
@@ -65,6 +67,7 @@ def connect_to_com_port(comPort):
 			print ("error communicating..." + e)
 
 
+
 def read_flash_data(hexFilePath):
 
 	with open("programmer.hex",'rb') as f:
@@ -97,10 +100,19 @@ def read_flash_data(hexFilePath):
 		else:
 			hexFileData[counterLine] = line
 		counterLine += 1
-	
+
+	dummyLinesToAdd = len(hexFileData) % 8
+
+	# 8 lines into a page
+	# 16 bytes into a line
+	for index in range(8 - dummyLinesToAdd):
+		hexFileData.append("FF" * 16)		
+
 	for line in hexFileData:
 		print(line)
-		
+
+
+
 def send_command(command):
 	if ser.isOpen():
 
@@ -135,7 +147,7 @@ def send_command(command):
 	
 		
 		
-def send_TX_address():
+def send_TX_Address():
 	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT + CMD_CRLF
 	resp = send_command(command)	
 	
@@ -143,22 +155,103 @@ def send_TX_address():
 		return 0
 
 	return 1
+
+
+
+def send_Init_NRF():
+	command = CMD_PREFIX + CMD_INIT_NRF + CMD_CRLF
+	resp = send_command(command)	
+	
+	if "<EXECUTE_CMD:0x43>" in resp and "<NRF_CONFIG:STARTING>" in resp and "<NRF_CONFIG:DONE>" in resp:
+		return 0
+
+	return 1
+
+
+
+def send_Start_Write():
+	command = CMD_PREFIX + CMD_START_WRITE + CMD_CRLF
+	resp = send_command(command)	
+	
+	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+
+	return 1
+
+
+
+def send_Write_Next_Page():
+	command = CMD_PREFIX + CMD_WRITE_NEXT_PAGE + CMD_CRLF
+	resp = send_command(command)	
+	
+	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+
+	return 1
+
+
+
+def send_Stop_Write_Page():
+	command = CMD_PREFIX + CMD_STOP_WRITE_PAGE + CMD_CRLF
+	resp = send_command(command)	
+	
+	if "<EXECUTE_CMD:0x44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+
+	return 1
+
+def send_HEX_Data():
+	counterLinesOfPage = 0
+	for line in hexFileData:
+		command = CMD_PREFIX + CMD_16BIT_OF_PAGE + line + CMD_CRLF
+		resp = send_command(command)
+
+		if "<EXECUTE_CMD:0x44>" not in resp and "<SEND_TX:ACK>" not in resp:
+			return 1
+		
+		counterLinesOfPage += 1
+
+		if counterLinesOfPage % 8 == 0:
+			resp = send_Write_Next_Page()
+			counterLinesOfPage = 0
+			if resp != 0:
+				return 1
+	
+	resp = send_Stop_Write_Page()
+	if resp == 0:
+		return 0
+	
+	return 1
 		
 def flash_data(state):
 	read_flash_data("")
 
 	while (state != 99):
 		if (state == 1):		# set TX address
-			retValue = send_TX_address()
+			retValue = send_TX_Address()
 			if (retValue == 0):
-				state = 99
+				state = 2
 			else:
 				state = 99
 
-		if (state == 2):		# set TX address
-			retValue = send_TX_address()
+		if (state == 2):		# init NRF
+			retValue = send_Init_NRF()
 			if (retValue == 0):
+				state = 3
+			else:
 				state = 99
+
+		if (state == 3):		# start write command
+			retValue = send_Start_Write()
+			if (retValue == 0):
+				state = 4
+			else:
+				state = 99
+
+		if (state == 4):		# write hex file
+			retValue = send_HEX_Data()
+			if (retValue == 0):
+				state = 5
 			else:
 				state = 99
 
@@ -192,7 +285,7 @@ def main():
 			connect_to_com_port(str(comSelect))
 			
 		if (option == "3"):
-			flash_data(1)
+			flash_data(99)
 			
 		if (option == "4"):
 			exit()
@@ -200,4 +293,4 @@ def main():
 			
 
 if __name__== "__main__":
-  main()
+  	main()
