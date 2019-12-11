@@ -29,7 +29,7 @@ uint8_t uart_data[UART_RX_MAX];
 #define UART_END_2 9
 
 #define MAX_ADDR	5
-#define MAX_CMD_LEN 33
+#define MAX_CMD_LEN 34
 uint8_t command_type;
 uint8_t command_len;
 uint8_t cmd[MAX_CMD_LEN];
@@ -289,7 +289,7 @@ int main(void)
 				case CMD_SEND_TX:
 					uart_printRegister(command_type);
 					uart_printString(">",1);
-					if(command_len <= UART_RX_MAX)
+					if(command_len < MAX_CMD_LEN)
 					{
 						uart_printString("<SEND_TX:",0);
 						uint8_t payload[33] = {0};
@@ -320,14 +320,14 @@ int main(void)
 					uart_printRegister(command_type);
 					uart_printString(">",1);
 					
-					if(command_len <= UART_RX_MAX)
+					if(command_len < MAX_CMD_LEN)
 					{
 						uint8_t payload_count = 0;
 						uint8_t payload[17] = {0};
 						uint8_t nibble = 0;
 						uint8_t nibble_count = 0;
 
-						payload[0] = cmd[0];
+						payload[payload_count++] = cmd[0];
 						for(uint8_t idx = 1; idx < command_len; idx++)
 						{
 							if(nibble_count == 0)
@@ -366,6 +366,12 @@ int main(void)
 							
 						}
 						__nrfRadio_LoadMessages(payload, 17);
+						
+						uart_printString("<TX_DATA:",0);
+						for(uint8_t i = 0; i < 17; i++)
+							uart_printRegister(payload[i]);
+						uart_printString(">", 1);
+						
 						uint8_t status = __nrfRadio_Transmit(tx_addr, RADIO_WAIT_TX);
 						if( status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL)
 						{
