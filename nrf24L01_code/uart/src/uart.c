@@ -158,8 +158,8 @@ void uart_printString(char *string, char crlf){
 }
 
 void uart_printRegister(unsigned char reg){
-	uart_sendByte('0');
-	uart_sendByte('x');
+	//uart_sendByte('0');
+	//uart_sendByte('x');
 	unsigned char n1 = reg >> 4;
 	unsigned char n2 = reg & 0x0F;
 	uartPrintHex(n1);
