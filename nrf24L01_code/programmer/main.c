@@ -28,18 +28,24 @@ uint8_t uart_data[UART_RX_MAX];
 #define UART_END 8
 #define UART_END_2 9
 
-#define MAX_CMD_LEN 33
+#define MAX_ADDR	5
+#define MAX_CMD_LEN 34
 uint8_t command_type;
 uint8_t command_len;
 uint8_t cmd[MAX_CMD_LEN];
 uint8_t cmd_available = 0;
 
-#define CMD_SET_TX_ADDR 'A'
-#define CMD_SET_RX_ADDR	'B'
-#define CMD_CONFIGURE_RADIO 'C'
-#define CMD_SEND_TX	'D'
+#define CMD_SET_TX_ADDR				'A'
+#define CMD_SET_RX_ADDR				'B'
+#define CMD_CONFIGURE_RADIO			'C'
+#define CMD_SEND_TX					'D'
+#define CMD_SEND_ASCII_HEX			'E'
 
-#define PROG_VERSION 1
+#define PROG_VERSION "1.0.0"
+
+#define INVALID_HEX 255
+#define _ASCII_HEX_TO_INT(x) (x >= '0' && x <= '9') ? x - '0' : INVALID_HEX
+#define ASCII_HEX_TO_INT(x) ( x >= 'A' && x <= 'F') ? 10 + (x - 'A') : _ASCII_HEX_TO_INT(x)
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	uart_printString("<RX_PIPE:",0);
@@ -170,16 +176,15 @@ int main(void)
 	//initilize uart
 	uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
 	uart_printString("<NRF24L01_programmer:",0);
-	uart_printRegister(PROG_VERSION);
+	uart_printString(PROG_VERSION, 0);
 	uart_printString(">",1);
 	
-	//initilize the NRF 
-	
-    uint8_t uart_data_len;
-	uint8_t tx_addr[5] = {0};
-	uint8_t rx_addr[5] = {0};
+	//initilize the NRF data
+    uint8_t uart_data_len = 0;
+	uint8_t tx_addr[MAX_ADDR] = {0};
+	uint8_t rx_addr[MAX_ADDR] = {0};
 	uint8_t init = 0;
-	uint8_t uart_rx_err;
+	uint8_t uart_rx_err = 0;
 	
     while (1) 
     {
@@ -192,6 +197,7 @@ int main(void)
 			uart_printString("<UART_RX_ERROR:", 0);
 			uart_printRegister(uart_rx_err);
 			uart_printString(">",1);
+			_delay_ms(1000);
 		}
 		
 		if(cmd_available)
@@ -283,7 +289,7 @@ int main(void)
 				case CMD_SEND_TX:
 					uart_printRegister(command_type);
 					uart_printString(">",1);
-					if(command_len <= UART_RX_MAX)
+					if(command_len < MAX_CMD_LEN)
 					{
 						uart_printString("<SEND_TX:",0);
 						uint8_t payload[33] = {0};
@@ -310,9 +316,79 @@ int main(void)
 						uart_printString("<SEND_TX:LENGTH_ERR>", 1);
 					}
 				break;
-				
+				case CMD_SEND_ASCII_HEX:
+					uart_printRegister(command_type);
+					uart_printString(">",1);
+					
+					if(command_len < MAX_CMD_LEN)
+					{
+						uint8_t payload_count = 0;
+						uint8_t payload[17] = {0};
+						uint8_t nibble = 0;
+						uint8_t nibble_count = 0;
+
+						payload[payload_count++] = cmd[0];
+						for(uint8_t idx = 1; idx < command_len; idx++)
+						{
+							if(nibble_count == 0)
+							{
+								nibble = ASCII_HEX_TO_INT(cmd[idx]);
+								if (INVALID_HEX != nibble)
+								{
+									nibble *= 16;
+								}
+								else
+								{
+									uart_printString("<INVALID_HEX>", 1);
+									break;
+								}
+								nibble_count++;
+							}
+							else if(nibble_count == 1)
+							{
+								uint8_t tmp;
+								tmp = ASCII_HEX_TO_INT(cmd[idx]);
+								
+								if(INVALID_HEX != tmp)
+								{
+									nibble += tmp;
+								}
+								else
+								{
+									uart_printString("<INVALID_HEX>", 1);
+									break;
+								}
+								if(payload_count < 17)
+									payload[payload_count++] = nibble;
+								nibble_count = 0;
+								nibble = 0;
+							}
+							
+						}
+						__nrfRadio_LoadMessages(payload, 17);
+						
+						uart_printString("<TX_DATA:",0);
+						for(uint8_t i = 0; i < 17; i++)
+							uart_printRegister(payload[i]);
+						uart_printString(">", 1);
+						
+						uint8_t status = __nrfRadio_Transmit(tx_addr, RADIO_WAIT_TX);
+						if( status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL)
+						{
+							uart_printString("<SEND_TX:ACK>",1);
+						}
+						else
+						{
+							uart_printString("<SEND_TX:NACK>",1);
+						}
+					}
+					else
+					{
+						uart_printString("<SEND_FLASH:LENGTH_ERR>", 1);
+					}
+				break;
 				default:
-					uart_printString("CMD_INVALID>", 1);
+					uart_printString("<CMD_INVALID>", 1);
 				break;
 			}
 			cmd_available = 0;
