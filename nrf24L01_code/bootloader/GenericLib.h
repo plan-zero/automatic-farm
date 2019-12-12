@@ -27,5 +27,8 @@
 #define TURN_LED_OFF	PORTB &= 0xFE
 #define TOGGLE_LED		PORTB ^= 1
 
+#define APP_ADDR_START	0
+#define APP_ADDR_END		0x2800
+
 
 #endif /* INCFILE1_H_ */

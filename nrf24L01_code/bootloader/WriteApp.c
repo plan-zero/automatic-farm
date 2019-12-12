@@ -7,6 +7,8 @@
 #include "WriteApp.h"
 #include "radio_fptr.h"
 #include "GenericLib.h"
+#include <util/crc16.h>
+#include <avr/pgmspace.h>
 
 
 #define BUFFER_LENGTH				((uint8_t) 32)
@@ -27,6 +29,7 @@
 #define BOOTLOADER_FLASH_DATA		((uint8_t) 'F')
 #define BOOTLOADER_FLASH_PAGE_DONE	((uint8_t) 'G')
 #define BOOTLOADER_CHECK_CKS		((uint8_t) 'H')
+#define BOOTLOADER_WAIT_FLASH_END	((uint8_t) 'J')
 
 #define BOOTLOADER_FLASH_END		((uint8_t) 'K')
 #define BOOTLOADER_FLASH_ERROR		((uint8_t) 'L')
@@ -45,6 +48,22 @@
 
 #define COMM_ABORT					((uint8_t) 'o')
 #define COMM_NO_COMMAND				((uint8_t) 'p')
+
+
+
+// COMM errors
+#define COMM_ERR_TIMEOUT	 		((uint8_t) '1')
+#define COMM_ERR_WRONG_COMMAND 		((uint8_t) '2')
+#define COMM_ERR_WRONG_PAGE_LENGTH	((uint8_t) '3')
+#define COMM_ERR_WRONG_CRC	 		((uint8_t) '4')
+
+
+
+
+
+
+
+
 
 char bootloader_state = BOOTLOADER_INIT_NRF;
 
@@ -108,8 +127,6 @@ void initNrf(uint8_t * rx_address)
 	__nrfRadio_ListeningMode();
 }
 
-
-
 // Bootloader flash
 void boot_program_page (uint32_t page, uint8_t *buf)
 {
@@ -137,6 +154,13 @@ void boot_program_page (uint32_t page, uint8_t *buf)
 	SREG = sreg;
 }
 
+void wdgReset(void)
+{
+    WDTCR=0x18;
+    WDTCR=0x08;
+    asm("wdr");
+    while(1);
+}
 
 void startFlash(uint8_t * rx_address)
 {
@@ -163,7 +187,7 @@ void startFlash(uint8_t * rx_address)
 		{
 			// Clear response
 			memset(ackResponse, 0x00, RESPONSE_SIZE);
-			ackResponse[1] = 0;
+			ackResponse[1] = '0';
 			if ((rxData.command == COMM_NO_COMMAND) || (rxData.command == COMM_GET_STATE))
 			{
 				// I love goats
@@ -174,6 +198,8 @@ void startFlash(uint8_t * rx_address)
 				{
 					case BOOTLOADER_FLASH_INIT:
 					{
+						// TODO: wait the programmer to confirm  PROGRAMMER_ADDR_ADDRESS
+
 						if (rxData.command == COMM_START_FLASH_PROCEDURE)
 							bootloader_state = BOOTLOADER_REC_DATA;
 						else
@@ -191,7 +217,7 @@ void startFlash(uint8_t * rx_address)
 							{
 								bootloader_state = BOOTLOADER_FLASH_DATA;
 							}
-							else if (rxData.length > PAGE_SIZE)
+							else if (bytesReceived > PAGE_SIZE)
 							{
 								bootloader_state = BOOTLOADER_FLASH_ERROR;
 								ackResponse[1] = '1';
@@ -246,17 +272,59 @@ void startFlash(uint8_t * rx_address)
 					}
 					case BOOTLOADER_CHECK_CKS:
 					{
-						bootloader_state = BOOTLOADER_FLASH_END;
-						uint8_t dummy = 0;
-						cli();
-						eeprom_write_block ((void*)&dummy, (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
-						sei();
+						if (rxData.command == COMM_CHECK_CKS)
+						{
+							uint8_t flash_byte = 0;
+							uint16_t crc = 0;
+							//read application byte by byte
+							for(uint32_t addr = APP_ADDR_START; addr < APP_ADDR_END; addr++)
+							{
+								flash_byte = pgm_read_byte(addr);
+								crc = _crc16_update(crc, flash_byte);
+							}
+
+							if (recvCKS == crc)
+							{
+								bootloader_state = BOOTLOADER_WAIT_FLASH_END;
+							}
+							else
+							{
+								bootloader_state = BOOTLOADER_FLASH_ERROR;
+								ackResponse[1] = '5';
+							}
+						}
+						else
+						{
+							bootloader_state = BOOTLOADER_FLASH_ERROR;
+							ackResponse[1] = '6';
+						}
+
+						break;
+					}
+					case BOOTLOADER_WAIT_FLASH_END:
+					{
+						if (rxData.command == COMM_FINISH_FLASH)
+						{
+							uint8_t dummy[5] = {0};
+							cli();
+							eeprom_write_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
+							eeprom_write_block ((void*)&dummy, (void*)PROGRAMMER_ADDR_ADDRESS, PROGRAMMER_ADDR_LENGTH);
+							sei();
+
+							//  WDG reset
+							wdgReset();
+						}
+						else
+						{
+							bootloader_state = BOOTLOADER_FLASH_ERROR;
+							ackResponse[1] = '7';
+						}
 						break;
 					}
 					default:
 					{
 						bootloader_state = BOOTLOADER_FLASH_ERROR;
-						ackResponse[1] = '5';
+						ackResponse[1] = '8';
 					}
 				}
 			}
@@ -287,13 +355,36 @@ void startFlash(uint8_t * rx_address)
 	
 	if (bootloader_state == BOOTLOADER_FLASH_ERROR)
 	{
+		// 30s counter
+		uint16_t count = 30000;
+		ackResponse[0] = BOOTLOADER_FLASH_ERROR;
+		// Do not overwrite ackResponse[1]
 		do{
-			_delay_ms(500);
-			memset(ackResponse, 0x00, BUFFER_LENGTH);
-			ackResponse[0] = BOOTLOADER_FLASH_ERROR;
-			//ackResponse[1] = 'X';
-			__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, 2);			
-		}while (1);
-		// KAPUT
+			__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse,RESPONSE_SIZE);
+			// Clear data
+			rxData.hasMessage = MSG_NO_DATA;
+			rxData.command = COMM_NO_COMMAND;
+
+			__nrfRadio_Main();
+			if (rxData.hasMessage)
+			{
+				if ((rxData.command == COMM_NO_COMMAND) || (rxData.command == COMM_GET_STATE))
+				{
+					// let him have the error (it is already loaded)
+				}
+				else if (rxData.command == COMM_ABORT)
+				{
+					wdgReset();
+				}
+			}
+			_delay_ms(1);
+			count--;
+		}while (count > 1);
+
+		// Enough time to wait. Reset that motherfucker!
+		wdgReset();
 	}
+
+	// Asta la vista baby
+	wdgReset();
 }
