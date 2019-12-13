@@ -48,16 +48,12 @@ int main(void)
 	if( download == 0xAA) {
 		startFlash(rx_address);
 	}
-	while (1)
-	{
-		
-	}
 	
 	/*while(bootloader_state == BOOTLOADER_CHECK_APP)
 	{
 		TURN_LED_OFF;
 	}*/
 	//go to the application as soon as the code has downloaded
-	//asm("JMP 0");
+	asm("JMP 0");
 }
 
