@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 					bytes_verified++;
 					_CRC16 = crc16_update(_CRC16, 255);
 				}
-				printf("CRC16 calculated: %d\n", _CRC16);
+				printf("CRC16 calculated: <%d>\n", _CRC16);
 				
 				if(write_file)
 				{
