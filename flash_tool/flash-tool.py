@@ -35,6 +35,9 @@ DEBUG = 1
 ERROR = 2
 INFO  = 3
 
+_previous_progress = -1
+_progress_res = 10
+
 def print_message(msg, dbg_level):
 	
 	if(VERBOSE_MODE):
@@ -252,10 +255,22 @@ def send_Stop_Flash_Confirm():
 
 	return 1
 
-
+def show_progress(current, total):
+	global _previous_progress
+	try:
+		#we don't show the progress in verbose mdoe
+		if VERBOSE_MODE == 0:
+			progress = (current * 100) / total
+			if (progress - _previous_progress) > _progress_res or _previous_progress == -1 or progress == 100:
+				print_message("DOWNLOAD: " + str(progress) + "%", INFO)
+				_previous_progress = progress
+	except Exception as e:
+		print_message(str(e), ERROR)
 
 def send_HEX_Data(crc):
 	counterLinesOfPage = 0
+	t = len(hexFileData)
+	c = 0;
 	for data in hexFileData:
 		command = CMD_PREFIX + CMD_SEND_16B_ASCII + data
 		resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)
@@ -274,7 +289,8 @@ def send_HEX_Data(crc):
 				resp = send_Write_Next_Page()
 				if resp != 0:
 					return 1
-	
+		c = c + 1
+		show_progress(c,t)
 	resp = send_checksum(crc)
 	resp = send_verify_checksum()
 	if resp == 0:

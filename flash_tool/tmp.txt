@@ -1,0 +1,3 @@
+CRC16 version: v1.0.0 
+Verified bytes: 142 
+CRC16 calculated: 63207
