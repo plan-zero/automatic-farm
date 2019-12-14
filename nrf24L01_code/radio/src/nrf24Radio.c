@@ -201,14 +201,16 @@ radio_error_code nrfRadio_Init(radio_config cfg)
 	}
 	GICR |= _BV(IRQ_EN);
 	MCUCR |= _BV(IRQ_EDGE);
-	
-	//initialize the SPI
-	SPI_Init();
+
 
 	//CONFIGURE the radio, the radio is disabled during configuration
 	CE_LOW();
 	// wait for POR (defined as 10.3 ms for NRF24L01 )
 	_delay_ms(11);
+	//initialize the SPI
+	SPI_Init();
+	//enter in power down
+	nrfRadio_PowerDown();
 	//set the address length
 	value = cfg.address_length;
 	set_register(SETUP_AW, &value, 1);
@@ -290,10 +292,7 @@ radio_error_code nrfRadio_Init(radio_config cfg)
 	//Flush FIFO buffers
 	send_instruction(FLUSH_TX, NULL, NULL, 0);
 	send_instruction(FLUSH_RX, NULL, NULL, 0);
-	
-	//enter in power down
-	
-	nrfRadio_PowerDown();
+
 	
 	return err;
 }

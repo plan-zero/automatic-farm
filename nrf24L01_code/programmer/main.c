@@ -248,7 +248,7 @@ int main(void)
 					uart_printString(">",1);
 					if(0 == init)
 					{
-						init = 1;
+						//init = 1;
 						uart_printString("<NRF_CONFIG:STARTING>", 1);
 						radio_config cfg = 
 						{ 
