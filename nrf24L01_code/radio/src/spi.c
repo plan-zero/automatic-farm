@@ -28,7 +28,7 @@ void SPI_Init()
 	// the SS pin that's used for a given slave.  Anything that uses this driver must handle its own slave selection.
 	// It must set its SS pin direction to output, set the pin low before doing an SPI operation, and set it high
 	// when the SPI operation is complete.
-    SPI_DDR &= ~(_BV(SPI_MOSI)|_BV(SPI_MISO)|_BV(SPI_SS)|_BV(SPI_SCK));
+    SPI_DDR &= ~(_BV(SPI_MISO));
     // Define the following pins as output
     SPI_DDR |= (_BV(SPI_MOSI) | _BV(SPI_SS) | _BV(SPI_SCK));
 
