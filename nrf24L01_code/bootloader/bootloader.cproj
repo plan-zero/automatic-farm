@@ -132,6 +132,9 @@
     <PostBuildEvent>$(MSBuildProjectDirectory)\..\postbuild_scripts\create_firmware_img.sh</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="E2P_Layout.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="GenericLib.h">
       <SubType>compile</SubType>
     </Compile>

@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define CRCVER "v1.0.0"
+#define APP_SIZE (uint32_t)10240
 
 int verbose = 0;
 
@@ -55,6 +56,8 @@ int main(int argc, char *argv[])
 	FILE *outputfile = NULL;
 	int write_file = 0;
 	printf("CRC16 version: %s \n", CRCVER);
+	
+	uint32_t bytes_verified = 0;
 
 	if (5 == argc && strcmp(argv[3], "-o") == 0 )
 	{
@@ -201,6 +204,7 @@ int main(int argc, char *argv[])
 									fprintf(outputfile,"%d", one_byte);
 								}
 								//do the CRC here
+								bytes_verified++;
 								_CRC16 = crc16_update(_CRC16, one_byte);
 								nibble_count = 0;
 							}
@@ -221,7 +225,14 @@ int main(int argc, char *argv[])
 						
 				}
 				
-				printf("CRC16 calculated: %d\n", _CRC16);
+				printf("Verified bytes: %d \n", bytes_verified);
+				//do the CRC for all bytes that are FF
+				while(bytes_verified < APP_SIZE)
+				{
+					bytes_verified++;
+					_CRC16 = crc16_update(_CRC16, 255);
+				}
+				printf("CRC16 calculated: <%d>\n", _CRC16);
 				
 				if(write_file)
 				{

@@ -46,6 +46,7 @@ uint8_t cmd_available = 0;
 #define INVALID_HEX 255
 #define _ASCII_HEX_TO_INT(x) (x >= '0' && x <= '9') ? x - '0' : INVALID_HEX
 #define ASCII_HEX_TO_INT(x) ( x >= 'A' && x <= 'F') ? 10 + (x - 'A') : _ASCII_HEX_TO_INT(x)
+#define CALCULATE_PAYLOAD_LENGTH(x)		(uint8_t)(x/2) + (uint8_t)1
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	uart_printString("<RX_PIPE:",0);
@@ -365,10 +366,10 @@ int main(void)
 							}
 							
 						}
-						__nrfRadio_LoadMessages(payload, 17);
+						__nrfRadio_LoadMessages(payload, CALCULATE_PAYLOAD_LENGTH(command_len));
 						
 						uart_printString("<TX_DATA:",0);
-						for(uint8_t i = 0; i < 17; i++)
+						for(uint8_t i = 0; i < CALCULATE_PAYLOAD_LENGTH(command_len); i++)
 							uart_printRegister(payload[i]);
 						uart_printString(">", 1);
 						

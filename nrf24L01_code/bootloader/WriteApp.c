@@ -305,12 +305,11 @@ void startFlash(uint8_t * rx_address)
 					{
 						if (rxData.command == COMM_FINISH_FLASH)
 						{
-							uint8_t dummy[5] = {0};
+							uint8_t dummy[6] = {0};
 							cli();
-							eeprom_write_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH);
-							eeprom_write_block ((void*)&dummy, (void*)PROGRAMMER_ADDR_ADDRESS, PROGRAMMER_ADDR_LENGTH);
+							eeprom_update_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH + PROGRAMMER_ADDR_LENGTH);
 							sei();
-
+							_delay_ms(1000);
 							//  WDG reset
 							wdgReset();
 						}
