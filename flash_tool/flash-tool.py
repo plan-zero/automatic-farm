@@ -26,7 +26,7 @@ CMD_STOP_FLASH_CONFIRM = "D01u"
 CMD_SEND_CHECKSUM = "E05y"
 CMD_SEND_16B_ASCII = "E33e"
 
-SLEEP_TIME_SERIAL_DEFAULT = 0.01
+SLEEP_TIME_SERIAL_DEFAULT = 0.07
 SLEEP_TIME_SERIAL_NRF_INIT = 0.1
 SLEEP_TIME_SERIAL_CRC = 0.1
 
@@ -107,7 +107,9 @@ def read_flash_data(hexFilePath):
 
 	counterLine = 0
 	for line in hexFileData:
-		line = line[9:-3]
+		line = line.replace('\r', '')
+		line = line.replace('\n', '')
+		line = line[9:-2]
 		hexFileData[counterLine] = line
 		counterLine += 1
 		
@@ -210,7 +212,7 @@ def send_Write_Next_Page():
 	command = CMD_PREFIX + CMD_WRITE_NEXT_PAGE 
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
 	
-	if "<EXECUTE_CMD:44>" in resp and "<RX_DATA:G0>" in resp and "<SEND_TX:ACK>" in resp:
+	if "<EXECUTE_CMD:44>" in resp and "<RX_DATA:G" in resp and "<SEND_TX:ACK>" in resp:
 		return 0
 
 	return 1

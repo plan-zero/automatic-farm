@@ -5,6 +5,7 @@
 
 #define CRCVER "v1.0.0"
 #define APP_SIZE (uint32_t)10240
+#define BYTES_INLINE_16 16
 
 int verbose = 0;
 
@@ -209,6 +210,13 @@ int main(int argc, char *argv[])
 								nibble_count = 0;
 							}
 						}
+						if (bytes_in_line != 0)
+							for(int k = bytes_in_line; k < BYTES_INLINE_16; k++)
+							{
+								//fillin line if it is not completed
+								bytes_verified++;
+								_CRC16 = crc16_update(_CRC16, 255);
+							}
 						if(verbose)
 						{
 							printf("}\n");
