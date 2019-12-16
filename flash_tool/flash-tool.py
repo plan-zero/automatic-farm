@@ -233,7 +233,7 @@ def send_checksum(checksum):
 	command = CMD_PREFIX + CMD_SEND_CHECKSUM + checksum
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)
 	
-	if "<EXECUTE_CMD:45>" in resp and "<SEND_TX:ACK>" in resp and "<RX_DATA:G1>" in resp:
+	if "<EXECUTE_CMD:45>" in resp and "<SEND_TX:ACK>" in resp and "<RX_DATA:G" in resp:
 		return 0
 	return 1
 
@@ -369,6 +369,8 @@ def main(argv):
 		crc_str = res[0].replace('>','')
 		crc_str = crc_str.replace('<','')
 		CRC = "{0:X}".format(int(crc_str,10))
+		if len(CRC) == 3:
+			CRC = "0" + CRC
 		print_message("CRC calculated:" + CRC, INFO)
 		_crc_valid = 1
 	except Exception as e:
