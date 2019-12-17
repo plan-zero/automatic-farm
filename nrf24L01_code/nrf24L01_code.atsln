@@ -4,14 +4,26 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "application", "application\application.cproj", "{DCE6C7E3-EE26-4D79-826B-08594B9AD897}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5046B83C-AC61-4D08-B528-E71DF18DA1D1} = {5046B83C-AC61-4D08-B528-E71DF18DA1D1}
+		{2AE4A978-E2E4-4635-BDCA-C74D482B0014} = {2AE4A978-E2E4-4635-BDCA-C74D482B0014}
+	EndProjectSection
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "bootloader", "bootloader\bootloader.cproj", "{CC2A83D5-4FF3-40D3-AE4D-51E7EB1CF38E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5046B83C-AC61-4D08-B528-E71DF18DA1D1} = {5046B83C-AC61-4D08-B528-E71DF18DA1D1}
+		{2AE4A978-E2E4-4635-BDCA-C74D482B0014} = {2AE4A978-E2E4-4635-BDCA-C74D482B0014}
+	EndProjectSection
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "radio", "radio\radio.cproj", "{5046B83C-AC61-4D08-B528-E71DF18DA1D1}"
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "uart", "uart\uart.cproj", "{2AE4A978-E2E4-4635-BDCA-C74D482B0014}"
 EndProject
 Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "programmer", "programmer\programmer.cproj", "{F01E2166-B91A-4ECA-94CD-0E9DB7A6BB80}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5046B83C-AC61-4D08-B528-E71DF18DA1D1} = {5046B83C-AC61-4D08-B528-E71DF18DA1D1}
+		{2AE4A978-E2E4-4635-BDCA-C74D482B0014} = {2AE4A978-E2E4-4635-BDCA-C74D482B0014}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
