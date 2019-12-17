@@ -22,11 +22,6 @@
 #include "E2P_Layout.h"
 #include <avr/eeprom.h>
 
-ISR(INT0_vect)
-{
-	
-	
-}
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	TOGGLE_LED;
@@ -35,8 +30,9 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 		if(data[0] == 'B' && data[1] == '1' )
 		{
 			cli();
-			uint8_t dummy[6] = {0};
+			uint8_t dummy[6] = {0xAA,'B','B','C','D','E'};
 			eeprom_update_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH + PROGRAMMER_ADDR_LENGTH);
+			_delay_ms(100);
 			sei();
 			//enter bootloader
 			WDTCR=0x18;
@@ -74,6 +70,7 @@ int main(void)
 		RADIO_APPLICATION
 	};
 	__nrfRadio_Init(cfg);
+	
 	uint8_t rx_addr[5] = {'A','B','C','D','E'};
 	uint8_t tx_addr[5] = {'B','B','C','D','E'};
 	pipe_config pipe_cfg0 =
@@ -91,14 +88,17 @@ int main(void)
 	__nrfRadio_SetTxCallback(tx_handler);
 	__nrfRadio_PowerUp();
 	__nrfRadio_ListeningMode();
+	_delay_ms(1000);
+	TURN_LED_OFF;
 	sei();
 	uint8_t msg[2] = {'A','F'};
     while (1) 
     {
-		TOGGLE_LED;
+		//
 		//__nrfRadio_LoadMessages(msg,2);
 		//__nrfRadio_Transmit(tx_addr,RADIO_WAIT_TX);
 		__nrfRadio_Main();
+		TOGGLE_LED;
 		_delay_ms(1000);
     }
 }
