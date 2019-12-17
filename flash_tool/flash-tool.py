@@ -8,7 +8,6 @@ import re
 VERSION = "1.0.0"
 
 comPorts = []
-hexFileData = []
 ser = serial.Serial()
 
 HEX_LINE_LENGHT = 16  # Length in bytes
@@ -95,7 +94,7 @@ def connect_to_com_port(comPort, baud):
 	return 0
 
 def read_flash_data(hexFilePath):
-
+	hexFileData = []
 	with open(hexFilePath,'rb') as f:
 		for line in f:
 			#line = line[1:(len(line)-2)]
@@ -118,26 +117,40 @@ def read_flash_data(hexFilePath):
 		#print(line)
 	
 	counterLine = 0
+	line_data = ""
+	line_byte_count = 0
+	
+	output = []
 	for line in hexFileData:
-		lineLenght = len(line)
-		if (HEX_LINE_LENGHT * 2 > lineLenght):
-			line = line + ("F" * (HEX_LINE_LENGHT * 2 - lineLenght))
-		if (hexFileData[counterLine] == ""):
-			hexFileData.remove("")
-		else:
-			hexFileData[counterLine] = line
-		counterLine += 1
+		print_message(str(line_byte_count) + "  " + line, DEBUG)
+		for byte in line:
+			if line_byte_count < 32:
+				line_data += str(byte)
+				line_byte_count += 1
+			else:
+				output.append(line_data)
+				line_data = "" +  str(byte)
+				line_byte_count = 1
+				counterLine += 1
+	
+	while line_byte_count < 32:
+		line_data += "F"
+		line_byte_count += 1
+	output.append(line_data)
+	counterLine += 1
 
-	dummyLinesToAdd = len(hexFileData) % 8
+	#print_message("output len is: " + str(len(output)), DEBUG)
+	dummyLinesToAdd = len(output) % 8
 
 	# 8 lines into a page
 	# 16 bytes into a line
-	for index in range(8 - dummyLinesToAdd):
-		hexFileData.append("FF" * 16)		
+	if dummyLinesToAdd != 0:
+		for index in range(8 - dummyLinesToAdd):
+			output.append("FF" * 16)		
 
-	for line in hexFileData:
+	for line in output:
 		print_message(line, DEBUG)
-
+	return output
 
 
 def send_command(command, sleeptime):
@@ -269,7 +282,7 @@ def show_progress(current, total):
 	except Exception as e:
 		print_message(str(e), ERROR)
 
-def send_HEX_Data(crc):
+def send_HEX_Data(crc, hexFileData):
 	counterLinesOfPage = 0
 	t = len(hexFileData)
 	c = 0;
@@ -302,7 +315,7 @@ def send_HEX_Data(crc):
 		
 def flash_data(state, tx, hex_file, crc):
 	
-	read_flash_data(hex_file)
+	out = read_flash_data(hex_file)
 
 	while (state != 99 and state != 98):
 		if (state == 1):		# set TX address
@@ -327,7 +340,7 @@ def flash_data(state, tx, hex_file, crc):
 				state = 99
 
 		if (state == 4):		# write hex file
-			retValue = send_HEX_Data(crc)
+			retValue = send_HEX_Data(crc, out)
 			if (retValue == 0):
 				state = 5
 			else:
