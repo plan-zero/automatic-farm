@@ -25,9 +25,10 @@ CMD_STOP_FLASH_CONFIRM = "D01u"
 CMD_SEND_CHECKSUM = "E05y"
 CMD_SEND_16B_ASCII = "E33e"
 
-SLEEP_TIME_SERIAL_DEFAULT = 0.07
+SLEEP_TIME_SERIAL_DEFAULT = 0.04
 SLEEP_TIME_SERIAL_NRF_INIT = 0.1
 SLEEP_TIME_SERIAL_CRC = 0.1
+SLEEP_TIME_SERIAL_BOOTLOADER = 1
 
 VERBOSE_MODE = 0
 DEBUG = 1
@@ -185,7 +186,15 @@ def send_command(command, sleeptime):
 		print_message(f"cannot open {ser.port} serial port", DEBUG)
 	
 	return "NRC"
+
+def send_bootloader_key(key):
+	print_message("Put target in programming mode", INFO)
+	command = CMD_PREFIX + "D10" + key
+	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)
 	
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+	return 1
 		
 		
 def send_TX_Address(Tx_addr):
@@ -214,7 +223,7 @@ def send_Start_Write():
 	command = CMD_PREFIX + CMD_START_WRITE 
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
 	
-	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp and "<RX_DATA:S0>" in resp:
 		return 0
 
 	return 1
@@ -243,6 +252,7 @@ def send_Write_In_Flash():
 
 
 def send_checksum(checksum):
+	print_message("CRC verification and erase", INFO)
 	command = CMD_PREFIX + CMD_SEND_CHECKSUM + checksum
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)
 	
@@ -251,6 +261,8 @@ def send_checksum(checksum):
 	return 1
 
 def send_verify_checksum():
+	#wait until the erase is performed
+	time.sleep(1)
 	command = CMD_PREFIX + CMD_VERIFY_CHECKSUM 
 	resp = send_command(command, SLEEP_TIME_SERIAL_CRC)	
 	
@@ -313,9 +325,10 @@ def send_HEX_Data(crc, hexFileData):
 	
 	return 1
 		
-def flash_data(state, tx, hex_file, crc):
+def flash_data(tx, hex_file, crc, key):
 	
 	out = read_flash_data(hex_file)
+	state = 1
 
 	while (state != 99 and state != 98):
 		if (state == 1):		# set TX address
@@ -323,20 +336,32 @@ def flash_data(state, tx, hex_file, crc):
 			if (retValue == 0):
 				state = 2
 			else:
+				print_message("Failed to set TX address", ERROR)
 				state = 99
 
 		if (state == 2):		# init NRF
 			retValue = send_Init_NRF()
 			if (retValue == 0):
+				state = 0
+			else:
+				print_message("Failed to init NRF", ERROR)
+				state = 99
+		if (state == 0): #sent bootloader key
+			if key != "+":
+				retValue = send_bootloader_key(key)
+			else:
+				retValue = 0
+			if (retValue == 0):
 				state = 3
 			else:
+				print_message("Target not responding", ERROR)
 				state = 99
-
 		if (state == 3):		# start write command
 			retValue = send_Start_Write()
 			if (retValue == 0):
 				state = 4
 			else:
+				print_message("Target can't enter in programming mode", ERROR)
 				state = 99
 
 		if (state == 4):		# write hex file
@@ -344,6 +369,7 @@ def flash_data(state, tx, hex_file, crc):
 			if (retValue == 0):
 				state = 5
 			else:
+				print_message("Failed to write data", ERROR)
 				state = 99
 
 		if (state == 5):		# stop flash
@@ -351,6 +377,7 @@ def flash_data(state, tx, hex_file, crc):
 			if (retValue == 0):
 				state = 98
 			else:
+				print_message("Fail to reset target", ERROR)
 				state = 99
 	return state
 
@@ -368,6 +395,8 @@ def main(argv):
 	baud = argv["-B"][0]
 	tx_addr = argv["-T"][0]
 	hex_file = argv["-H"][0]
+	key = argv["-K"][0]
+	
 	ret = connect_to_com_port(port,baud)
 	#calculate CRC here, use relative path to this script
 	
@@ -391,7 +420,7 @@ def main(argv):
 		print_message("CRC16 failed: " + str(e), ERROR)
 	
 	if ret == 1 and _crc_valid == 1:
-		procedure = flash_data(1,tx_addr, hex_file, CRC)
+		procedure = flash_data(tx_addr, hex_file, CRC, key)
 		if procedure == 99:
 			print_message("Flashing procedure failed: internal error code returned", ERROR)
 		elif procedure == 98:
@@ -400,6 +429,7 @@ def main(argv):
 		print_message("Flash failed: can't open COM port or CRC16 failed", ERROR)
 			
 help_string = """
+-K : bootloader key, the key that puts the application in bootloader e.g Aa51cVvM7z 
 -P : serial port, e.g -P COM1
 -B : serial baudrate, the value must be in 0-250K interval
 -H : HEX path, use the absolute path of file
@@ -408,6 +438,7 @@ help_string = """
 --v : tool version
 -V : verbose mode, prints debugging messages during script execution """
 _commands = {
+	"-K" : ["+",		lambda x: len(str(x)) == 10, 						"-K: The key must be 10 char long(alpha-numeric ASCII)"],
 	"-P" : ["",		lambda x: "COM" == x[:3] and x[3:].isdigit(),		"-P: The supported port is COMx where x must be an unsigned int"],
 	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 250000, 	"-B: The baud rate should be in 0-250000 range" ],
 	"-H" : ["", 	lambda x: x != "" and os.path.isfile(x), 			"-H: File not found"],
