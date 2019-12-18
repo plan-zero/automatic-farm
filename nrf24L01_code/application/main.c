@@ -22,12 +22,23 @@
 #include "E2P_Layout.h"
 #include <avr/eeprom.h>
 
+#define BOOT_KEY "Z4zC6i5FmM"
+#define BOOT_KEY_SIZE 10
 
-void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
-	TOGGLE_LED;
-	if (payload_length == 2)
+void check_bootloader_key(uint8_t *key, uint8_t key_len)
+{
+	if(key_len == BOOT_KEY_SIZE)
 	{
-		if(data[0] == 'B' && data[1] == '1' )
+		uint8_t boot_key_received = 1;
+		for(uint8_t i = 0; i < BOOT_KEY_SIZE; i++)
+		{
+			if( key[i] != BOOT_KEY[i] )
+			{
+				boot_key_received = 0;
+				break;
+			}
+		}
+		if(boot_key_received)
 		{
 			cli();
 			uint8_t dummy[6] = {0xAA,'B','B','C','D','E'};
@@ -41,6 +52,11 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 			while(1);
 		}
 	}
+}
+
+void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
+	
+	check_bootloader_key(data, payload_length);
 }
 
 void tx_handler(radio_tx_status tx_status) {
@@ -99,7 +115,7 @@ int main(void)
 		//__nrfRadio_Transmit(tx_addr,RADIO_WAIT_TX);
 		__nrfRadio_Main();
 		TOGGLE_LED;
-		_delay_ms(1000);
+		_delay_ms(200);
     }
 }
 
