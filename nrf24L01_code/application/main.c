@@ -6,8 +6,9 @@
  */ 
 
 #include <avr/io.h>
-#include "radio_fptr.h"
 #include "nrf24Radio.h"
+#include "nrf24Radio_API.h"
+
 
 #define LED_PORT_DIR DDRB
 #define LED_PORT_PIN PINB0

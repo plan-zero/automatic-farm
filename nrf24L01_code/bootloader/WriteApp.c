@@ -5,7 +5,8 @@
  *  Author: Adi
  */ 
 #include "WriteApp.h"
-#include "radio_fptr.h"
+#include "nrf24Radio.h"
+#include "nrf24Radio_API.h"
 #include "GenericLib.h"
 #include <util/crc16.h>
 #include <avr/pgmspace.h>

@@ -8,7 +8,7 @@
 
 //#define IRQ_HANDLER		INT0_vect
 #include "nrf24Radio.h"
-#include "radio_fptr.h"
+#include "nrf24Radio_API.h"
 #include "nRF24L01.h"
 #include <avr/io.h>
 
