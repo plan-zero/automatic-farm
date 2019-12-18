@@ -13,6 +13,7 @@ ser = serial.Serial()
 HEX_LINE_LENGHT = 16  # Length in bytes
 
 CMD_PREFIX = "<CMD>"
+CMD_ABORT = "D01o"
 CMD_CRLF = "\r"
 CMD_TX_ADDR_DEFAULT = "A05"
 CMD_INIT_NRF = "C00"
@@ -221,9 +222,9 @@ def send_Init_NRF():
 
 def send_Start_Write():
 	command = CMD_PREFIX + CMD_START_WRITE 
-	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
+	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)	
 	
-	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp and "<RX_DATA:S0>" in resp:
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp and "<RX_DATA:S" in resp:
 		return 0
 
 	return 1
@@ -281,6 +282,15 @@ def send_Stop_Flash_Confirm():
 		return 0
 
 	return 1
+	
+def send_abort_command():
+	command = CMD_PREFIX + CMD_ABORT
+	resp = command = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)
+	
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+	return 1
+		
 
 def show_progress(current, total):
 	global _previous_progress
@@ -329,8 +339,9 @@ def flash_data(tx, hex_file, crc, key):
 	
 	out = read_flash_data(hex_file)
 	state = 1
+	tries = 5
 
-	while (state != 99 and state != 98):
+	while (state != 99 and state != 98 and tries != 0):
 		if (state == 1):		# set TX address
 			retValue = send_TX_Address(tx)
 			if (retValue == 0):
@@ -347,7 +358,7 @@ def flash_data(tx, hex_file, crc, key):
 				print_message("Failed to init NRF", ERROR)
 				state = 99
 		if (state == 0): #sent bootloader key
-			if key != "+":
+			if key != "+" and tries == 5:
 				retValue = send_bootloader_key(key)
 			else:
 				retValue = 0
@@ -377,8 +388,21 @@ def flash_data(tx, hex_file, crc, key):
 			if (retValue == 0):
 				state = 98
 			else:
-				print_message("Fail to reset target", ERROR)
+				print_message("Fail to program target, aborting", ERROR)
 				state = 99
+				abort = 1
+		if state == 99:
+			tries -= 1
+			retValue = send_abort_command()
+			if retValue == 0:
+				print_message("Abort command sent", INFO)
+				time.sleep(1) #wait until the micro is restarting
+				print_message("Restart flashing, try no: " + str( (5 - tries) ), INFO)
+				state = 1
+			else:
+				print_message("Can't restart procedure, stop flash", ERROR)
+				tries = 0
+			
 	return state
 
 def main(argv):	
