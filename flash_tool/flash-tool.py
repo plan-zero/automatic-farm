@@ -31,6 +31,8 @@ SLEEP_TIME_SERIAL_NRF_INIT = 0.1
 SLEEP_TIME_SERIAL_CRC = 0.1
 SLEEP_TIME_SERIAL_BOOTLOADER = 1
 
+APP_MAX_SIZE = 10240
+
 VERBOSE_MODE = 0
 DEBUG = 1
 ERROR = 2
@@ -123,9 +125,11 @@ def read_flash_data(hexFilePath):
 	line_byte_count = 0
 	
 	output = []
+	all_bytes = 0
 	for line in hexFileData:
 		print_message(str(line_byte_count) + "  " + line, DEBUG)
 		for byte in line:
+			all_bytes += 1
 			if line_byte_count < 32:
 				line_data += str(byte)
 				line_byte_count += 1
@@ -138,9 +142,15 @@ def read_flash_data(hexFilePath):
 	while line_byte_count < 32:
 		line_data += "F"
 		line_byte_count += 1
+		all_bytes += 1
 	output.append(line_data)
 	counterLine += 1
-
+	
+	if all_bytes < APP_MAX_SIZE:
+		print_message("Preparing " + str(all_bytes) + " B to write", INFO)
+	else:
+		print_message("The hex file is to big, the maximum size is 10kB", ERROR)
+		return []
 	#print_message("output len is: " + str(len(output)), DEBUG)
 	dummyLinesToAdd = len(output) % 8
 
