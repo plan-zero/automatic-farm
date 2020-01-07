@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include "uart.h"
 #include "nrf24Radio.h"
-#include "radio_fptr.h"
+#include "nrf24Radio_API.h"
 
 #define F_CPU 8000000UL
 #include <util/delay.h>

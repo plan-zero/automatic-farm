@@ -8,12 +8,12 @@ import re
 VERSION = "1.0.0"
 
 comPorts = []
-hexFileData = []
 ser = serial.Serial()
 
 HEX_LINE_LENGHT = 16  # Length in bytes
 
 CMD_PREFIX = "<CMD>"
+CMD_ABORT = "D01o"
 CMD_CRLF = "\r"
 CMD_TX_ADDR_DEFAULT = "A05"
 CMD_INIT_NRF = "C00"
@@ -26,9 +26,12 @@ CMD_STOP_FLASH_CONFIRM = "D01u"
 CMD_SEND_CHECKSUM = "E05y"
 CMD_SEND_16B_ASCII = "E33e"
 
-SLEEP_TIME_SERIAL_DEFAULT = 0.07
+SLEEP_TIME_SERIAL_DEFAULT = 0.04
 SLEEP_TIME_SERIAL_NRF_INIT = 0.1
 SLEEP_TIME_SERIAL_CRC = 0.1
+SLEEP_TIME_SERIAL_BOOTLOADER = 1
+
+APP_MAX_SIZE = 10240
 
 VERBOSE_MODE = 0
 DEBUG = 1
@@ -95,7 +98,7 @@ def connect_to_com_port(comPort, baud):
 	return 0
 
 def read_flash_data(hexFilePath):
-
+	hexFileData = []
 	with open(hexFilePath,'rb') as f:
 		for line in f:
 			#line = line[1:(len(line)-2)]
@@ -118,26 +121,48 @@ def read_flash_data(hexFilePath):
 		#print(line)
 	
 	counterLine = 0
+	line_data = ""
+	line_byte_count = 0
+	
+	output = []
+	all_bytes = 0
 	for line in hexFileData:
-		lineLenght = len(line)
-		if (HEX_LINE_LENGHT * 2 > lineLenght):
-			line = line + ("F" * (HEX_LINE_LENGHT * 2 - lineLenght))
-		if (hexFileData[counterLine] == ""):
-			hexFileData.remove("")
-		else:
-			hexFileData[counterLine] = line
-		counterLine += 1
-
-	dummyLinesToAdd = len(hexFileData) % 8
+		print_message(str(line_byte_count) + "  " + line, DEBUG)
+		for byte in line:
+			all_bytes += 1
+			if line_byte_count < 32:
+				line_data += str(byte)
+				line_byte_count += 1
+			else:
+				output.append(line_data)
+				line_data = "" +  str(byte)
+				line_byte_count = 1
+				counterLine += 1
+	
+	while line_byte_count < 32:
+		line_data += "F"
+		line_byte_count += 1
+		all_bytes += 1
+	output.append(line_data)
+	counterLine += 1
+	
+	if all_bytes < APP_MAX_SIZE:
+		print_message("Preparing " + str(all_bytes) + " B to write", INFO)
+	else:
+		print_message("The hex file is to big, the maximum size is 10kB", ERROR)
+		return []
+	#print_message("output len is: " + str(len(output)), DEBUG)
+	dummyLinesToAdd = len(output) % 8
 
 	# 8 lines into a page
 	# 16 bytes into a line
-	for index in range(8 - dummyLinesToAdd):
-		hexFileData.append("FF" * 16)		
+	if dummyLinesToAdd != 0:
+		for index in range(8 - dummyLinesToAdd):
+			output.append("FF" * 16)		
 
-	for line in hexFileData:
+	for line in output:
 		print_message(line, DEBUG)
-
+	return output
 
 
 def send_command(command, sleeptime):
@@ -172,7 +197,15 @@ def send_command(command, sleeptime):
 		print_message(f"cannot open {ser.port} serial port", DEBUG)
 	
 	return "NRC"
+
+def send_bootloader_key(key):
+	print_message("Put target in programming mode", INFO)
+	command = CMD_PREFIX + "D10" + key
+	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)
 	
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+	return 1
 		
 		
 def send_TX_Address(Tx_addr):
@@ -199,9 +232,9 @@ def send_Init_NRF():
 
 def send_Start_Write():
 	command = CMD_PREFIX + CMD_START_WRITE 
-	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
+	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)	
 	
-	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp and "<RX_DATA:S" in resp:
 		return 0
 
 	return 1
@@ -230,6 +263,7 @@ def send_Write_In_Flash():
 
 
 def send_checksum(checksum):
+	print_message("CRC verification and erase", INFO)
 	command = CMD_PREFIX + CMD_SEND_CHECKSUM + checksum
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)
 	
@@ -238,6 +272,8 @@ def send_checksum(checksum):
 	return 1
 
 def send_verify_checksum():
+	#wait until the erase is performed
+	time.sleep(1)
 	command = CMD_PREFIX + CMD_VERIFY_CHECKSUM 
 	resp = send_command(command, SLEEP_TIME_SERIAL_CRC)	
 	
@@ -256,6 +292,15 @@ def send_Stop_Flash_Confirm():
 		return 0
 
 	return 1
+	
+def send_abort_command():
+	command = CMD_PREFIX + CMD_ABORT
+	resp = command = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)
+	
+	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
+		return 0
+	return 1
+		
 
 def show_progress(current, total):
 	global _previous_progress
@@ -269,7 +314,7 @@ def show_progress(current, total):
 	except Exception as e:
 		print_message(str(e), ERROR)
 
-def send_HEX_Data(crc):
+def send_HEX_Data(crc, hexFileData):
 	counterLinesOfPage = 0
 	t = len(hexFileData)
 	c = 0;
@@ -300,37 +345,52 @@ def send_HEX_Data(crc):
 	
 	return 1
 		
-def flash_data(state, tx, hex_file, crc):
+def flash_data(tx, hex_file, crc, key):
 	
-	read_flash_data(hex_file)
+	out = read_flash_data(hex_file)
+	state = 1
+	tries = 5
 
-	while (state != 99 and state != 98):
+	while (state != 99 and state != 98 and tries != 0):
 		if (state == 1):		# set TX address
 			retValue = send_TX_Address(tx)
 			if (retValue == 0):
 				state = 2
 			else:
+				print_message("Failed to set TX address", ERROR)
 				state = 99
 
 		if (state == 2):		# init NRF
 			retValue = send_Init_NRF()
 			if (retValue == 0):
+				state = 0
+			else:
+				print_message("Failed to init NRF", ERROR)
+				state = 99
+		if (state == 0): #sent bootloader key
+			if key != "+" and tries == 5:
+				retValue = send_bootloader_key(key)
+			else:
+				retValue = 0
+			if (retValue == 0):
 				state = 3
 			else:
+				print_message("Target not responding", ERROR)
 				state = 99
-
 		if (state == 3):		# start write command
 			retValue = send_Start_Write()
 			if (retValue == 0):
 				state = 4
 			else:
+				print_message("Target can't enter in programming mode", ERROR)
 				state = 99
 
 		if (state == 4):		# write hex file
-			retValue = send_HEX_Data(crc)
+			retValue = send_HEX_Data(crc, out)
 			if (retValue == 0):
 				state = 5
 			else:
+				print_message("Failed to write data", ERROR)
 				state = 99
 
 		if (state == 5):		# stop flash
@@ -338,7 +398,21 @@ def flash_data(state, tx, hex_file, crc):
 			if (retValue == 0):
 				state = 98
 			else:
+				print_message("Fail to program target, aborting", ERROR)
 				state = 99
+				abort = 1
+		if state == 99:
+			tries -= 1
+			retValue = send_abort_command()
+			if retValue == 0:
+				print_message("Abort command sent", INFO)
+				time.sleep(1) #wait until the micro is restarting
+				print_message("Restart flashing, try no: " + str( (5 - tries) ), INFO)
+				state = 1
+			else:
+				print_message("Can't restart procedure, stop flash", ERROR)
+				tries = 0
+			
 	return state
 
 def main(argv):	
@@ -355,6 +429,8 @@ def main(argv):
 	baud = argv["-B"][0]
 	tx_addr = argv["-T"][0]
 	hex_file = argv["-H"][0]
+	key = argv["-K"][0]
+	
 	ret = connect_to_com_port(port,baud)
 	#calculate CRC here, use relative path to this script
 	
@@ -378,7 +454,7 @@ def main(argv):
 		print_message("CRC16 failed: " + str(e), ERROR)
 	
 	if ret == 1 and _crc_valid == 1:
-		procedure = flash_data(1,tx_addr, hex_file, CRC)
+		procedure = flash_data(tx_addr, hex_file, CRC, key)
 		if procedure == 99:
 			print_message("Flashing procedure failed: internal error code returned", ERROR)
 		elif procedure == 98:
@@ -387,6 +463,7 @@ def main(argv):
 		print_message("Flash failed: can't open COM port or CRC16 failed", ERROR)
 			
 help_string = """
+-K : bootloader key, the key that puts the application in bootloader e.g Aa51cVvM7z 
 -P : serial port, e.g -P COM1
 -B : serial baudrate, the value must be in 0-250K interval
 -H : HEX path, use the absolute path of file
@@ -395,6 +472,7 @@ help_string = """
 --v : tool version
 -V : verbose mode, prints debugging messages during script execution """
 _commands = {
+	"-K" : ["+",		lambda x: len(str(x)) == 10, 						"-K: The key must be 10 char long(alpha-numeric ASCII)"],
 	"-P" : ["",		lambda x: "COM" == x[:3] and x[3:].isdigit(),		"-P: The supported port is COMx where x must be an unsigned int"],
 	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 250000, 	"-B: The baud rate should be in 0-250000 range" ],
 	"-H" : ["", 	lambda x: x != "" and os.path.isfile(x), 			"-H: File not found"],

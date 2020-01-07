@@ -4,9 +4,6 @@
  * Created: 11/4/2019 7:34:04 PM
  * Author : AR
  */ 
-
-#include "radio_fptr.h"
-#include "uart.h"
 #include "WriteApp.h"
 #include "GenericLib.h"
 

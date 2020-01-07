@@ -5,7 +5,8 @@
  *  Author: Adi
  */ 
 #include "WriteApp.h"
-#include "radio_fptr.h"
+#include "nrf24Radio.h"
+#include "nrf24Radio_API.h"
 #include "GenericLib.h"
 #include <util/crc16.h>
 #include <avr/pgmspace.h>
@@ -164,7 +165,7 @@ void wdgReset(void)
 
 void startFlash(uint8_t * rx_address)
 {
-	uint8_t ackResponse [RESPONSE_SIZE];
+	uint8_t ackResponse [RESPONSE_SIZE] = {0};
 	uint8_t pageData [PAGE_SIZE];
 	uint8_t bytesReceived = 0;
 	uint16_t currentPage = 0;
@@ -178,7 +179,8 @@ void startFlash(uint8_t * rx_address)
 	initNrf(rx_address);
 	sei();
 	bootloader_state = BOOTLOADER_FLASH_INIT;
-
+	ackResponse[0] = BOOTLOADER_FLASH_INIT;
+	__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, RESPONSE_SIZE);
 	do 
 	{
 		__nrfRadio_Main();
@@ -259,6 +261,18 @@ void startFlash(uint8_t * rx_address)
 						}
 						else if (rxData.command == COMM_CHECK_CKS)
 						{
+							//erase the remaning pages
+							uint8_t sreg = SREG;
+							cli();
+							for(uint16_t page = currentPage + 1; page < 80; page++)
+							{
+								eeprom_busy_wait ();
+								boot_page_erase (page * 128);
+								boot_spm_busy_wait (); // Wait until the memory is erased.
+								boot_rww_enable();
+							}
+							SREG = sreg;
+							sei();
 							recvCKS = (rxData.data[0] << 8) | (rxData.data[1]);
 							bootloader_state = BOOTLOADER_CHECK_CKS;
 						}
