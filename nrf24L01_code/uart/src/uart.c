@@ -24,13 +24,14 @@ uint8_t uart_rx_index;
 
 volatile uint8_t uart_rx_err_state;
 
-int16_t uart_values[UART_COUNT_MHZ][UART_COUNT_BAUD] = 
+const int16_t uart_values[UART_COUNT_MHZ][UART_COUNT_BAUD] = 
 {
-	{12, 6, 1, 0, -1 },
-	{25, 12, 3, 1, 0},
-	{51, 25, 8, 3, 1 },
-	{103, 51, 16, 8, 3 },
-	{207, 103, 34, 16, 7 }
+// 9600	  19200  57600  115200  250000 (U2X = 0)
+	{6,   2,     0,     -1,     -1 }, //1MHZ
+	{12,  6,     1,     0,      -1 }, //2MHZ
+	{25,  12,    3,     1,       0 }, //4MHZ
+	{51,  25,    8,     3,       1 }, //8MHZ
+	{103, 51,   16,     8,       3 }  //16MHZ
 };
 
 ISR(USART_TXC_vect)
@@ -44,9 +45,9 @@ ISR(USART_RXC_vect)
 
 	if ( ((UCSRA & 0x1C) >> 2) != 0)
 	{
-		uart_rx_err_state = (UCSRA & 0x1C) >> 2;
-		uart_rx_state = UART_RX_ERROR;
-		UCSRA &= ~0x1C;
+		//uart_rx_err_state = (UCSRA & 0x1C) >> 2;
+		//uart_rx_state = UART_RX_ERROR;
+		//UCSRA &= ~0x1C;
 	}
 	else 
 	{
@@ -101,9 +102,9 @@ uart_err uart_init(uint8_t baud, uint8_t cpu_freq, uint8_t uart_parity) // 1Mhz 
 	uart_tx_state = UART_IDLE;
 	uart_rx_state = UART_IDLE;
 
-    UCSRA  = (0x1 << U2X);
+    //UCSRA  = (0x1 << U2X);
 	UCSRB  = (0x1 << TXEN) | (0x1 << RXEN) | (0x1 << RXCIE) | (0x1 << TXCIE);
-	UCSRC  = (0x1 << URSEL) | (0x1 << UCSZ0) | (0x1 << UCSZ1);
+	UCSRC  = (0x1 << URSEL) | (0x1 << UCSZ0) | (0x1 << UCSZ1) | (1 << USBS);
 
 	if( uart_values[cpu_freq][baud] != -1)
 		UBRRL =  (uint8_t)uart_values[cpu_freq][baud];
