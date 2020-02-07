@@ -1,0 +1,7 @@
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/rebuild_cache.dir
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/spi.dir
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/install/local.dir
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/install.dir
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/edit_cache.dir
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/list_install_components.dir
+C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/install/strip.dir
