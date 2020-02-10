@@ -1,0 +1,346 @@
+The target system is: Generic -  - 
+The host system is: Windows - 10.0.17134 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/3.16.2/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/3.16.2/CompilerIdCXX/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe cmTC_5558e/fast && C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe -f CMakeFiles/cmTC_5558e.dir/build.make CMakeFiles/cmTC_5558e.dir/build
+make.exe[1]: Entering directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5558e.dir/testCCompiler.c.obj
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe"   -O3 -DNDEBUG   -o CMakeFiles/cmTC_5558e.dir/testCCompiler.c.obj   -c C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_5558e
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe"   -O3 -DNDEBUG    "CMakeFiles/cmTC_5558e.dir/testCCompiler.c.obj"   -o cmTC_5558e 
+make.exe[1]: Leaving directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe cmTC_03158/fast && C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe -f CMakeFiles/cmTC_03158.dir/build.make CMakeFiles/cmTC_03158.dir/build
+make.exe[1]: Entering directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe"   -O3 -DNDEBUG   -v -o CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj   -c "C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCCompilerABI.c"
+Using built-in specs.
+Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2
+COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe
+Target: avr
+Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c,c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com
+Thread model: single
+gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) 
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj' '-c' '-specs=device-specs/specs-avr2'
+ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/cc1.exe -quiet -v -iprefix c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/ -D NDEBUG C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCCompilerABI.c -mn-flash=1 -mskip-bug -quiet -dumpbase CMakeCCompilerABI.c -auxbase-strip CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj -O3 -version -o C:\Users\AR\AppData\Local\Temp\ccLXd3qR.s
+GNU C11 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)
+	compiled by GNU C version 4.7.4, GMP version 5.0.2, MPFR version 3.0.0, MPC version 0.9
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/sys-include"
+ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include"
+ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include-fixed"
+ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/sys-include"
+ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include
+ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include-fixed
+ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include
+End of search list.
+GNU C11 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)
+	compiled by GNU C version 4.7.4, GMP version 5.0.2, MPFR version 3.0.0, MPC version 0.9
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 73e6560d96e5a5df0438336da33e8090
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj' '-c' '-specs=device-specs/specs-avr2'
+ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/as.exe -mmcu=avr2 -o CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj C:\Users\AR\AppData\Local\Temp\ccLXd3qR.s
+COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/
+LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj' '-c' '-specs=device-specs/specs-avr2'
+Linking C executable cmTC_03158
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe"   -O3 -DNDEBUG   -v "CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj"   -o cmTC_03158 
+Using built-in specs.
+Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2
+COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe
+COLLECT_LTO_WRAPPER=c:/program\ files\ (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe
+Target: avr
+Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c,c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com
+Thread model: single
+gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) 
+COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/
+LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'cmTC_03158' '-specs=device-specs/specs-avr2'
+ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/collect2.exe -plugin c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/liblto_plugin-0.dll -plugin-opt=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\AR\AppData\Local\Temp\ccb1zUo9.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lc --pmem-wrap-around=8k -o cmTC_03158 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj --start-group -lgcc -lm -lc --end-group
+make.exe[1]: Leaving directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include]
+    add: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include-fixed]
+    add: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/include]
+  end of search list found
+  collapse include dir [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include] ==> [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include]
+  collapse include dir [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include-fixed] ==> [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include-fixed]
+  collapse include dir [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/include] ==> [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/avr/include]
+  implicit include dirs: [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include;C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include-fixed;C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/avr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(avr-ld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe cmTC_03158/fast && C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe -f CMakeFiles/cmTC_03158.dir/build.make CMakeFiles/cmTC_03158.dir/build]
+  ignore line: [make.exe[1]: Entering directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj]
+  ignore line: ["C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe"   -O3 -DNDEBUG   -v -o CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj   -c "C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCCompilerABI.c"]
+  ignore line: [Using built-in specs.]
+  ignore line: [Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2]
+  ignore line: [COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe]
+  ignore line: [Target: avr]
+  ignore line: [Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com]
+  ignore line: [Thread model: single]
+  ignore line: [gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj' '-c' '-specs=device-specs/specs-avr2']
+  ignore line: [ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/cc1.exe -quiet -v -iprefix c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/ -D NDEBUG C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCCompilerABI.c -mn-flash=1 -mskip-bug -quiet -dumpbase CMakeCCompilerABI.c -auxbase-strip CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj -O3 -version -o C:\Users\AR\AppData\Local\Temp\ccLXd3qR.s]
+  ignore line: [GNU C11 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)]
+  ignore line: [	compiled by GNU C version 4.7.4  GMP version 5.0.2  MPFR version 3.0.0  MPC version 0.9]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/sys-include"]
+  ignore line: [ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include"]
+  ignore line: [ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include-fixed"]
+  ignore line: [ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/sys-include"]
+  ignore line: [ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include]
+  ignore line: [ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include-fixed]
+  ignore line: [ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C11 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)]
+  ignore line: [	compiled by GNU C version 4.7.4  GMP version 5.0.2  MPFR version 3.0.0  MPC version 0.9]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: 73e6560d96e5a5df0438336da33e8090]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj' '-c' '-specs=device-specs/specs-avr2']
+  ignore line: [ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/as.exe -mmcu=avr2 -o CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj C:\Users\AR\AppData\Local\Temp\ccLXd3qR.s]
+  ignore line: [COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/]
+  ignore line: [LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj' '-c' '-specs=device-specs/specs-avr2']
+  ignore line: [Linking C executable cmTC_03158]
+  ignore line: ["C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe"   -O3 -DNDEBUG   -v "CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj"   -o cmTC_03158 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2]
+  ignore line: [COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-gcc.exe]
+  ignore line: [COLLECT_LTO_WRAPPER=c:/program\ files\ (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe]
+  ignore line: [Target: avr]
+  ignore line: [Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com]
+  ignore line: [Thread model: single]
+  ignore line: [gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) ]
+  ignore line: [COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/]
+  ignore line: [LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'cmTC_03158' '-specs=device-specs/specs-avr2']
+  ignore line: [ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/collect2.exe -plugin c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/liblto_plugin-0.dll -plugin-opt=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\AR\AppData\Local\Temp\ccb1zUo9.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lc --pmem-wrap-around=8k -o cmTC_03158 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib CMakeFiles/cmTC_03158.dir/CMakeCCompilerABI.c.obj --start-group -lgcc -lm -lc --end-group]
+  ignore line: [make.exe[1]: Leaving directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp']
+  ignore line: []
+  ignore line: []
+  implicit libs: []
+  implicit dirs: []
+  implicit fwks: []
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe cmTC_ff5ec/fast && C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe -f CMakeFiles/cmTC_ff5ec.dir/build.make CMakeFiles/cmTC_ff5ec.dir/build
+make.exe[1]: Entering directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_ff5ec.dir/testCXXCompiler.cxx.obj
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe"    -O3 -DNDEBUG   -o CMakeFiles/cmTC_ff5ec.dir/testCXXCompiler.cxx.obj -c C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_ff5ec
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe"    -O3 -DNDEBUG    "CMakeFiles/cmTC_ff5ec.dir/testCXXCompiler.cxx.obj"   -o cmTC_ff5ec 
+make.exe[1]: Leaving directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe cmTC_9bb93/fast && C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe -f CMakeFiles/cmTC_9bb93.dir/build.make CMakeFiles/cmTC_9bb93.dir/build
+make.exe[1]: Entering directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe"    -O3 -DNDEBUG   -v -o CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj -c "C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp"
+Using built-in specs.
+Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2
+COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe
+Target: avr
+Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c,c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com
+Thread model: single
+gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) 
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-specs=device-specs/specs-avr2'
+ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/cc1plus.exe -quiet -v -iprefix c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/ -D NDEBUG C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp -mn-flash=1 -mskip-bug -quiet -dumpbase CMakeCXXCompilerABI.cpp -auxbase-strip CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj -O3 -version -mn-flash=1 -mskip-bug -fno-rtti -fno-enforce-eh-specs -fno-exceptions -o C:\Users\AR\AppData\Local\Temp\cchZU3sL.s
+GNU C++ (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)
+	compiled by GNU C version 4.7.4, GMP version 5.0.2, MPFR version 3.0.0, MPC version 0.9
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0"
+ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/avr"
+ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/backward"
+ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/sys-include"
+ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0"
+ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/avr"
+ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/backward"
+ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include"
+ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include-fixed"
+ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/sys-include"
+ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include
+ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include-fixed
+ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include
+End of search list.
+GNU C++ (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)
+	compiled by GNU C version 4.7.4, GMP version 5.0.2, MPFR version 3.0.0, MPC version 0.9
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 7acefd4733d069bf95ebde087682d8c4
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-specs=device-specs/specs-avr2'
+ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/as.exe -mmcu=avr2 -o CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj C:\Users\AR\AppData\Local\Temp\cchZU3sL.s
+COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/
+LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-specs=device-specs/specs-avr2'
+Linking CXX executable cmTC_9bb93
+"C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe"    -O3 -DNDEBUG   -v "CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj"   -o cmTC_9bb93 
+Using built-in specs.
+Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2
+COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe
+COLLECT_LTO_WRAPPER=c:/program\ files\ (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe
+Target: avr
+Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c,c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com
+Thread model: single
+gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) 
+COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/
+LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/;c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/
+COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'cmTC_9bb93' '-specs=device-specs/specs-avr2'
+ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/collect2.exe -plugin c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/liblto_plugin-0.dll -plugin-opt=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\AR\AppData\Local\Temp\ccLseGn4.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lc --pmem-wrap-around=8k -o cmTC_9bb93 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj -lgcc -lm --start-group -lgcc -lm -lc --end-group
+make.exe[1]: Leaving directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp'
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include]
+    add: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include-fixed]
+    add: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/include]
+  end of search list found
+  collapse include dir [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include] ==> [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include]
+  collapse include dir [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/include-fixed] ==> [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include-fixed]
+  collapse include dir [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/include] ==> [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/avr/include]
+  implicit include dirs: [C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include;C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/avr/5.4.0/include-fixed;C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/avr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(avr-ld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe cmTC_9bb93/fast && C:/PROGRA~2/Atmel/Studio/7.0/SHELLU~1/make.exe -f CMakeFiles/cmTC_9bb93.dir/build.make CMakeFiles/cmTC_9bb93.dir/build]
+  ignore line: [make.exe[1]: Entering directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj]
+  ignore line: ["C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe"    -O3 -DNDEBUG   -v -o CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj -c "C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp"]
+  ignore line: [Using built-in specs.]
+  ignore line: [Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2]
+  ignore line: [COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe]
+  ignore line: [Target: avr]
+  ignore line: [Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com]
+  ignore line: [Thread model: single]
+  ignore line: [gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-specs=device-specs/specs-avr2']
+  ignore line: [ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/cc1plus.exe -quiet -v -iprefix c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/ -D NDEBUG C:/Program Files/CMake/share/cmake-3.16/Modules/CMakeCXXCompilerABI.cpp -mn-flash=1 -mskip-bug -quiet -dumpbase CMakeCXXCompilerABI.cpp -auxbase-strip CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj -O3 -version -mn-flash=1 -mskip-bug -fno-rtti -fno-enforce-eh-specs -fno-exceptions -o C:\Users\AR\AppData\Local\Temp\cchZU3sL.s]
+  ignore line: [GNU C++ (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)]
+  ignore line: [	compiled by GNU C version 4.7.4  GMP version 5.0.2  MPFR version 3.0.0  MPC version 0.9]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0"]
+  ignore line: [ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/avr"]
+  ignore line: [ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/backward"]
+  ignore line: [ignoring nonexistent directory "c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/sys-include"]
+  ignore line: [ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0"]
+  ignore line: [ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/avr"]
+  ignore line: [ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include/c++/5.4.0/backward"]
+  ignore line: [ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include"]
+  ignore line: [ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/include-fixed"]
+  ignore line: [ignoring nonexistent directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/sys-include"]
+  ignore line: [ignoring duplicate directory "c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/lib/gcc/../../lib/gcc/avr/5.4.0/../../../../avr/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include]
+  ignore line: [ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/include-fixed]
+  ignore line: [ c:\program files (x86)\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\../lib/gcc/avr/5.4.0/../../../../avr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C++ (AVR_8_bit_GNU_Toolchain_3.6.1_1750) version 5.4.0 (avr)]
+  ignore line: [	compiled by GNU C version 4.7.4  GMP version 5.0.2  MPFR version 3.0.0  MPC version 0.9]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: 7acefd4733d069bf95ebde087682d8c4]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-specs=device-specs/specs-avr2']
+  ignore line: [ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/as.exe -mmcu=avr2 -o CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj C:\Users\AR\AppData\Local\Temp\cchZU3sL.s]
+  ignore line: [COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/]
+  ignore line: [LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-specs=device-specs/specs-avr2']
+  ignore line: [Linking CXX executable cmTC_9bb93]
+  ignore line: ["C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe"    -O3 -DNDEBUG   -v "CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj"   -o cmTC_9bb93 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [Reading specs from c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/device-specs/specs-avr2]
+  ignore line: [COLLECT_GCC=C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-g++.exe]
+  ignore line: [COLLECT_LTO_WRAPPER=c:/program\ files\ (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe]
+  ignore line: [Target: avr]
+  ignore line: [Configured with: /home/toolsbuild/workspace/avr8-gnu-toolchain/src/gcc/configure LDFLAGS=-L/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs/lib CPPFLAGS= --target=avr --host=i686-w64-mingw32 --build=x86_64-pc-linux-gnu --prefix=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86 --libdir=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86/lib --enable-languages=c c++ --with-dwarf2 --enable-doc --disable-shared --disable-libada --disable-libssp --disable-nls --with-avrlibc=yes --with-mpfr=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-gmp=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --with-mpc=/home/toolsbuild/workspace/avr8-gnu-toolchain/avr8-gnu-toolchain-win32_x86-hostlibs --enable-win32-registry=avrtoolchain --with-pkgversion=AVR_8_bit_GNU_Toolchain_3.6.1_1750 --with-bugurl=http://www.atmel.com]
+  ignore line: [Thread model: single]
+  ignore line: [gcc version 5.4.0 (AVR_8_bit_GNU_Toolchain_3.6.1_1750) ]
+  ignore line: [COMPILER_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/bin/]
+  ignore line: [LIBRARY_PATH=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/]
+  ignore line: [c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-O3' '-D' 'NDEBUG' '-v' '-o' 'cmTC_9bb93' '-specs=device-specs/specs-avr2']
+  ignore line: [ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/collect2.exe -plugin c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/liblto_plugin-0.dll -plugin-opt=c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../libexec/gcc/avr/5.4.0/lto-wrapper.exe -plugin-opt=-fresolution=C:\Users\AR\AppData\Local\Temp\ccLseGn4.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lm -plugin-opt=-pass-through=-lc --pmem-wrap-around=8k -o cmTC_9bb93 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0 -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc -Lc:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib CMakeFiles/cmTC_9bb93.dir/CMakeCXXCompilerABI.cpp.obj -lgcc -lm --start-group -lgcc -lm -lc --end-group]
+  ignore line: [make.exe[1]: Leaving directory 'C:/git_projects/automatic-farm/software/libraries/drivers/spi/build/CMakeFiles/CMakeTmp']
+  ignore line: []
+  ignore line: []
+  implicit libs: []
+  implicit dirs: []
+  implicit fwks: []
+
+

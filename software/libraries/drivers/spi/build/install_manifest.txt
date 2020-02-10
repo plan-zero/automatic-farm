@@ -1,0 +1,2 @@
+C:/git_projects/automatic-farm/software/libraries/drivers/lib/libspi.a
+C:/git_projects/automatic-farm/software/libraries/drivers/includes/spi.h
