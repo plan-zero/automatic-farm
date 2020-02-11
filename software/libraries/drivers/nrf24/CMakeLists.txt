@@ -13,10 +13,7 @@ set(AVR_MCU atmega16)
 
 
 include_directories(./inc)
-include_directories(./../includes)
+include_directories(./../spi/inc)
 avr_add_library(nrf24 ./src/nrf24Radio.c )
-
-install(TARGETS nrf24 DESTINATION lib)
-install(FILES "${PROJECT_BINARY_DIR}/../inc/nrf24Radio_API.h" DESTINATION includes)
 
 
