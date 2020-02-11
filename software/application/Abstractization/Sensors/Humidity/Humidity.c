@@ -6,3 +6,7 @@
  */
 
 
+void HUM_Acquire()
+{
+    
+}
