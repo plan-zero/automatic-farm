@@ -5,4 +5,13 @@
  *      Author: Adi
  */
 
+#include "Scheduler.h"
 
+int  main()
+{
+    voidFunctionType oneMsTask = getPointerTo1msTask();
+
+    oneMsTask();
+     
+    return 0;
+}
