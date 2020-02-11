@@ -10,3 +10,6 @@
 nrf24L01_code/*/Debug/
 .atsuo
 nrf24L01_code/out/*
+software/application/build
+software/application/CMakeLists.txt
+software/application/App/paths
