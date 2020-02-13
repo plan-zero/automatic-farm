@@ -16,6 +16,7 @@ find_program(AVR-GCC avr-gcc)
 find_program(AVR-GXX avr-g++)
 find_program(AVR-OBJCOPY avr-objcopy)
 find_program(AVR-SIZE avr-size)
+find_program(AVR-OBJDUMP avr-objdump)
 find_program(AVRDUDE avrdude)
 
 #define toolchain
@@ -36,6 +37,8 @@ function(avr_add_executable_compilation EXECUTABLE)
 	
 	set(EXECUTABLE_ELF "${EXECUTABLE}.elf")
 	set(EXECUTABLE_HEX "${EXECUTABLE}.hex")
+	set(EXECUTABLE_LSS "${EXECUTABLE}.lss")
+
 	if(PROGRAM_EEPROM)
 		set(EXECUTABLE_EEPROM "${EXECUTABLE}_eeprom.hex")
 	endif(PROGRAM_EEPROM)
@@ -43,17 +46,17 @@ function(avr_add_executable_compilation EXECUTABLE)
 	# main target for the executable depends of hex and eeprom files
 	if(PROGRAM_EEPROM)
 		add_custom_target(${EXECUTABLE} ALL 
-			DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_EEPROM})
+			DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_EEPROM} ${EXECUTABLE_LSS})
 	else(PROGRAM_EEPROM)
 		add_custom_target(${EXECUTABLE} ALL 
-			DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_EEPROM})
+			DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_EEPROM} ${EXECUTABLE_LSS})
 	endif(PROGRAM_EEPROM)
 
 	# compile and link elf file
 	add_executable(${EXECUTABLE_ELF} ${ARGN})
 	set_target_properties(${EXECUTABLE_ELF} PROPERTIES 
 		COMPILE_FLAGS "-mmcu=${AVR_MCU} -DF_CPU=${MCU_FREQ} ${AVR_CFLAGS}"
-		LINK_FLAGS "-mmcu=${AVR_MCU} ${AVR_LFLAGS}")
+		LINK_FLAGS "-mmcu=${AVR_MCU} -Wl,-Map=${EXECUTABLE}.map,--cref ${AVR_LFLAGS}")
 
 	# rule for program hex file
 	add_custom_command(OUTPUT ${EXECUTABLE_HEX} 
@@ -66,6 +69,12 @@ function(avr_add_executable_compilation EXECUTABLE)
 			COMMAND ${AVR-OBJCOPY} -j .eeprom --change-section-lma .eeprom=0 -O ihex ${EXECUTABLE_ELF} ${EXECUTABLE_EEPROM}
 			DEPENDS ${EXECUTABLE_ELF})
 	endif(PROGRAM_EEPROM)
+
+	# rule for lss file
+	add_custom_command(OUTPUT ${EXECUTABLE_LSS} 
+		COMMAND ${AVR-OBJDUMP} -h -S ${EXECUTABLE_ELF} > ${EXECUTABLE_LSS}
+		DEPENDS ${EXECUTABLE_ELF})
+
 
 	# display size info after compilation
 	add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
