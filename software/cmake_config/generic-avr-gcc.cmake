@@ -75,6 +75,13 @@ function(avr_add_executable_compilation EXECUTABLE)
 		COMMAND ${AVR-OBJDUMP} -h -S ${EXECUTABLE_ELF} > ${EXECUTABLE_LSS}
 		DEPENDS ${EXECUTABLE_ELF})
 
+	# clean map file
+	get_directory_property(clean_files ADDITIONAL_MAKE_CLEAN_FILES)
+	set_directory_properties(
+		PROPERTIES
+			ADDITIONAL_MAKE_CLEAN_FILES "${EXECUTABLE}.map"
+	)
+
 
 	# display size info after compilation
 	add_custom_command(TARGET ${EXECUTABLE} POST_BUILD

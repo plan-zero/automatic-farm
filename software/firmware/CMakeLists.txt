@@ -13,3 +13,8 @@ include_directories(./bootloader/inc)
 avr_add_executable(firmware ./bootloader/src/main.c ./bootloader/src/WriteApp.c)
 target_link_libraries(firmware.elf nrf24)
 
+#install binaries
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/firmware.hex
+    DESTINATION ${CMAKE_SOURCE_DIR}/assets/firmware
+)
