@@ -7,9 +7,9 @@ set(AVR_LFLAGS "-Wl,--relax,--gc-sections -Wl,-section-start=.text=0x3800 -Wl,--
 # Name your project
 project(FIRMWARE)
 
-include_directories(./../../libraries/drivers/nrf24/inc)
-include_directories(./inc)
+include_directories(./../libraries/modules/nrf24/inc)
+include_directories(./bootloader/inc)
 
-avr_add_executable(firmware ./src/main.c ./src/WriteApp.c ./../../libraries/drivers/nrf24/src/nrf24Radio_shared.c)
-target_link_libraries(firmware.elf nrf24 spi)
+avr_add_executable(firmware ./bootloader/src/main.c ./bootloader/src/WriteApp.c)
+target_link_libraries(firmware.elf nrf24)
 

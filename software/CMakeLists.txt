@@ -10,5 +10,5 @@ project(AUTOMATIC_FARM)
 set(AVR_MCU atmega16)
 
 add_subdirectory(libraries/drivers/spi)
-add_subdirectory(libraries/drivers/nrf24)
-add_subdirectory(firmware/bootloader)
+add_subdirectory(libraries/modules/nrf24)
+add_subdirectory(firmware)

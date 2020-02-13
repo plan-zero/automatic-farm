@@ -11,6 +11,7 @@
 #include "spi.h"
 #include "stdint.h"
 #include <stddef.h>
+#include "nrf24_hw.h"
 
 
 #define F_CPU 8000000
