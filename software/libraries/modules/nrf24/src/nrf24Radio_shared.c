@@ -4,15 +4,13 @@
  * Created: 12/3/2019 11:26:45 AM
  *  Author: amestereaga
  */ 
-#include <avr/interrupt.h>
 
-//#define IRQ_HANDLER		INT0_vect
-#include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
 #include "nRF24L01.h"
-#include <avr/io.h>
 
 #include "nrf24_hw.h"
+#include "interrupt_hw.h"
+#include "spi_hw.h"
 
 #define NRF_LIB_HOOKS_BASE_ADDR	0x2800
 radio_error_code (* const __flash *fptr_nrfRadio_Main)(radio_context *) = (radio_error_code(* const __flash *)(radio_context *))NRF_LIB_HOOKS_BASE_ADDR;
@@ -34,28 +32,24 @@ radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_context *
 //the instance that is used to store the radio details (states, pipes configuration and so on)
 radio_context _radio_instance;
 
-#define _SPI_WAIT()              while ((SPSR & _BV(SPIF)) == 0)
-#define _SPI_LOAD(byte)			SPDR = byte
-#define _SPI_DATA				SPDR
-
 NRF24_MEMORY ISR(IRQ_HANDLER)
 {
 	GIFR = (1<<INTF0);
 	_radio_instance.irq_triggered++;
 	CSN_LOW();
 	//load status
-	_SPI_LOAD(NOP);
-	_SPI_WAIT();
-	_radio_instance.irq_status = _SPI_DATA;
+	SPI_LOAD(NOP);
+	SPI_WAIT();
+	_radio_instance.irq_status = SPI_DATA;
 	CSN_HIGH();
 	
 
 	CSN_LOW();
 	//clear interrupt
-	_SPI_LOAD(W_REGISTER | (REGISTER_MASK & STATUS));
-	_SPI_WAIT();
-	_SPI_LOAD( (uint8_t)(_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT)) );
-	_SPI_WAIT();
+	SPI_LOAD(W_REGISTER | (REGISTER_MASK & STATUS));
+	SPI_WAIT();
+	SPI_LOAD( (uint8_t)(_BV(RX_DR) | _BV(TX_DS) | _BV(MAX_RT)) );
+	SPI_WAIT();
 	
 	CSN_HIGH();
 }
