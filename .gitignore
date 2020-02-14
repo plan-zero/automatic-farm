@@ -13,3 +13,4 @@ nrf24L01_code/out/*
 tools/avr8-gnu-toolchain-linux_x86_64/
 software/build
 software/assets
+.vscode
