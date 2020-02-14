@@ -21,10 +21,6 @@
 #include <avr/io.h>
 #include <stdlib.h>
 
-#define SPI_WAIT()              while ((SPSR & _BV(SPIF)) == 0)
-#define SPI_LOAD(byte)			SPDR = byte
-#define SPI_DATA				SPDR
-
 #define SPI_MEMORY __attribute__((section(".nrf24")))
 /**
  * Initialize the SPI port as a master.
