@@ -2,7 +2,9 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../cmake_config/generic-avr-gcc.cmake")
 
-set(AVR_LFLAGS "-Wl,--relax,--gc-sections -Wl,-section-start=.text=0x3800 -Wl,--section-start=.nrf24=0x2840 -Wl,--section-start=.radio_fptrs=0x2800  -Wl,--undefined=ptrs")
+#include HW definition for flash locations
+
+set(AVR_LFLAGS "-Wl,--relax,--gc-sections -Wl,-section-start=.text=${BOOTLOADER_CODE_ADDR} -Wl,--section-start=.nrf24=${NRF_CODE_ADDR} -Wl,--section-start=.radio_fptrs=${NRF_HOOKS_ADDR}  -Wl,--undefined=ptrs")
 
 # Name your project
 project(FIRMWARE)

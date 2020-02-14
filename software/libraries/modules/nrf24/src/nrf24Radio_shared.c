@@ -11,8 +11,9 @@
 #include "nrf24_hw.h"
 #include "interrupt_hw.h"
 #include "spi_hw.h"
+#include "flash_layout.h"
 
-#define NRF_LIB_HOOKS_BASE_ADDR	0x2800
+#define NRF_LIB_HOOKS_BASE_ADDR	NRF_HOOKS_ADDR
 radio_error_code (* const __flash *fptr_nrfRadio_Main)(radio_context *) = (radio_error_code(* const __flash *)(radio_context *))NRF_LIB_HOOKS_BASE_ADDR;
 radio_error_code (* const __flash *fptr_nrfRadio_TransmitMode)(radio_context *) = (radio_error_code(* const __flash *)(radio_context *))(NRF_LIB_HOOKS_BASE_ADDR + 2);
 radio_error_code (* const __flash *fptr_nrfRadio_Init)(radio_context *, radio_config) = (radio_error_code(* const __flash *)(radio_context *, radio_config))(NRF_LIB_HOOKS_BASE_ADDR + 4);

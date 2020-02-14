@@ -9,6 +9,7 @@ project(AUTOMATIC_FARM)
 # Name your project
 set(AVR_MCU atmega16)
 
+add_subdirectory(libraries/hardware/${AVR_MCU})
 add_subdirectory(libraries/drivers/spi)
 add_subdirectory(libraries/modules/nrf24)
 add_subdirectory(firmware)
