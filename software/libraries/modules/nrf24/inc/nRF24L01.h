@@ -22,6 +22,7 @@
 /// instructions, to make sure that they do not overwrite the 3 MSBits in those instructions.
 #define REGISTER_MASK 0x1F
 
+#include "stdint.h"
 typedef uint8_t radio_register_t;
 
 

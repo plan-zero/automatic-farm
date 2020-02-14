@@ -4,14 +4,14 @@
  * Created: 11/19/2019 1:38:29 PM
  *  Author: amestereaga
  */ 
-#include <avr/interrupt.h>
-#include <avr/io.h>
 #include "nRF24L01.h"
 #include "nrf24Radio.h"
 #include "spi.h"
 #include "stdint.h"
 #include <stddef.h>
+
 #include "nrf24_hw.h"
+#include "interrupt_hw.h"
 
 
 #define F_CPU 8000000
@@ -139,20 +139,14 @@ radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg)
 	radio_error_code err = RADIO_ERR_OK;
 	uint8_t value;
 
-	
-	//set the MCU registers
-	CE_DDR |= _BV(CE_PIN);
-	CSN_DDR |= _BV(CSN_PIN);
-	INTERRUPT_DDR &= ~_BV(INTERRUPT_PIN);
-	PORTD |= _BV(INTERRUPT_PIN);
+	//set hardware registers
+	NRF24_SET_HW();
 		
 	//move the IRQ table to the bootloader starting section, which is different than the application usage (where it starts from 0x0)
 	if(RADIO_BOOTLOADER == cfg.usecase) {
-		GICR |= (1 << IVCE);
-		GICR = 0x2;
+		INT_ENABLE_BOOTLOADER_INTVECT();
 	}
-	GICR |= _BV(IRQ_EN);
-	MCUCR |= _BV(IRQ_EDGE);
+	INT_ENABLE_INTERRUPT_HW();
 
 
 	//CONFIGURE the radio, the radio is disabled during configuration
@@ -604,9 +598,9 @@ radio_error_code nrfRadio_Main(radio_context *instance) {
 			
 			//we're transmitting so we expect to get the TX_DS or MAX_RT
 			if(instance->irq_triggered > 0) {
-				cli();
+				INT_GLOBAL_DIS();
 				instance->irq_triggered = 0;
-				sei();
+				INT_GLOBAL_EN();
 				instance->currentState = RADIO_STANDBY_2;
 				if(instance->irq_status & _BV(TX_DS)) {
 					if(instance->tx_callback != NULL)
@@ -640,7 +634,7 @@ radio_error_code nrfRadio_Main(radio_context *instance) {
 		//the PWR_BIT must be set and CE pin must be high during RX operation
 		case RADIO_PRX:
 		if(instance->irq_triggered > 0) {
-			cli();
+			INT_GLOBAL_DIS();
 			instance->irq_triggered = 0;
 			
 			if(instance->irq_status & _BV(RX_DR)) {
@@ -668,7 +662,7 @@ radio_error_code nrfRadio_Main(radio_context *instance) {
 				}
 				CE_HIGH();
 			}
-			sei();
+			INT_GLOBAL_EN();
 			
 		}
 		break;
