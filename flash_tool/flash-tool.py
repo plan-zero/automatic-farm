@@ -1,4 +1,4 @@
-import serial.tools.list_ports
+#import serial.tools.list_ports
 import serial, time
 import sys
 import os
@@ -435,10 +435,11 @@ def main(argv):
 	_crc_valid = 0
 	CRC = 0
 	try:
-		crc_cmd = os.path.dirname(sys.argv[0]) + "\\..\\tools\\crc\\crc16"
+		crc_cmd = os.path.dirname(sys.argv[0]) + "./../tools/crc/crc16_linux"
 		crc_cmd = crc_cmd + " -x " + hex_file
 		p = subprocess.Popen(crc_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
 		output = p.stdout.read()
+		print("here" + str(output))
 		res = re.findall(r"<[0-9]+>", output.decode())
 		crc_str = res[0].replace('>','')
 		crc_str = crc_str.replace('<','')
@@ -471,7 +472,7 @@ help_string = """
 -V : verbose mode, prints debugging messages during script execution """
 _commands = {
 	"-K" : ["+",		lambda x: len(str(x)) == 10, 						"-K: The key must be 10 char long(alpha-numeric ASCII)"],
-	"-P" : ["",		lambda x: "COM" == x[:3] and x[3:].isdigit(),		"-P: The supported port is COMx where x must be an unsigned int"],
+	"-P" : ["",		lambda x: ("COM" == x[:3] and x[3:].isdigit()) or (x[:-4] == "/dev/tty"),		"-P: The supported port is COMx where x must be an unsigned int"],
 	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 250000, 	"-B: The baud rate should be in 0-250000 range" ],
 	"-H" : ["", 	lambda x: x != "" and os.path.isfile(x), 			"-H: File not found"],
 	"-T" : ["",		lambda x: x != "" and len(x) <= 5,					"-T: The length of TX/RX address must be less or equal to 5"],
