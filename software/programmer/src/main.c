@@ -11,7 +11,6 @@
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
 
-#define F_CPU 8000000UL
 #include <util/delay.h>
 
 uint8_t uart_data[UART_RX_MAX];

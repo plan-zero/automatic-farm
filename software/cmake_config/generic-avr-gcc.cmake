@@ -39,18 +39,23 @@ function(avr_add_executable_compilation EXECUTABLE)
 	set(EXECUTABLE_HEX "${EXECUTABLE}.hex")
 	set(EXECUTABLE_LSS "${EXECUTABLE}.lss")
 
+	set(TARGET_DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_LSS})
+
+	#check if we create eeprom
 	if(PROGRAM_EEPROM)
 		set(EXECUTABLE_EEPROM "${EXECUTABLE}_eeprom.hex")
+		set(TARGET_DEPENDS ${TARGET_DEPENDS} ${EXECUTABLE_EEPROM})
 	endif(PROGRAM_EEPROM)
 
-	# main target for the executable depends of hex and eeprom files
-	if(PROGRAM_EEPROM)
-		add_custom_target(${EXECUTABLE} ALL 
-			DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_EEPROM} ${EXECUTABLE_LSS})
-	else(PROGRAM_EEPROM)
-		add_custom_target(${EXECUTABLE} ALL 
-			DEPENDS ${EXECUTABLE_HEX} ${EXECUTABLE_EEPROM} ${EXECUTABLE_LSS})
-	endif(PROGRAM_EEPROM)
+	#check if we create nrf24 image
+	if(NRF24_IMAGE)
+		set(EXECUTABLE_NRF24 "nrf24.hex")
+		set(TARGET_DEPENDS ${TARGET_DEPENDS} ${EXECUTABLE_NRF24})
+	endif(NRF24_IMAGE)
+
+	add_custom_target(${EXECUTABLE} ALL 
+		DEPENDS ${TARGET_DEPENDS})
+
 
 	# compile and link elf file
 	add_executable(${EXECUTABLE_ELF} ${ARGN})
@@ -62,6 +67,13 @@ function(avr_add_executable_compilation EXECUTABLE)
 	add_custom_command(OUTPUT ${EXECUTABLE_HEX} 
 		COMMAND ${AVR-OBJCOPY} -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures -O ihex ${EXECUTABLE_ELF} ${EXECUTABLE_HEX}
 		DEPENDS ${EXECUTABLE_ELF})
+
+	# rule for program nrf24 hex file
+	if(NRF24_IMAGE)
+		add_custom_command(OUTPUT ${EXECUTABLE_NRF24} 
+			COMMAND ${AVR-OBJCOPY} -j .nrf24 -j .radio_fptrs -O ihex ${EXECUTABLE_ELF} ${EXECUTABLE_NRF24}
+			DEPENDS ${EXECUTABLE_ELF})
+	endif(NRF24_IMAGE)
 
 	# rule for eeprom hex file
 	if(PROGRAM_EEPROM)

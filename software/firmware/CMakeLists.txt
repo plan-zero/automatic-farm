@@ -9,6 +9,9 @@ set(AVR_LFLAGS "-Wl,--relax,--gc-sections -Wl,-section-start=.text=${BOOTLOADER_
 # Name your project
 project(FIRMWARE)
 
+#extract the NRF24 image
+set(NRF24_IMAGE True)
+
 include_directories(./../libraries/modules/nrf24/inc)
 include_directories(./bootloader/inc)
 
@@ -17,6 +20,7 @@ target_link_libraries(firmware.elf nrf24)
 
 #install binaries
 install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/firmware.hex
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/firmware.hex 
+          ${CMAKE_CURRENT_BINARY_DIR}/nrf24.hex
     DESTINATION ${CMAKE_SOURCE_DIR}/assets/firmware
 )
