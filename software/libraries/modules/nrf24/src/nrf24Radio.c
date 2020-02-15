@@ -14,7 +14,6 @@
 #include "interrupt_hw.h"
 
 
-#define F_CPU 8000000
 #include <util/delay.h>
 
 
@@ -146,7 +145,7 @@ radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg)
 	if(RADIO_BOOTLOADER == cfg.usecase) {
 		INT_ENABLE_BOOTLOADER_INTVECT();
 	}
-	INT_ENABLE_INTERRUPT_HW();
+	INT_ENABLE_INTERRUPT0_HW();
 
 
 	//CONFIGURE the radio, the radio is disabled during configuration

@@ -33,7 +33,7 @@ radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_context *
 //the instance that is used to store the radio details (states, pipes configuration and so on)
 radio_context _radio_instance;
 
-NRF24_MEMORY ISR(IRQ_HANDLER)
+NRF24_MEMORY INTERRUPT_ROUTINE(IRQ_INT0_HANDLER)
 {
 	GIFR = (1<<INTF0);
 	_radio_instance.irq_triggered++;

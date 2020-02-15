@@ -9,7 +9,6 @@
 #ifndef INCFILE1_H_
 #define INCFILE1_H_
 
-#define F_CPU 4000000UL
 
 #include <util/delay.h>
 #include <avr/io.h>
