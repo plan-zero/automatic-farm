@@ -10,19 +10,19 @@
 #define UART_PARITY_EVEN 1
 #define UART_PARITY_ODD  2
 
-#define UART_1MHZ			_UART_1MHZ
-#define UART_2MHZ			_UART_2MHZ
-#define UART_4MHZ			_UART_4MHZ
-#define UART_8MHZ			_UART_8MHZ
-#define UART_16MHZ			_UART_16MHZ
-#define UART_COUNT_MHZ		_UART_COUNT_MHZ
+#define UART_1MHZ 0
+#define UART_2MHZ 1
+#define UART_4MHZ 2
+#define UART_8MHZ 3
+#define UART_16MHZ 4
+#define UART_COUNT_MHZ 5
 
-#define UART_9600BAUD  		_UART_9600BAUD
-#define UART_19200BAUD 		_UART_9600BAUD
-#define UART_57600BAUD		_UART_9600BAUD
-#define UART_115200BAUD		_UART_9600BAUD
-#define UART_250000BAUD		_UART_9600BAUD
-#define UART_COUNT_BAUD		_UART_9600BAUD
+#define UART_9600BAUD  0
+#define UART_19200BAUD 1
+#define UART_57600BAUD 2
+#define UART_115200BAUD 3
+#define UART_250000BAUD 4
+#define UART_COUNT_BAUD 5
 
 typedef enum {
 	UART_INVALID_ARG,
@@ -42,5 +42,6 @@ extern uint8_t uart_rx_flush(uint8_t *buffer, uint8_t *rx_error);
 extern void uart_printRegister(unsigned char reg);
 extern void uart_printString(char *string, char crlf);
 extern volatile uint8_t uart_rx_err_state;
+
 
 #endif//_UART_H

@@ -23,4 +23,7 @@ add_subdirectory(libraries/modules/nrf24)
 #compile the firmware
 add_subdirectory(firmware)
 
+#compile the programmer sw
+add_subdirectory(programmer)
+
 #TODO: compile the application
