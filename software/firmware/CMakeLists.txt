@@ -4,7 +4,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../cmake_config/generic-avr-gcc
 
 #include HW definition for flash locations
 
-set(AVR_LFLAGS "-Wl,--relax,--gc-sections -Wl,-section-start=.text=${BOOTLOADER_CODE_ADDR} -Wl,--section-start=.nrf24=${NRF_CODE_ADDR} -Wl,--section-start=.radio_fptrs=${NRF_HOOKS_ADDR}  -Wl,--undefined=ptrs")
+set(AVR_LFLAGS "-Wl,--relax,--gc-sections -Wl,-section-start=.text=${BOOTLOADER_CODE_ADDR} -Wl,--section-start=.nrf24=${NRF_CODE_ADDR} -Wl,--section-start=.radio_fptrs=${NRF_HOOKS_ADDR}  -Wl,--undefined=ptrs -Wl,--undefined=${E2P_DATA_VAR_NAME}")
 
 # Name your project
 project(FIRMWARE)
@@ -14,13 +14,17 @@ set(NRF24_IMAGE True)
 
 include_directories(./../libraries/modules/nrf24/inc)
 include_directories(./bootloader/inc)
+include_directories(./../libraries/hardware/${AVR_MCU})
+
+set(PROGRAM_EEPROM True)
 
 avr_add_executable(firmware ./bootloader/src/main.c ./bootloader/src/WriteApp.c)
-target_link_libraries(firmware.elf nrf24)
+target_link_libraries(firmware.elf nrf24 e2p)
 
 #install binaries
 install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/firmware.hex 
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/firmware.hex
+          ${CMAKE_CURRENT_BINARY_DIR}/firmware_eep.hex
           ${CMAKE_CURRENT_BINARY_DIR}/nrf24.hex
     DESTINATION ${CMAKE_SOURCE_DIR}/assets/firmware
 )

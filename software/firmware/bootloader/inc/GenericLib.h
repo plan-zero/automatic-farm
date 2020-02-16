@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "E2P_Layout.h"
+#include "e2p_layout.h"
 #define LED_PORT_DIR DDRB
 #define LED_PORT_PIN PINB0
 
