@@ -43,7 +43,7 @@ function(avr_add_executable_compilation EXECUTABLE)
 
 	#check if we create eeprom
 	if(PROGRAM_EEPROM)
-		set(EXECUTABLE_EEPROM "${EXECUTABLE}_eeprom.hex")
+		set(EXECUTABLE_EEPROM "${EXECUTABLE}_eep.hex")
 		set(TARGET_DEPENDS ${TARGET_DEPENDS} ${EXECUTABLE_EEPROM})
 	endif(PROGRAM_EEPROM)
 
@@ -78,7 +78,7 @@ function(avr_add_executable_compilation EXECUTABLE)
 	# rule for eeprom hex file
 	if(PROGRAM_EEPROM)
 		add_custom_command(OUTPUT ${EXECUTABLE_EEPROM}
-			COMMAND ${AVR-OBJCOPY} -j .eeprom --change-section-lma .eeprom=0 -O ihex ${EXECUTABLE_ELF} ${EXECUTABLE_EEPROM}
+			COMMAND ${AVR-OBJCOPY} -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 -O ihex ${EXECUTABLE_ELF} ${EXECUTABLE_EEPROM}
 			DEPENDS ${EXECUTABLE_ELF})
 	endif(PROGRAM_EEPROM)
 
