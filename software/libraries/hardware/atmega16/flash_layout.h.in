@@ -16,4 +16,7 @@
 #cmakedefine FLASH_PAGE_COUNT           @FLASH_PAGE_COUNT@          //The total number of flash pages
 #cmakedefine FLASH_PAGE_SIZE            @FLASH_PAGE_SIZE@           //The size of one page in [Bytes]
 
+#cmakedefine APP_CODE_ADDR              @APP_CODE_ADDR@             //APP code starting address in flash
+#cmakedefine APP_CODE_SIZE              @APP_CODE_SIZE@             //APP code SIZE [Bytes]
+
 #endif
