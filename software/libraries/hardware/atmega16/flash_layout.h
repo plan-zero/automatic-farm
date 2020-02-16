@@ -16,4 +16,7 @@
 #define FLASH_PAGE_COUNT           80          //The total number of flash pages
 #define FLASH_PAGE_SIZE            128           //The size of one page in [Bytes]
 
+#define APP_CODE_ADDR              0x0             //APP code starting address in flash
+#define APP_CODE_SIZE              10240             //APP code SIZE [Bytes]
+
 #endif
