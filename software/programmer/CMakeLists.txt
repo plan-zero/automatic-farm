@@ -18,7 +18,9 @@ target_link_libraries(${TARGET_NAME}.elf nrf24_api uart)
 #set postbuild command to concatenate programmer with nrf24
 add_custom_command(TARGET programmer POST_BUILD
     COMMAND test ! -e ${CMAKE_CURRENT_BINARY_DIR}/../firmware/${NRF24HEX} || 
-    cat ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.hex ${CMAKE_CURRENT_BINARY_DIR}/../firmware/${NRF24HEX} > ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}${TARGET_EXT_NAME}
+    head -n-1 ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.hex > ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}${TARGET_EXT_NAME}
+    COMMAND test ! -e ${CMAKE_CURRENT_BINARY_DIR}/../firmware/${NRF24HEX} || 
+    cat ${CMAKE_CURRENT_BINARY_DIR}/../firmware/${NRF24HEX} >> ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}${TARGET_EXT_NAME}
 )
 
 
