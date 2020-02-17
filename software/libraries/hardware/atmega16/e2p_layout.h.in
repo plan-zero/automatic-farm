@@ -46,4 +46,6 @@
 
 #cmakedefine E2P_SIZE                       (uint16_t)@E2P_SIZE@
 
+#define EEP_MEMORY_SECTION __attribute__((section("@EEP_MEMORY_SECTION@")))
+
 #endif

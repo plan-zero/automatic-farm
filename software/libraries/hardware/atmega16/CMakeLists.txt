@@ -64,6 +64,9 @@ set(PROGRAMMER_KEY_LENGTH "10")
 
 MATH(EXPR E2P_SIZE "${PROGRAMMER_SECRET_KEY} + ${PROGRAMMER_KEY_LENGTH}")
 
+#define E2P memory section - by default the avr-gcc is using eeprom
+set(EEP_MEMORY_SECTION .eeprom)
+
 
 configure_file(flash_layout.h.in ${CMAKE_CURRENT_SOURCE_DIR}/flash_layout.h @ONLY)
 configure_file(e2p_layout.h.in ${CMAKE_CURRENT_SOURCE_DIR}/e2p_layout.h @ONLY)

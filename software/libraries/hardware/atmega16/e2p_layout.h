@@ -46,4 +46,6 @@
 
 #define E2P_SIZE                       (uint16_t)39
 
+#define EEP_MEMORY_SECTION __attribute__((section(".eeprom")))
+
 #endif

@@ -6,7 +6,7 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../../cmake_config/generic-avr-
 project(E2P)
 
 #set E2P variable that is passed down to the linker
-set(E2P_DATA_VAR_NAME e2p_layout CACHE INTERNAL "")
+set(E2P_DATA_VAR_NAME e2p_default_data CACHE INTERNAL "")
 #check if E2P values are set, otherwise use the default ones
 
 #check RX address value

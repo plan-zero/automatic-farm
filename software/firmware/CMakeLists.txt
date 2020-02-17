@@ -14,6 +14,7 @@ set(NRF24_IMAGE True)
 
 include_directories(./../libraries/modules/nrf24/inc)
 include_directories(./bootloader/inc)
+include_directories(./../libraries/drivers/e2p/inc)
 include_directories(./../libraries/hardware/${AVR_MCU})
 
 set(PROGRAM_EEPROM True)

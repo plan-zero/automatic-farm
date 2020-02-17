@@ -1,8 +1,7 @@
 #include "e2p_layout.h"
 #include "stdint.h"
 #include "string.h"
-
-#define E2P_EXTRACT_BYTE(string, pos) (uint8_t)string[pos]
+#include <avr/eeprom.h>
 
 union e2p_data
 {
@@ -22,7 +21,7 @@ union e2p_data
     uint8_t e2p_raw[E2P_SIZE];
 };
 
-union e2p_data e2p_layout __attribute__((section(".eeprom"))) = 
+union e2p_data e2p_default_data EEP_MEMORY_SECTION = 
 {
     .e2p_fields.rx_address = 
         {
