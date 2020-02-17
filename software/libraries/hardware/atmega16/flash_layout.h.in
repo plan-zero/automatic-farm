@@ -19,4 +19,8 @@
 #cmakedefine APP_CODE_ADDR              @APP_CODE_ADDR@             //APP code starting address in flash
 #cmakedefine APP_CODE_SIZE              @APP_CODE_SIZE@             //APP code SIZE [Bytes]
 
+#define SPI_MEMORY              __attribute__((section("@FLASH_SECTION_SPI@")))
+#define NRF24_MEMORY            __attribute__((section("@FLASH_SECTION_NRF24@")))
+#define RADIO_FPTRS_MEMORY      __attribute__((used, section("@FLASH_SECITON_RADIO_FPTR@")))
+
 #endif

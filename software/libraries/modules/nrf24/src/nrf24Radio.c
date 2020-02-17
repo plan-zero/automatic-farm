@@ -12,6 +12,7 @@
 
 #include "nrf24_hw.h"
 #include "interrupt_hw.h"
+#include "flash_layout.h"
 
 
 #include <util/delay.h>
@@ -77,17 +78,17 @@ NRF24_MEMORY static void send_instruction(uint8_t instruction, uint8_t* data, ui
 	CSN_HIGH();
 }
 
-radio_error_code nrfRadio_SetTxCallback(radio_context *instance, void (*callback)(radio_tx_status)) {
+NRF24_MEMORY radio_error_code nrfRadio_SetTxCallback(radio_context *instance, void (*callback)(radio_tx_status)) {
 	instance->tx_callback = callback;
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_SetRxCallback(radio_context *instance, void (*callback)(uint8_t, uint8_t *, uint8_t)) {
+NRF24_MEMORY radio_error_code nrfRadio_SetRxCallback(radio_context *instance, void (*callback)(uint8_t, uint8_t *, uint8_t)) {
 	instance->rx_callback = callback;
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_GetInfo(radio_context *instance, radio_registers * reg)
+NRF24_MEMORY radio_error_code nrfRadio_GetInfo(radio_context *instance, radio_registers * reg)
 {
 	//read CONFIG register
 	get_register(CONFIG, &reg->config, 1);
@@ -133,7 +134,7 @@ radio_error_code nrfRadio_GetInfo(radio_context *instance, radio_registers * reg
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg)
+NRF24_MEMORY radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg)
 {
 	radio_error_code err = RADIO_ERR_OK;
 	uint8_t value;
@@ -242,7 +243,7 @@ radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg)
 	return err;
 }
 
-radio_error_code nrfRadio_PipeConfig(radio_context *instance, pipe_config pipe_cfg){
+NRF24_MEMORY radio_error_code nrfRadio_PipeConfig(radio_context *instance, pipe_config pipe_cfg){
 	radio_error_code err = RADIO_ERR_OK;
 	uint8_t value = 0;
 	
@@ -315,7 +316,7 @@ radio_error_code nrfRadio_PipeConfig(radio_context *instance, pipe_config pipe_c
 	return err;
 }
 
-radio_error_code nrfRadio_ChangeDataRate(radio_context *instance, radio_data_rate datarate) {
+NRF24_MEMORY radio_error_code nrfRadio_ChangeDataRate(radio_context *instance, radio_data_rate datarate) {
 	
 	uint8_t value = 0;
 	uint8_t read_value = 0;
@@ -340,7 +341,7 @@ radio_error_code nrfRadio_ChangeDataRate(radio_context *instance, radio_data_rat
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_ChangePower(radio_context *instance, radio_rf_power power){
+NRF24_MEMORY radio_error_code nrfRadio_ChangePower(radio_context *instance, radio_rf_power power){
 	uint8_t value = 0;
 	uint8_t read_value = 0;
 	
@@ -373,7 +374,7 @@ radio_error_code nrfRadio_ChangePower(radio_context *instance, radio_rf_power po
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_PowerDown(radio_context *instance) {
+NRF24_MEMORY radio_error_code nrfRadio_PowerDown(radio_context *instance) {
 	
 	uint8_t value = 0;
 	
@@ -390,7 +391,7 @@ radio_error_code nrfRadio_PowerDown(radio_context *instance) {
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_PowerUp(radio_context *instance) {
+NRF24_MEMORY radio_error_code nrfRadio_PowerUp(radio_context *instance) {
 	uint8_t value = 0;
 	
 	//if the state is not power down, then the radio is already powered up
@@ -410,7 +411,7 @@ radio_error_code nrfRadio_PowerUp(radio_context *instance) {
 	return RADIO_ERR_OK;
 }
 
-radio_error_code nrfRadio_ListeningMode(radio_context *instance) {
+NRF24_MEMORY radio_error_code nrfRadio_ListeningMode(radio_context *instance) {
 	uint8_t value = 0;
 	
 	//the radio must be powered up before it enters in listening mode
@@ -434,7 +435,7 @@ radio_error_code nrfRadio_ListeningMode(radio_context *instance) {
 	return RADIO_ERR_INVALID;
 }
 
-radio_error_code nrfRadio_TransmitMode(radio_context *instance) {
+NRF24_MEMORY radio_error_code nrfRadio_TransmitMode(radio_context *instance) {
 	uint8_t value = 0;
 	
 	//the radio must be powered up before it enters in listening mode
@@ -455,7 +456,7 @@ radio_error_code nrfRadio_TransmitMode(radio_context *instance) {
 	
 	return RADIO_ERR_INVALID;
 }
-radio_error_code nrfRadio_LoadMessages(radio_context *instance, uint8_t * payload, uint8_t payload_length) {
+NRF24_MEMORY radio_error_code nrfRadio_LoadMessages(radio_context *instance, uint8_t * payload, uint8_t payload_length) {
 	uint8_t value;
 	
 	//radio is transmiting
@@ -476,7 +477,7 @@ radio_error_code nrfRadio_LoadMessages(radio_context *instance, uint8_t * payloa
 	return RADIO_ERR_OK;
 }
 
-radio_tx_status nrfRadio_Transmit(radio_context *instance, uint8_t * tx_address, radio_transmision_type trans_type) 
+NRF24_MEMORY radio_tx_status nrfRadio_Transmit(radio_context *instance, uint8_t * tx_address, radio_transmision_type trans_type) 
 {
 	uint8_t value;
 	radio_tx_status txerr = RADIO_TX_OK;
@@ -552,7 +553,7 @@ radio_tx_status nrfRadio_Transmit(radio_context *instance, uint8_t * tx_address,
 	return txerr;
 }
 
-radio_error_code nrfRadio_LoadAckPayload(radio_context *instance, radio_pipe pipe, uint8_t * payload, uint8_t payload_length)
+NRF24_MEMORY radio_error_code nrfRadio_LoadAckPayload(radio_context *instance, radio_pipe pipe, uint8_t * payload, uint8_t payload_length)
 {
 	if(RADIO_PRX == instance->currentState) {
 		CE_LOW();
@@ -567,7 +568,7 @@ radio_error_code nrfRadio_LoadAckPayload(radio_context *instance, radio_pipe pip
 
 
 //the main radio task, this should be called in a loop
-radio_error_code nrfRadio_Main(radio_context *instance) {
+NRF24_MEMORY radio_error_code nrfRadio_Main(radio_context *instance) {
 	
 	switch(instance->currentState){
 		// the radio is not already initialized, but the main loop has been called.
@@ -673,7 +674,7 @@ radio_error_code nrfRadio_Main(radio_context *instance) {
 	return RADIO_ERR_OK;
 }
 
-fptr_t ptrs[] __attribute__((used, section(".radio_fptrs"))) = {
+fptr_t ptrs[] RADIO_FPTRS_MEMORY = {
 	(fptr_t)nrfRadio_Main,
 	(fptr_t)nrfRadio_TransmitMode,
 	(fptr_t)nrfRadio_Init,

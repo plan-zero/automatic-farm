@@ -19,4 +19,8 @@
 #define APP_CODE_ADDR              0x0             //APP code starting address in flash
 #define APP_CODE_SIZE              10240             //APP code SIZE [Bytes]
 
+#define SPI_MEMORY              __attribute__((section(".nrf24")))
+#define NRF24_MEMORY            __attribute__((section(".nrf24")))
+#define RADIO_FPTRS_MEMORY      __attribute__((used, section(".radio_fptrs")))
+
 #endif

@@ -11,9 +11,6 @@
 
 #include "stdint.h"
 
-//#ifndef 
-#define NRF24_MEMORY __attribute__((section(".nrf24")))
-//#endif
 
 
 typedef enum _crc {
@@ -398,21 +395,21 @@ typedef struct _radio_context{
 }radio_context;
 
 
-NRF24_MEMORY radio_error_code nrfRadio_GetInfo(radio_context *instance, radio_registers * reg);
-NRF24_MEMORY radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg);
-NRF24_MEMORY radio_error_code nrfRadio_PipeConfig(radio_context *instance, pipe_config pipe_cfg);
-NRF24_MEMORY radio_error_code nrfRadio_LoadMessages(radio_context *instance, uint8_t * payload, uint8_t payload_length);
-NRF24_MEMORY radio_tx_status nrfRadio_Transmit(radio_context *instance, uint8_t * tx_address, radio_transmision_type trans_type);
-NRF24_MEMORY radio_error_code nrfRadio_Main(radio_context *instance);
-NRF24_MEMORY radio_error_code nrfRadio_TransmitMode(radio_context *instance);
-NRF24_MEMORY radio_error_code nrfRadio_ListeningMode(radio_context *instance);
-NRF24_MEMORY radio_error_code nrfRadio_PowerUp(radio_context *instance);
-NRF24_MEMORY radio_error_code nrfRadio_PowerDown(radio_context *instance);
-NRF24_MEMORY radio_error_code nrfRadio_ChangeDataRate(radio_context *instance, radio_data_rate datarate);
-NRF24_MEMORY radio_error_code nrfRadio_ChangePower(radio_context *instance, radio_rf_power power);
-NRF24_MEMORY radio_error_code nrfRadio_SetTxCallback(radio_context *instance, void (*callback)(radio_tx_status));
-NRF24_MEMORY radio_error_code nrfRadio_SetRxCallback(radio_context *instance, void (*callback)(uint8_t, uint8_t *, uint8_t));
-NRF24_MEMORY radio_error_code nrfRadio_LoadAckPayload(radio_context *instance, radio_pipe pipe, uint8_t * payload, uint8_t payload_length);
+radio_error_code nrfRadio_GetInfo(radio_context *instance, radio_registers * reg);
+radio_error_code nrfRadio_Init(radio_context *instance, radio_config cfg);
+radio_error_code nrfRadio_PipeConfig(radio_context *instance, pipe_config pipe_cfg);
+radio_error_code nrfRadio_LoadMessages(radio_context *instance, uint8_t * payload, uint8_t payload_length);
+radio_tx_status nrfRadio_Transmit(radio_context *instance, uint8_t * tx_address, radio_transmision_type trans_type);
+radio_error_code nrfRadio_Main(radio_context *instance);
+radio_error_code nrfRadio_TransmitMode(radio_context *instance);
+radio_error_code nrfRadio_ListeningMode(radio_context *instance);
+radio_error_code nrfRadio_PowerUp(radio_context *instance);
+radio_error_code nrfRadio_PowerDown(radio_context *instance);
+radio_error_code nrfRadio_ChangeDataRate(radio_context *instance, radio_data_rate datarate);
+radio_error_code nrfRadio_ChangePower(radio_context *instance, radio_rf_power power);
+radio_error_code nrfRadio_SetTxCallback(radio_context *instance, void (*callback)(radio_tx_status));
+radio_error_code nrfRadio_SetRxCallback(radio_context *instance, void (*callback)(uint8_t, uint8_t *, uint8_t));
+radio_error_code nrfRadio_LoadAckPayload(radio_context *instance, radio_pipe pipe, uint8_t * payload, uint8_t payload_length);
 
 typedef void(*fptr_t)(void);
 

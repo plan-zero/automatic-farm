@@ -18,10 +18,8 @@
 #define SPI_H_
 
 #include <stdio.h>
-#include <avr/io.h>
 #include <stdlib.h>
-
-#define SPI_MEMORY __attribute__((section(".nrf24")))
+#include "flash_layout.h"
 /**
  * Initialize the SPI port as a master.
  * This function must be called once before using the SPI interface.

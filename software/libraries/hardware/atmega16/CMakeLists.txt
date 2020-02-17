@@ -1,6 +1,8 @@
 project(MEMORY_LAYOUT)
 
 #FLASH LAYOUT DEFINES
+##################################################################
+
 set(APP_CODE_ADDR "0x0" CACHE INTERNAL "")
 set(APP_CODE_SIZE "10240" CACHE INTERNAL "")
 
@@ -16,8 +18,13 @@ set(BOOTLOADER_CODE_SIZE "2048" CACHE INTERNAL "")
 set(FLASH_PAGE_COUNT "80")
 set(FLASH_PAGE_SIZE  "128")
 
-#EEPROM LAYOUT DEFINES
+set(FLASH_SECTION_NRF24 .nrf24 CACHE INTERNAL "")
+#we use the same section for spi driver
+set(FLASH_SECTION_SPI ${FLASH_SECTION_NRF24} CACHE INTERNAL "")
+set(FLASH_SECITON_RADIO_FPTR .radio_fptrs CACHE INTERNAL "")
 
+#EEPROM LAYOUT DEFINES
+##################################################################
 #this will shift the whole e2p layout, currently we use start at 0
 set(EEPROM_START_ADDR "0")
 
