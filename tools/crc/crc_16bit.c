@@ -246,9 +246,9 @@ int main(int argc, char *argv[])
 				printf("ERROR: Can't open the file");
 			}
 			
-			
 			fclose(fptr);
-			fclose(outputfile);
+			if(write_file)
+				fclose(outputfile);
 		}
 
 	}
