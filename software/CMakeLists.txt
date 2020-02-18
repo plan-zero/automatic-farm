@@ -6,9 +6,8 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/cmake_config/generic-avr-gcc.cmake
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 
 project(AUTOMATIC_FARM)
-# Name your project
-set(AVR_MCU atmega16)
-set(MCU_FREQ 8000000UL)
+
+include(CheckArguments.cmake)
 
 #generate the driver headers
 add_subdirectory(libraries/hardware/${AVR_MCU})
