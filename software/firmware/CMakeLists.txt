@@ -12,15 +12,16 @@ project(FIRMWARE)
 #extract the NRF24 image
 set(NRF24_IMAGE True)
 
-include_directories(./../libraries/modules/nrf24/inc)
 include_directories(./bootloader/inc)
+include_directories(./../libraries/modules/nrf24/inc)
 include_directories(./../libraries/drivers/e2p/inc)
+include_directories(./../libraries/drivers/flash/inc)
 include_directories(./../libraries/hardware/${AVR_MCU})
 
 set(PROGRAM_EEPROM True)
 
 avr_add_executable(firmware ./bootloader/src/main.c ./bootloader/src/WriteApp.c)
-target_link_libraries(firmware.elf nrf24 e2p)
+target_link_libraries(firmware.elf nrf24 e2p flash)
 
 #install binaries
 install(
