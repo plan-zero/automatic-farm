@@ -28,4 +28,5 @@ add_subdirectory(firmware)
 #compile the programmer sw
 add_subdirectory(programmer)
 
-#TODO: compile the application
+#compile the application
+add_subdirectory(application)
