@@ -1,1 +1,0 @@
-This folder contains the firmware outfile (hex files)
