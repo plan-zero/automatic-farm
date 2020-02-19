@@ -131,6 +131,7 @@ function(avr_add_executable EXECUTABLE)
 	if(AVR_PROGRAMMER)
 		avr_add_executable_upload(${EXECUTABLE})
 	endif()
+
 endfunction(avr_add_executable)
 
 function(avr_add_library LIBRARY)

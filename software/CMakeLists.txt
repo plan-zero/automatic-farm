@@ -7,7 +7,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 
 project(AUTOMATIC_FARM)
 
+
 include(CheckArguments.cmake)
+
 
 #generate the driver headers
 add_subdirectory(libraries/hardware/${AVR_MCU})
@@ -27,4 +29,7 @@ add_subdirectory(firmware)
 #compile the programmer sw
 add_subdirectory(programmer)
 
-#TODO: compile the application
+
+#compile the application
+add_subdirectory(application)
+

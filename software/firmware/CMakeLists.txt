@@ -29,4 +29,5 @@ install(
           ${CMAKE_CURRENT_BINARY_DIR}/firmware_eep.hex
           ${CMAKE_CURRENT_BINARY_DIR}/nrf24.hex
     DESTINATION ${CMAKE_SOURCE_DIR}/assets/${AVR_MCU}/firmware
+
 )

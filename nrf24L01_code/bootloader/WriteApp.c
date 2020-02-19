@@ -87,9 +87,7 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 	rxData.length = payload_length - 1;	
 	rxData.hasMessage = MSG_RECEIVED;
 }
-void tx_handler(radio_tx_status tx_status) {
-	
-}
+
 
 
 
@@ -123,7 +121,6 @@ void initNrf(uint8_t * rx_address)
 	__nrfRadio_PipeConfig(pipe_cfg0);
 	
 	__nrfRadio_SetRxCallback(rx_handler);
-	__nrfRadio_SetTxCallback(tx_handler);
 	__nrfRadio_PowerUp();
 	__nrfRadio_ListeningMode();
 }
@@ -322,6 +319,12 @@ void startFlash(uint8_t * rx_address)
 							uint8_t dummy[6] = {0};
 							cli();
 							eeprom_update_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH + PROGRAMMER_ADDR_LENGTH);
+							//write flash checksum
+							dummy[0] = (uint8_t)(recvCKS >> 8);
+							dummy[1] = (uint8_t)(recvCKS);
+							dummy[2] = 0;
+							dummy[3] = 0;
+							eeprom_update_block ((void*)&dummy[0], (void*)FLASH_CKS_ADDRESS, FLASH_CKS_LENGTH);
 							sei();
 							_delay_ms(1000);
 							//  WDG reset
