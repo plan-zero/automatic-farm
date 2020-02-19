@@ -5,12 +5,24 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../../cmake_config/generic-avr-
 # Name your project
 project(NRF24)
 
-include_directories(inc)
-include_directories(./../../drivers/spi/inc)
-include_directories(./../../hardware/${AVR_MCU})
+set(HEADER_INC
+    ./inc
+    ./../../drivers/spi/inc
+    ./../../hardware/${AVR_MCU}
+)
+include_directories(${HEADER_INC})
 
-avr_add_library(nrf24 ./src/nrf24Radio.c ./src/nrf24Radio_shared.c)
-avr_add_library(nrf24_api ./src/nrf24Radio_shared.c)
+set(SOURCE_FILES
+    ./src/nrf24Radio.c
+    ./src/nrf24Radio_shared.c
+)
+avr_add_library(nrf24 ${SOURCE_FILES})
 target_link_libraries(nrf24 spi)
+
+set(SOURCE_SHARED_FILES
+    ./src/nrf24Radio_shared.c
+)
+avr_add_library(nrf24_api ${SOURCE_SHARED_FILES})
+
 
 

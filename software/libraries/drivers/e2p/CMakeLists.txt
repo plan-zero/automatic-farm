@@ -29,9 +29,16 @@ endif(E2P_RX_ADDRESS)
 #set download flag to true by default
 add_definitions(-DE2P_DOWNLOAD_FLAG_VALUE=0xAA)
 
-include_directories(inc)
-include_directories(./../../hardware/${AVR_MCU})
-avr_add_library(e2p src/e2p.c)
+set(HEADER_INC
+    ./inc
+    ./../../hardware/${AVR_MCU}
+)
+include_directories(${HEADER_INC})
+
+set(SOURCE_FILES
+    ./src/e2p.c
+)
+avr_add_library(e2p ${SOURCE_FILES})
 
 
 

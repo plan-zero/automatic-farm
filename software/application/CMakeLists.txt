@@ -7,16 +7,22 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../cmake_config/generic-avr-gcc.cm
 # Name your project
 project(APP)
 
+set(HEADER_INC
+    ./Scheduler
+    ./Abstractization/Sensors/Humidity
+    ./Abstractization/Sensors/Light
+    ./Abstractization/Actuators/Relay
+    ./Abstractization/Actuators/Valve
+)
+include_directories(${HEADER_INC})
 
-include_directories(./Scheduler)
-include_directories(./Abstractization/Sensors/Humidity)
-include_directories(./Abstractization/Sensors/Light)
-include_directories(./Abstractization/Actuators/Relay)
-include_directories(./Abstractization/Actuators/Valve)
 
-
-
-avr_add_executable(app ./App/Main.c ./Scheduler/Scheduler.c ./Abstractization/Sensors/Humidity/Humidity.c ./)
+set(SOURCE_FILES
+    ./App/Main.c
+    ./Scheduler/Scheduler.c
+    ./Abstractization/Sensors/Humidity/Humidity.c
+)
+avr_add_executable(app ${SOURCE_FILES})
 
 target_link_libraries(app.elf nrf24_api uart)
 

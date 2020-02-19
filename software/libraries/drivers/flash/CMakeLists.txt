@@ -5,9 +5,16 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../../cmake_config/generic-avr-
 # Name your project
 project(FLASH)
 
-include_directories(inc)
-include_directories(./../../hardware/${AVR_MCU})
-avr_add_library(flash src/flash.c)
+set(HEADER_INC
+    ./inc
+    ./../../hardware/${AVR_MCU}
+)
+include_directories(${HEADER_INC})
+
+set(SOURCE_FILES
+    ./src/flash.c
+)
+avr_add_library(flash ${SOURCE_FILES})
 
 
 

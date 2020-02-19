@@ -5,14 +5,22 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../cmake_config/generic-avr-gcc
 # Name your project
 project(PROGRAMMER)
 
-include_directories(./../libraries/modules/nrf24/inc)
-include_directories(./../libraries/drivers/uart/inc)
-
 set(TARGET_NAME programmer)
 set(NRF24HEX nrf24.hex)
 set(TARGET_EXT_NAME _ext.hex)
 
-avr_add_executable(${TARGET_NAME} ./src/main.c)
+set(HEADER_INC
+    ./../libraries/modules/nrf24/inc
+    ./../libraries/drivers/uart/inc
+)
+include_directories(${HEADER_INC})
+
+set (SOURCE_FILES
+    ./src/main.c
+)
+avr_add_executable(${TARGET_NAME} ${SOURCE_FILES})
+
+#link target with libraries
 target_link_libraries(${TARGET_NAME}.elf nrf24_api uart)
 
 #set postbuild command to concatenate programmer with nrf24
