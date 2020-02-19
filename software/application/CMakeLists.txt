@@ -23,6 +23,6 @@ target_link_libraries(app.elf nrf24_api uart)
 #install binaries
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/app.hex
-    DESTINATION ${CMAKE_SOURCE_DIR}/assets/app
+    DESTINATION ${CMAKE_SOURCE_DIR}/assets/${AVR_MCU}/app
 )
 
