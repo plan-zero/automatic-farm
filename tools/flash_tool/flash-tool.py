@@ -439,7 +439,10 @@ def main(argv):
 	CRC = 0
 	try:
 		if PLATFORM_SYS == "LINUX":
-			crc_cmd = os.path.dirname(sys.argv[0]) + "./../crc/crc16_linux"
+			if os.path.isabs(os.path.dirname(sys.argv[0])):
+				crc_cmd = os.path.dirname(sys.argv[0]) + "/../crc/crc16_linux"
+			else:
+				crc_cmd = os.path.dirname(sys.argv[0]) + "./../crc/crc16_linux"
 		elif PLATFORM_SYS == "WIN":
 			crc_cmd = os.path.dirname(sys.argv[0]) + "\\..\\crc\\crc16"
 		crc_cmd = crc_cmd + " -x " + hex_file
