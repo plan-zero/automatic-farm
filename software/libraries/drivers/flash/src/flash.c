@@ -1,5 +1,4 @@
 #include "flash.h"
-#include "flash_layout.h"
 #include "interrupt_hw.h"
 
 // Bootloader flash

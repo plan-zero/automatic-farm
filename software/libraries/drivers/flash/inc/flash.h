@@ -2,6 +2,7 @@
 #define _FLASH_H
 
 #include "stdint.h"
+#include "flash_layout.h"
 #include <avr/boot.h>
 #include <avr/pgmspace.h>
 
