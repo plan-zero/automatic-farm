@@ -5,11 +5,18 @@
  *  Author: Adi
  */ 
 #include "WriteApp.h"
-#include "nrf24Radio.h"
+
+//include NRF public header
 #include "nrf24Radio_API.h"
-#include "GenericLib.h"
+
+//include compiler utils
 #include <util/crc16.h>
+#include <util/delay.h>
+
+//include drivers
 #include "flash.h"
+#include "e2p.h"
+#include "interrupt_hw.h"
 
 
 #define BUFFER_LENGTH				((uint8_t) 32)
@@ -146,7 +153,7 @@ void startFlash(uint8_t * rx_address)
 	rxData.length = 0x00;
 	rxData.hasMessage = MSG_NO_DATA;
 	initNrf(rx_address);
-	sei();
+	INT_GLOBAL_EN();
 	bootloader_state = BOOTLOADER_FLASH_INIT;
 	ackResponse[0] = BOOTLOADER_FLASH_INIT;
 	__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, RESPONSE_SIZE);
@@ -206,10 +213,9 @@ void startFlash(uint8_t * rx_address)
 						if (rxData.command == COMM_FLASH_PAGE)
 						{
 							ackResponse[1] = '0' + currentPage;
-							cli();
+							INT_GLOBAL_DIS();
 							boot_program_page(currentPage*128, (uint8_t*) &pageData[0]);
-							sei();
-
+							INT_GLOBAL_EN();
 							bootloader_state = BOOTLOADER_FLASH_PAGE_DONE;
 						}
 						else
@@ -250,7 +256,7 @@ void startFlash(uint8_t * rx_address)
 							uint8_t flash_byte = 0;
 							uint16_t crc = 0;
 							//read application byte by byte
-							for(uint32_t addr = APP_ADDR_START; addr < APP_ADDR_END; addr++)
+							for(uint32_t addr = APP_CODE_ADDR; addr < (APP_CODE_ADDR + APP_CODE_SIZE); addr++)
 							{
 								flash_byte = pgm_read_byte(addr);
 								crc = _crc16_update(crc, flash_byte);
@@ -278,16 +284,17 @@ void startFlash(uint8_t * rx_address)
 					{
 						if (rxData.command == COMM_FINISH_FLASH)
 						{
-							uint8_t dummy[6] = {0};
-							cli();
-							eeprom_update_block ((void*)&dummy[0], (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH + PROGRAMMER_ADDR_LENGTH);
-							//write flash checksum
-							dummy[0] = (uint8_t)(recvCKS >> 8);
-							dummy[1] = (uint8_t)(recvCKS);
-							dummy[2] = 0;
-							dummy[3] = 0;
-							eeprom_update_block ((void*)&dummy[0], (void*)FLASH_CKS_ADDRESS, FLASH_CKS_LENGTH);
-							sei();
+							uint8_t flash_checksum[4] = {0};
+							INT_GLOBAL_DIS();
+							e2p_update_downloadflag(flash_checksum[0]);
+
+							flash_checksum[0] = (uint8_t)(recvCKS >> 8);
+							flash_checksum[1] = (uint8_t)(recvCKS);
+							flash_checksum[2] = 0;
+							flash_checksum[3] = 0;
+							e2p_update_flashchecksum(flash_checksum);
+							
+							INT_GLOBAL_EN();
 							_delay_ms(1000);
 							//  WDG reset
 							wdgReset();

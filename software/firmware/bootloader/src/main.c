@@ -5,7 +5,8 @@
  * Author : AR
  */ 
 #include "WriteApp.h"
-#include "GenericLib.h"
+#include "util/delay.h"
+#include "e2p.h"
 
 #define LED_PORT_DIR DDRB
 #define LED_PORT_PIN PINB0
@@ -18,7 +19,7 @@ int main(void)
 {
 	// Wait after power on in order to stabilize the tension
 	_delay_ms(50);
-	LED_PORT_DIR |= 1 << LED_PORT_PIN;
+
 
 	uint8_t rx_address[RADIO_RX_LENGTH] = {0};
 	/*uint32_t eep_checksum = 0;
@@ -32,14 +33,10 @@ int main(void)
 	
 	//reading eeprom parameters
 	
-	eeprom_read_block ((void*)&rx_address,				(void*)RADIO_RX_ADDRESS,			RADIO_RX_LENGTH);
-	/*eeprom_read_block ((void*)&eep_checksum,			(void*)E2P_CKS_ADDRESS,				E2P_CKS_LENGTH);
-	eeprom_read_block ((void*)&flash_checksum,			(void*)FLASH_CKS_ADDRESS,			FLASH_CKS_LENGTH);
-	eeprom_read_block ((void*)&nrf24_firmware_version,	(void*)NRF_VERS_ADDRESS,			NRF_VERS_LENGTH);
-	eeprom_read_block ((void*)&application_version,		(void*)APP_VERS_ADDRESS,			APP_VERS_LENGTH);
-	eeprom_read_block ((void*)&eep_version,				(void*)E2P_VERS_ADDRESS,			E2P_VERS_LENGTH);*/
-	eeprom_read_block ((void*)&download,				(void*)DOWNLOAD_FLAG_ADDRESS,		DOWNLOAD_FLAG_LENGTH);
-	eeprom_read_block ((void*)&tx_address,				(void*)PROGRAMMER_ADDR_ADDRESS,		PROGRAMMER_ADDR_LENGTH);
+	e2p_read_rxaddress(rx_address);
+
+	e2p_read_downloadflag(download);
+	e2p_read_txaddress(tx_address);
 
 		
 	if( download == 0xAA) {
