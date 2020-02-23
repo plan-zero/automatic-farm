@@ -38,13 +38,12 @@ if [[ $out == *"avrdude is"* ]]; then
         if [[ $out == *"python3 is"* ]]; then
             ##generate code
             flash_tool_path=$(pwd)/flash_tool/flash-tool.py
-            usb_dev=$(dmesg | grep "FTDI USB Serial Device converter now attached" | grep -Eo 'ttyUSB[0-9]+')
-            echo $flash_tool_path
             echo 'avr_ota_push() {' >> ~/.bashrc
+            echo "usb_dev=\$(dmesg | grep \"FTDI USB Serial Device converter now attached\" | grep -Eo 'ttyUSB[0-9]+')" >> ~/.bashrc
             echo 'if [ -z "$3" ]; then' >> ~/.bashrc
-            echo "    python3 $flash_tool_path -T \$2 -H \$1 -P /dev/$usb_dev -B 250000 " >> ~/.bashrc
+            echo "    python3 $flash_tool_path -T \$2 -H \$1 -P /dev/\$usb_dev -B 250000 " >> ~/.bashrc
             echo 'else' >> ~/.bashrc
-            echo "    python3 $flash_tool_path -T \$2 -H \$1 -K \$3 -P /dev/$usb_dev -B 250000 " >> ~/.bashrc
+            echo "    python3 $flash_tool_path -T \$2 -H \$1 -K \$3 -P /dev/\$usb_dev -B 250000 " >> ~/.bashrc
             echo 'fi' >> ~/.bashrc
             echo '}' >> ~/.bashrc
         else

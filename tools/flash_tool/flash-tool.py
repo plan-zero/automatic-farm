@@ -448,7 +448,6 @@ def main(argv):
 		crc_cmd = crc_cmd + " -x " + hex_file
 		p = subprocess.Popen(crc_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
 		output = p.stdout.read()
-		print("here" + str(output))
 		res = re.findall(r"<[0-9]+>", output.decode())
 		crc_str = res[0].replace('>','')
 		crc_str = crc_str.replace('<','')
