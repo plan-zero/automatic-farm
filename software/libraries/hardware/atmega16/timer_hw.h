@@ -11,7 +11,8 @@
 #define TIMER1_CH_A   A
 #define TIMER1_CH_B   B
 
-
+#define TIMER_H_REG   H
+#define TIMER_L_REG   L
 
 #define __NAME(reg,inst,ch, ...)    reg ## inst ## ch ## __VA_ARGS__
 #define _NAME(reg,inst, ...)        __NAME(reg,inst,__VA_ARGS__)
@@ -60,11 +61,11 @@
 #define TIMER8_CLEAR_CMP_MATCH(inst)            NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(COM,inst,0)) ) | _BV(NAME(COM,inst,1))
 #define TIMER8_SET_CMP_MATCH(inst)              NAME(TCCR, inst) |= _BV(NAME(COM,inst,0)) | _BV(NAME(COM,inst,1))
 
-#define TIMER8_GET_COUNTER(inst, ...)                NAME(TCNT, inst,__VA_ARGS__)
-#define TIMER8_SET_COUNTER(inst, value, ...)         NAME(TCNT, inst,__VA_ARGS__) = (unsigned char)value
+#define TIMER8_GET_COUNTER(inst)                NAME(TCNT, inst)
+#define TIMER8_SET_COUNTER(inst, value)         NAME(TCNT, inst) = (unsigned char)value
 
-#define TIMER8_GET_OUTPUT_CMP(inst, ...)             NAME(OCR, inst,__VA_ARGS__)
-#define TIMER8_SET_OUTPUT_CMP(inst, value, ...)      NAME(OCR, inst,__VA_ARGS__) = (unsigned char)value
+#define TIMER8_GET_OUTPUT_CMP(inst)             NAME(OCR, inst)
+#define TIMER8_SET_OUTPUT_CMP(inst, value)      NAME(OCR, inst) = (unsigned char)value
 
 
 
@@ -79,14 +80,14 @@
     6       1       1       0       external clock on T0 pin, clock on falling edge
     7       1       1       1       external clock on T0 pin, clock on rising edge
 */
-#define TIMER_CLOCK_DISABLED(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) &= ~(_BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2)))
-#define TIMER_CLOCK_PRE_1(inst, ...)            NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1)))) | _BV(NAME(CS,inst,0))
-#define TIMER_CLOCK_PRE_8(inst, ...)            NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,1))
-#define TIMER_CLOCK_PRE_64(inst, ...)           NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(CS,inst,2))) | _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1))
-#define TIMER_CLOCK_PRE_256(inst, ...)          NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~(_BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,2))
-#define TIMER_CLOCK_PRE_1024(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(CS,inst,1))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0))
-#define TIMER_CLOCK_EXT_T0FE(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(CS,inst,0))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1))
-#define TIMER_CLOCK_EXT_T0RE(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) |= _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2))
+#define TIMER8_CLOCK_DISABLED(inst)         NAME(TCCR, inst) &= ~(_BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2)))
+#define TIMER8_CLOCK_PRE_1(inst)            NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1)))) | _BV(NAME(CS,inst,0))
+#define TIMER8_CLOCK_PRE_8(inst)            NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,1))
+#define TIMER8_CLOCK_PRE_64(inst)           NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,2))) | _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1))
+#define TIMER8_CLOCK_PRE_256(inst)          NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~(_BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,2))
+#define TIMER8_CLOCK_PRE_1024(inst)         NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,1))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0))
+#define TIMER8_CLOCK_EXT_T0FE(inst)         NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,0))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1))
+#define TIMER8_CLOCK_EXT_T0RE(inst)         NAME(TCCR, inst) |= _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2))
 
 
 
@@ -147,12 +148,28 @@
                                                  NAME(TCCR, inst, TIMER1_CH_A) |= _BV(NAME(WGM,inst,2)) | _BV(NAME(WGM,inst,3))
 
 
+#define TIMER16_CLOCK_DISABLED(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) &= ~(_BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2)))
+#define TIMER16_CLOCK_PRE_1(inst, ...)            NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1)))) | _BV(NAME(CS,inst,0))
+#define TIMER16_CLOCK_PRE_8(inst, ...)            NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,1))
+#define TIMER16_CLOCK_PRE_64(inst, ...)           NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(CS,inst,2))) | _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1))
+#define TIMER16_CLOCK_PRE_256(inst, ...)          NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~(_BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,2))
+#define TIMER16_CLOCK_PRE_1024(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(CS,inst,1))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0))
+#define TIMER16_CLOCK_EXT_T0FE(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(CS,inst,0))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1))
+#define TIMER16_CLOCK_EXT_T0RE(inst, ...)         NAME(TCCR, inst, __VA_ARGS__) |= _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2))
+
 
 #define TIMER16_NORMAL_OPERATION(inst, ...)     NAME(TCCR, inst, TIMER1_CH_A) &= ~(_BV(NAME(COM,inst,__VA_ARGS__,0)) | _BV(NAME(COM,inst,__VA_ARGS__,1)))
 #define TIMER16_TOGGLE_CMP_MATCH(inst, ...)     NAME(TCCR, inst, TIMER1_CH_A) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(COM,inst,__VA_ARGS__,1)) ) | _BV(NAME(COM,inst,__VA_ARGS__,0))
 #define TIMER16_CLEAR_CMP_MATCH(inst, ...)      NAME(TCCR, inst, TIMER1_CH_A) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(COM,inst,__VA_ARGS__,0)) ) | _BV(NAME(COM,inst,__VA_ARGS__,1))
 #define TIMER16_SET_CMP_MATCH(inst, ...)        NAME(TCCR, inst, TIMER1_CH_A) |= _BV(NAME(COM,inst,__VA_ARGS__,0)) | _BV(NAME(COM,inst,__VA_ARGS__,1))
 
+#define TIMER16_GET_COUNTER(inst, ch, ...)                  NAME(TCNT, inst,ch ,__VA_ARGS__)
+#define TIMER16_SET_COUNTER(inst, ch, value, ...)           NAME(TCNT, inst,ch ,__VA_ARGS__) = (unsigned char)value
 
+#define TIMER16_GET_OUTPUT_CMP(inst, ch, ...)               NAME(OCR, inst,ch ,__VA_ARGS__)
+#define TIMER16_SET_OUTPUT_CMP(inst, ch, value, ...)        NAME(OCR, inst,ch , __VA_ARGS__) = (unsigned char)value
+
+#define TIMER16_GET_INPUT_CAPTURE(inst, ch, ...)            NAME(ICR, inst,ch ,__VA_ARGS__)
+#define TIMER16_SET_INPUT_CAPTURE(inst, ch, value, ...)     NAME(ICR, inst,ch , __VA_ARGS__) = (unsigned char)value
 
 #endif
