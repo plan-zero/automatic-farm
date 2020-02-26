@@ -44,8 +44,8 @@
     3       1       1       Fast PWM
 */            
 #define TIMER8_MODE_NORMAL_MODE(inst, ...)       NAME(TCCR, inst) &= ~(_BV(NAME(WGM,inst,0)) | _BV(NAME(WGM,inst,1)))
-#define TIMER8_MODE_PWM(inst, ...)               NAME(TCCR, inst) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(WGM,inst,1)) ) | _BV(NAME(WGM,inst,0))
-#define TIMER8_MODE_CTC(inst, ...)               NAME(TCCR, inst) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(WGM,inst,0)) ) | _BV(NAME(WGM,inst,1))
+#define TIMER8_MODE_PWM(inst, ...)               NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(WGM,inst,1)) ) | _BV(NAME(WGM,inst,0))
+#define TIMER8_MODE_CTC(inst, ...)               NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(WGM,inst,0)) ) | _BV(NAME(WGM,inst,1))
 #define TIMER8_MODE_FAST_PWM(inst, ...)          NAME(TCCR, inst) |= _BV(NAME(WGM,inst,0)) | _BV(NAME(WGM,inst,1))
 
 
@@ -92,8 +92,6 @@
 
 
 
-
-
 //********************************************** TIMER 16 BITs
 
 #define TIMER16_SET_IC_INT(inst)                 TIMSK |= _BV(NAME(TICIE, inst))
@@ -123,7 +121,7 @@
 #define TIMER16_MODE_FASTPWM_9BIT(inst)          NAME(TCCR, inst, TIMER1_CH_A) = ( NAME(TCCR, inst, TIMER1_CH_A) & ~_BV(NAME(WGM,inst,0)) ) | _BV(NAME(WGM,inst,1)); \
                                                  NAME(TCCR, inst, TIMER1_CH_B) = ( NAME(TCCR, inst, TIMER1_CH_B) & ~_BV(NAME(WGM,inst,3)) ) | _BV(NAME(WGM,inst,2))
 
-#define TIMER16_MODE_FASTPWM_10BIT(inst)         NAME(TCCR, inst, TIMER1_CH_A) |= _BV(NAME(WGM,inst,0)) | _BV(NAME(WGM,inst,1)); \     
+#define TIMER16_MODE_FASTPWM_10BIT(inst)         NAME(TCCR, inst, TIMER1_CH_A) |= _BV(NAME(WGM,inst,0)) | _BV(NAME(WGM,inst,1)); \
                                                  NAME(TCCR, inst, TIMER1_CH_B) = ( NAME(TCCR, inst, TIMER1_CH_B) & ~_BV(NAME(WGM,inst,3)) ) | _BV(NAME(WGM,inst,2))  
 
 #define TIMER16_MODE_PWM_PFC1(inst)              NAME(TCCR, inst, TIMER1_CH_A) &= ~(_BV(NAME(WGM,inst,0)) | _BV(NAME(WGM,inst,1))); \
@@ -171,5 +169,11 @@
 
 #define TIMER16_GET_INPUT_CAPTURE(inst, ch, ...)            NAME(ICR, inst,ch ,__VA_ARGS__)
 #define TIMER16_SET_INPUT_CAPTURE(inst, ch, value, ...)     NAME(ICR, inst,ch , __VA_ARGS__) = (unsigned char)value
+
+
+#define __TIMER_FUNCTIONS(function, inst, ...)       inst == TIMER_2 ? TIMER8_ ## function(TIMER_2, __VA_ARGS__) : 0
+#define _TIMER_FUNCTIONS(function, inst, ...)        inst == TIMER_0 ? TIMER8_ ## function(TIMER_0, __VA_ARGS__) : __TIMER_FUNCTIONS(function, inst, __VA_ARGS__)
+#define TIMER_FUNCTIONS(function,  inst, ch, ...)    inst == TIMER_1 ? TIMER16_ ## function(TIMER_1,ch , __VA_ARGS__) : _TIMER_FUNCTIONS(function, inst, __VA_ARGS__)
+
 
 #endif
