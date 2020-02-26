@@ -7,6 +7,13 @@
 #define TIMER_0     0
 #define TIMER_1     1
 #define TIMER_2     2
+#define TIMER_COUNT 3
+
+#define TIMER_8_BITS 99
+#define TIMER_16_BITS 98
+
+#define TIMER_GET_TYPE(inst) ( inst == TIMER_0 || inst == TIMER_2 ) ? TIMER_8_BITS : TIMER_16_BITS
+
 
 #define TIMER1_CH_A   A
 #define TIMER1_CH_B   B
