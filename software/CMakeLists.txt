@@ -34,3 +34,6 @@ add_subdirectory(programmer)
 #compile the application
 add_subdirectory(application)
 
+#compile the testbench env
+add_subdirectory(testing/timer_testbench)
+
