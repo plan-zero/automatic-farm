@@ -4,7 +4,10 @@
 #include "timer_hw.h"
 
 typedef enum{
-    timer_ok,
+    timer_noinit,
+    timer_ready,
+    timer_stopped,
+    timer_running,
     timer_err_inv_type,
 }timer_status;
 
@@ -53,6 +56,11 @@ typedef enum{
     timer_set_compare_match,
 }timer_compare_behaviour;
 
+typedef enum{
+    timer_cb_on_cmp_match,
+    timer_cb_on_ovf,
+}timer_cb_type;
+
 typedef union{
     struct{
         uint8_t overflow_en : 1;
@@ -91,7 +99,7 @@ typedef struct{
 }timer_cfg;
 
 timer_status timer_init(timer_instance inst, timer_cfg cfg);
-void timer_register_callback(timer_instance inst, timer_interrupt intcfg, timer_callback cb );
+//void timer_register_callback(timer_instance inst, timer_cb_type cb_type, timer_callback cb, uint8_t period );
 void timer_start(timer_instance inst, uint16_t initial_value);
 void timer_reset(timer_instance inst);
 uint16_t timer_get(timer_instance inst);

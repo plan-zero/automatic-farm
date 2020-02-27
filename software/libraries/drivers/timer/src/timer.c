@@ -1,5 +1,94 @@
 #include "timer.h"
 #include "stdint.h"
+#include "stdlib.h"
+
+#include "interrupt_hw.h"
+
+#define EN_TIMER0_CMP_IRQ
+
+timer_callback trigger_cb[TIMER_COUNT] = {NULL, NULL, NULL};
+uint8_t cb_period[TIMER_COUNT] = {0, 0, 0};
+uint8_t cb_count[TIMER_COUNT] = {0, 0, 0};
+uint8_t cb_count_ch[2] = {0, 0};
+timer_status timer_internal_state[TIMER_COUNT] = {timer_noinit,timer_noinit,timer_noinit};
+//define ISRs
+#ifdef EN_TIMER0_CMP_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER0_CMP)
+{
+    cb_count[TIMER_0]++;
+    if(cb_count[TIMER_0] == cb_period[TIMER_0])
+    {
+        cb_count[TIMER_0] = 0;
+        trigger_cb[TIMER_0](TIMER_0);
+    }
+}
+#endif
+#ifdef EN_TIMER0_OVF_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER0_OVF)
+{
+    cb_count[TIMER_0]++;
+    if(cb_count[TIMER_0] == cb_period[TIMER_0])
+    {
+        cb_count[TIMER_0] = 0;
+        trigger_cb[TIMER_0](TIMER_0);
+    }
+}
+#endif
+#ifdef EN_TIMER1_OVF_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER1_OVF)
+{
+    cb_count[TIMER_1]++;
+    if(cb_count[TIMER_1] == cb_period[TIMER_1])
+    {
+        cb_count[TIMER_1] = 0;
+        trigger_cb[TIMER_1](TIMER_1);
+    }
+}
+#endif
+#ifdef EN_TIMER1A_CMP_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER1A_CMP)
+{
+    cb_count_ch[0]++;
+    if(cb_count_ch[0] == cb_period[TIMER_1])
+    {
+        cb_count[TIMER_1] = 0;
+        trigger_cb[TIMER_1](TIMER_1);
+    }
+}
+#endif
+#ifdef EN_TIMER1B_CMP_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER1B_CMP)
+{
+    cb_count_ch[1]++;
+    if(cb_count_ch[1] == cb_period[TIMER_1])
+    {
+        cb_count[TIMER_1] = 0;
+        trigger_cb[TIMER_1](TIMER_1);
+    }
+}
+#endif
+#ifdef EN_TIMER2_CMP_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER2_CMP)
+{
+    cb_count[TIMER_2]++;
+    if(cb_count[TIMER_2] == cb_period[TIMER_2])
+    {
+        cb_count[TIMER_2] = 0;
+        trigger_cb[TIMER_2](TIMER_2);
+    }
+}
+#endif
+#ifdef EN_TIMER2_OVF_IRQ
+INTERRUPT_ROUTINE(IRQ_TIMER2_OVF)
+{
+    cb_count[TIMER_2]++;
+    if(cb_count[TIMER_2] == cb_period[TIMER_2])
+    {
+        cb_count[TIMER_2] = 0;
+        trigger_cb[TIMER_2](TIMER_2);
+    }
+}
+#endif
 
 timer_prescaler cached_timer_pres[TIMER_COUNT];
 
@@ -74,39 +163,63 @@ timer_status timer_init(timer_instance inst, timer_cfg cfg)
     else
         TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_b, TIMER_CH_A);
 
-    return timer_ok;
+    timer_internal_state[inst] = timer_ready;
+    return timer_ready;
 }
 
-void timer_register_callback(timer_instance inst, timer_interrupt intcfg, timer_callback cb )
+void timer_register_callback(timer_instance inst, timer_callback cb, uint8_t period )
 {
-
+    if(timer_internal_state[inst] == timer_ready || timer_internal_state[inst] == timer_stopped)
+    {
+        trigger_cb[inst] = cb;
+        cb_period[inst] = period;
+    }
 }
+
+void timer_set_cmp_value(timer_instance inst, timer_ch channel, uint16_t value)
+{
+    if(channel == timer_ch_a)
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP, inst, value, TIMER_CH_A);
+    else if(channel == timer_ch_b)
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP, inst, value, TIMER_CH_B);
+    else
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP, inst, (uint8_t)value, TIMER_CH_A);
+}
+
 void timer_start(timer_instance inst, uint16_t initial_value)
 {
-    switch (cached_timer_pres[inst])
+    if(timer_internal_state[inst] == timer_ready || timer_internal_state[inst] == timer_stopped)
     {
-    case timer_prescaler_1:
-        TIMER_FUNCTIONS(CLOCK_PRE_1,inst);
-        break;
-    case timer_prescaler_8:
-        TIMER_FUNCTIONS(CLOCK_PRE_8,inst);
-        break;
-    case timer_prescaler_64:
-        TIMER_FUNCTIONS(CLOCK_PRE_64,inst);
-        break;
-    case timer_prescaler_256:
-        TIMER_FUNCTIONS(CLOCK_PRE_256,inst);
-        break;
-    case timer_prescaler_1024:
-        TIMER_FUNCTIONS(CLOCK_PRE_1024,inst);
-        break;
-    default:
-        break;
+        switch (cached_timer_pres[inst])
+        {
+        case timer_prescaler_1:
+            TIMER_FUNCTIONS(CLOCK_PRE_1,inst);
+            break;
+        case timer_prescaler_8:
+            TIMER_FUNCTIONS(CLOCK_PRE_8,inst);
+            break;
+        case timer_prescaler_64:
+            TIMER_FUNCTIONS(CLOCK_PRE_64,inst);
+            break;
+        case timer_prescaler_256:
+            TIMER_FUNCTIONS(CLOCK_PRE_256,inst);
+            break;
+        case timer_prescaler_1024:
+            TIMER_FUNCTIONS(CLOCK_PRE_1024,inst);
+            break;
+        default:
+            break;
+        }
+        timer_internal_state[inst] = timer_running;
     }
 }
 void timer_stop(timer_instance inst)
 {
-    TIMER_FUNCTIONS(CLOCK_DISABLED,inst);
+    if(timer_internal_state[inst] == timer_running)
+    {
+        TIMER_FUNCTIONS(CLOCK_DISABLED,inst);
+        timer_internal_state[inst] = timer_stopped;
+    }
 }
 void timer_set_prescaler(timer_instance inst, timer_prescaler prescaler)
 {
