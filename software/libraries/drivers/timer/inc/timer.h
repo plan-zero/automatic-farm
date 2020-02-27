@@ -4,9 +4,23 @@
 #include "timer_hw.h"
 
 typedef enum{
+    timer_ok,
+    timer_err_inv_type,
+}timer_status;
+
+typedef uint8_t timer_instance;
+typedef void (*timer_callback)(timer_instance);
+
+typedef enum{
     timer_8_bits,
     timer_16_bits,
 }timer_type;
+
+typedef enum{
+    timer_ch_a,
+    timer_ch_b,
+    timer_ch_none,
+}timer_ch;
 
 typedef enum{
   timer_mode_normal,
@@ -71,11 +85,15 @@ typedef struct{
     uint16_t initial_output_cmp_val_ch_b;
     uint16_t initial_input_cmp_val;
     timer_type type;
-    uint8_t instance;
+    timer_ch channel;
     timer_interrupt interrupt;
     timer_flags flags;
 }timer_cfg;
 
-void timer_init(timer_cfg cfg);
+timer_status timer_init(timer_instance inst, timer_cfg cfg);
+void timer_register_callback(timer_instance inst, timer_interrupt intcfg, timer_callback cb );
+void timer_start(timer_instance inst, uint16_t initial_value);
+void timer_reset(timer_instance inst);
+uint16_t timer_get(timer_instance inst);
 
 #endif
