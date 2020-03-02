@@ -13,6 +13,8 @@ set(HEADER_INC
     ./Abstractization/Sensors/Light
     ./Abstractization/Actuators/Relay
     ./Abstractization/Actuators/Valve
+    ./../libraries/drivers/timer/inc
+    ./../libraries/drivers/uart/inc
 )
 include_directories(${HEADER_INC})
 
@@ -24,7 +26,7 @@ set(SOURCE_FILES
 )
 avr_add_executable(app ${SOURCE_FILES})
 
-target_link_libraries(app.elf nrf24_api uart)
+target_link_libraries(app.elf nrf24_api uart timer)
 
 #install binaries
 install(

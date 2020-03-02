@@ -1,8 +1,8 @@
 #include "timer.h"
-#include "stdint.h"
 #include "stdlib.h"
 
 #include "interrupt_hw.h"
+#include "timer_hw.h"
 
 #define EN_TIMER0_CMP_IRQ
 

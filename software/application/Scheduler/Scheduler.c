@@ -6,6 +6,8 @@
  */
 #include "Scheduler.h"
 #include "Humidity.h"
+#include <avr/io.h>
+
 
 #define TASK_NUMBER_1MS 	((char)1)
 #define TASK_NUMBER_10MS 	((char)0)
@@ -16,13 +18,13 @@
 static volatile char taskFinished = 1;
 unsigned short taskCounter = 0;
 
-voidFunctionType table_task_1ms     [TASK_NUMBER_1MS]   = 
+voidFunctionTypeVoid table_task_1ms     [TASK_NUMBER_1MS]   = 
 {
     HUM_Acquire
 };
-voidFunctionType table_task_10ms    [TASK_NUMBER_10MS]  = { };
-voidFunctionType table_task_100ms   [TASK_NUMBER_100MS] = { };
-voidFunctionType table_task_1s      [TASK_NUMBER_1S]    = { };
+voidFunctionTypeVoid table_task_10ms    [TASK_NUMBER_10MS]  = { };
+voidFunctionTypeVoid table_task_100ms   [TASK_NUMBER_100MS] = { };
+voidFunctionTypeVoid table_task_1s      [TASK_NUMBER_1S]    = { };
 
 void task_1ms();
 
@@ -32,7 +34,7 @@ voidFunctionType getPointerTo1msTask()
 }
 
 
-void task_1ms()
+void task_1ms(int timer_instance)
 {
     if(taskFinished)
     {
@@ -44,7 +46,11 @@ void task_1ms()
         {
             table_task_1ms[taskIterator]();
         }
-        
+        if (taskCounter == 1000)
+        {
+            taskCounter = 0;
+            PORTB ^= 1;
+        }
 
         
 

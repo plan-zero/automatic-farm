@@ -8,7 +8,8 @@
 #ifndef SCHEDULER_SCHEDULER_H_
 #define SCHEDULER_SCHEDULER_H_
 
-typedef void (*voidFunctionType)(void);
+typedef void (*voidFunctionType)(int);
+typedef void (*voidFunctionTypeVoid)();
 extern voidFunctionType getPointerTo1msTask(void);
 
 #endif /* SCHEDULER_SCHEDULER_H_ */
