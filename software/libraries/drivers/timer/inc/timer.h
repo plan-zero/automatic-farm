@@ -95,7 +95,6 @@ typedef struct{
     timer_type type;
     timer_ch channel;
     timer_interrupt interrupt;
-    timer_flags flags;
 }timer_cfg;
 
 timer_status timer_init(timer_instance inst, timer_cfg cfg);
