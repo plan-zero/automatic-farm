@@ -19,6 +19,7 @@ add_subdirectory(libraries/drivers/spi)
 add_subdirectory(libraries/drivers/uart)
 add_subdirectory(libraries/drivers/e2p)
 add_subdirectory(libraries/drivers/flash)
+add_subdirectory(libraries/drivers/timer)
 
 #compile the libs modules
 add_subdirectory(libraries/modules/nrf24)
@@ -32,4 +33,7 @@ add_subdirectory(programmer)
 
 #compile the application
 add_subdirectory(application)
+
+#compile the testbench env
+add_subdirectory(testing/timer_testbench)
 

@@ -28,6 +28,21 @@
 #define IRQ_USART_TXC_HANDLER       USART_TXC_vect
 #define IRQ_USART_RXC_HANDLER       USART_RXC_vect
 
+//TIMERS
+
+#define IRQ_TIMER0_OVF  TIMER0_OVF_vect
+#define IRQ_TIMER1_OVF  TIMER1_OVF_vect
+#define IRQ_TIMER2_OVF  TIMER2_OVF_vect
+
+#define IRQ_TIMER0_CMP      TIMER0_COMP_vect
+#define IRQ_TIMER1A_CMP     TIMER1_COMPA_vect
+#define IRQ_TIMER1B_CMP     TIMER1_COMPB_vect
+#define IRQ_TIMER2_CMP      TIMER2_COMP_vect
+
+#define IRQ_TIMER1_CAPT     TIMER1_CAPT_vect
+
+
+
 
 
 
