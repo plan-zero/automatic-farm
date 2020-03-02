@@ -9,7 +9,6 @@
 #include "timer.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "uart.h"
 
 inline void MAIN_timer_config()
 {
@@ -20,7 +19,7 @@ inline void MAIN_timer_config()
         timer_normal_operationm,
         timer_prescaler_64,
         0,
-        61,
+        123,
         0,
         0,
         0,
@@ -40,20 +39,10 @@ int  main()
 
     MAIN_timer_config();
     timer_register_callback(0, (timer_callback) oneMsTask, 1);
-    OCR0 = 125;
     timer_start(0,0);
-
-    uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
-    uartPrintHex(TCCR0);
-    uartNewLine();
-    uartPrintHex(OCR0);
-    uartNewLine();
-    uartPrintHex(TIMSK);
 
     sei();
 
-    
-    //PORTB |= 1;
     while(1)
     {
 

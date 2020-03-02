@@ -46,7 +46,7 @@ void task_1ms(int timer_instance)
         {
             table_task_1ms[taskIterator]();
         }
-        if (taskCounter == 1000)
+        if (taskCounter == 1)
         {
             taskCounter = 0;
             PORTB ^= 1;
