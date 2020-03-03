@@ -22,14 +22,14 @@
 #include "stdint.h"
 
 
-#define TASK_NUMBER_1MS 	((uint8_t)2)
-#define TASK_NUMBER_10MS 	((uint8_t)1)
+#define TASK_NUMBER_1MS 	((uint8_t)1)
+#define TASK_NUMBER_10MS 	((uint8_t)0)
 #define TASK_NUMBER_100MS 	((uint8_t)0)
-#define TASK_NUMBER_1S 		((uint8_t)1)
+#define TASK_NUMBER_1S 		((uint8_t)0)
 
 
 uint16_t taskCounter = 0;
-#define ENABLE_TASK_TEST 1
+//#define ENABLE_TASK_TEST 1
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -74,12 +74,11 @@ void test_task_1s()
 
 voidFunctionTypeVoid table_task_1ms     [TASK_NUMBER_1MS]   = 
 {
-    HUM_Acquire,
-    test_task_1ms
+    HUM_Acquire,    
 };
-voidFunctionTypeVoid table_task_10ms    [TASK_NUMBER_10MS]  = {test_task_10ms };
+voidFunctionTypeVoid table_task_10ms    [TASK_NUMBER_10MS]  = { };
 voidFunctionTypeVoid table_task_100ms   [TASK_NUMBER_100MS] = { };
-voidFunctionTypeVoid table_task_1s      [TASK_NUMBER_1S]    = {test_task_1s };
+voidFunctionTypeVoid table_task_1s      [TASK_NUMBER_1S]    = { };
 
 typedef struct Timer
 {
@@ -105,14 +104,6 @@ voidFunctionTypeVoid getPointerTo1msTask()
 void task_1ms()
 {    
     int8_t multiplier;
-
-    // This is available just for testing
-/*#ifdef ENABLE_TASK_TEST
-    test_task_1ms();
-    return;
-#endif*/
-    
-    (taskCounter < 1000) ? taskCounter++ : (taskCounter = 0);
 
     // Call all the 1ms tasks
     for (uint8_t taskIterator = 0; taskIterator < TASK_NUMBER_1MS; taskIterator++)
@@ -162,6 +153,7 @@ void task_1ms()
     if (taskCounter % 1000 == 0)
     {
         timer1s.slot = TASK_NUMBER_1S;
+        taskCounter = 0;
     }
 }
 
