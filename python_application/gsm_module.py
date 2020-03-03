@@ -4,9 +4,8 @@ import time
 import sys,os
 import re
 
-#admin = ["0743566434", "+40743566434", "0741457348", "+40741457348"]
-phonebook = ["0743566434"] #, "0757791322", "0741457348"]
-
+admin_number = ""
+phonebook = [admin_number]
 
 admin = []
 definedCommands = []
@@ -76,7 +75,7 @@ def formatNumber(number):
 		e = sys.exc_info()
 		print("formatNumber: error during formating")
 		print(e)
-		return "0743566434"
+		return admin_number
 
 
 def checkMessages():
@@ -105,7 +104,6 @@ def checkMessages():
 
 def main():
 	print("testing area")
-	#sendSMS("0743566434", "salut andrei")
 	while True:
 		checkMessages()
 		time.sleep(1)

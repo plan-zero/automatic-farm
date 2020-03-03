@@ -1,6 +1,7 @@
 import log_module as logger
 
 definedCommands = []
+admin_number=""
 
 
 def registerCommandHandler(commandString, commandHandler):
@@ -37,11 +38,11 @@ def main():
 		print(arg + " handler 2")
 	def myHandler3(arg):
 		print(arg + " handler 3")
-	addAdministrator("0743566434")
+	addAdministrator(admin_number)
 	registerCommandHandler("getBattery", myHandler1)
 	registerCommandHandler("cancelReboot", myHandler2)
 	registerCommandHandler("reboot", myHandler3)
-	mes = [ ["0", "0743566434", "cancelReboot"], ["0", "0743566434", "getBattery"] ]
+	mes = [ ["0", admin_number, "cancelReboot"], ["0", admin_number, "getBattery"] ]
 	executeCommand(mes)
 
 	print("Remove handler 2")
@@ -49,7 +50,7 @@ def main():
 	executeCommand(mes)
 
 	print("Remove admin")
-	removeAdministrator("0743566434")
+	removeAdministrator(admin_number)
 	executeCommand(mes)
 
 if __name__ == "__main__":
