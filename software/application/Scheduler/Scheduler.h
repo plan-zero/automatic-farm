@@ -10,6 +10,6 @@
 
 typedef void (*voidFunctionType)(int);
 typedef void (*voidFunctionTypeVoid)();
-extern voidFunctionType getPointerTo1msTask(void);
+extern voidFunctionTypeVoid getPointerTo1msTask(void);
 
 #endif /* SCHEDULER_SCHEDULER_H_ */
