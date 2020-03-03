@@ -6,7 +6,7 @@
  */
 #include "Scheduler.h"
 #include "Humidity.h"
-#include <avr/io.h>
+
 
 
 #define TASK_NUMBER_1MS 	((char)1)
@@ -18,9 +18,29 @@
 static volatile char taskFinished = 1;
 unsigned short taskCounter = 0;
 
-voidFunctionTypeVoid table_task_1ms     [TASK_NUMBER_1MS]   = 
+#ifdef ENABLE_TASK_TEST
+#include <avr/io.h>
+void test_task_1ms()
 {
-    HUM_Acquire
+    static init_led = 0;
+    if(!init_led)
+    {
+        init_led = 1;
+        DDRB |= 1;
+    }
+    PORTB ^= 1;
+    
+}
+#endif
+
+voidFunctionTypeVoid table_task_1ms     []   = 
+{
+    HUM_Acquire,
+
+//this is available just for testing
+#ifdef ENABLE_TASK_TEST
+    test_task_1ms
+#endif
 };
 voidFunctionTypeVoid table_task_10ms    [TASK_NUMBER_10MS]  = { };
 voidFunctionTypeVoid table_task_100ms   [TASK_NUMBER_100MS] = { };
@@ -46,14 +66,6 @@ void task_1ms(int timer_instance)
         {
             table_task_1ms[taskIterator]();
         }
-        if (taskCounter == 1)
-        {
-            taskCounter = 0;
-            PORTB ^= 1;
-        }
-
-        
-
         taskFinished = 1;
     }
     else

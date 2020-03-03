@@ -7,8 +7,7 @@
 
 #include "Scheduler.h"
 #include "timer.h"
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include "interrupt_hw.h"
 
 inline void MAIN_timer_config()
 {
@@ -34,14 +33,14 @@ inline void MAIN_timer_config()
 int  main()
 {
     voidFunctionType oneMsTask = getPointerTo1msTask();
-    
-    DDRB |= 1;
+
+
 
     MAIN_timer_config();
     timer_register_callback(0, (timer_callback) oneMsTask, 1);
     timer_start(0,0);
 
-    sei();
+    INT_GLOBAL_EN();
 
     while(1)
     {

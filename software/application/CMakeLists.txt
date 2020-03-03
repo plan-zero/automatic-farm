@@ -7,6 +7,10 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../cmake_config/generic-avr-gcc.cm
 # Name your project
 project(APP)
 
+if(TASK_TEST)
+    add_definitions(-DENABLE_TASK_TEST)
+endif()
+
 set(HEADER_INC
     ./Scheduler
     ./Abstractization/Sensors/Humidity
@@ -15,6 +19,7 @@ set(HEADER_INC
     ./Abstractization/Actuators/Valve
     ./../libraries/drivers/timer/inc
     ./../libraries/drivers/uart/inc
+    ./../libraries/hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
 
