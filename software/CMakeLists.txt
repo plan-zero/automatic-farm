@@ -35,6 +35,7 @@ add_subdirectory(libraries/drivers/uart)
 add_subdirectory(libraries/drivers/e2p)
 add_subdirectory(libraries/drivers/flash)
 add_subdirectory(libraries/drivers/timer)
+add_subdirectory(libraries/drivers/wdg)
 
 #compile the libs modules
 add_subdirectory(libraries/modules/nrf24)
