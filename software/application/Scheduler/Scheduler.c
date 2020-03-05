@@ -19,7 +19,6 @@
 
 #include "Scheduler.h"
 #include "Humidity.h"
-#include "stdint.h"
 #include "stdlib.h"
 
 typedef void (**ptr_voidFunctionTypeVoid)();
@@ -36,45 +35,6 @@ uint8_t TASK_NUMBER_1S =	((uint8_t)0);
 
 
 uint16_t taskCounter = 0;
-
-
-#ifdef ENABLE_TASK_TEST
-#include <avr/io.h>
-void test_task_1ms()
-{
-    static init_led = 0;
-    if(!init_led)
-    {
-        init_led = 1;
-        DDRD |= 1;
-    }
-    PORTD ^= 1;
-    
-}
-void test_task_10ms()
-{
-    static init_led = 0;
-    if(!init_led)
-    {
-        init_led = 1;
-        DDRD |= 2;
-    }
-    PORTD ^= 2;
-    
-}
-
-void test_task_1s()
-{
-    static init_led = 0;
-    if(!init_led)
-    {
-        init_led = 1;
-        DDRB |= 1;
-    }
-    PORTB ^= 1;
-    
-} 
-#endif
 
 voidFunctionTypeVoid table_task_1ms     [TASK_1MS_MAX];
 voidFunctionTypeVoid table_task_10ms    [TASK_10MS_MAX];
@@ -120,29 +80,35 @@ int8_t scheduler_remove_task(scheduler_task_type tasktype, int8_t task_id)
             if(task_id < TASK_NUMBER_1MS)
             {
                 shift_task(table_task_1ms, TASK_1MS_MAX, task_id);
+                task_found = task_id;
             }
         break;
         case sch_type_task_10ms:
             if(task_id < TASK_NUMBER_10MS)
             {
                 shift_task(table_task_1ms, TASK_10MS_MAX, task_id);
+                task_found = task_id;
             }
         break;
         case sch_type_task_100ms:
             if(task_id < TASK_NUMBER_100MS)
             {
                 shift_task(table_task_1ms, TASK_100MS_MAX, task_id);
+                task_found = task_id;
             }
         break;
         case sch_type_task_1s:
             if(task_id < TASK_NUMBER_1S)
             {
                 shift_task(table_task_1ms, TASK_1S_MAX, task_id);
+                task_found = task_id;
             }
         break;
         default:
         break;
     }
+
+    return task_found;
 }
 
 int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid task)
@@ -180,7 +146,7 @@ int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid tas
     return task_id;    
 }
 
-voidFunctionTypeVoid getPointerTo1msTask()
+voidFunctionTypeVoid scheduler_getPointerTo1msTask()
 {
     return task_1ms;
 }
