@@ -21,6 +21,45 @@
 #include "Scheduler.h"
 #include "timer.h"
 #include "interrupt_hw.h"
+#include "stdint.h"
+
+#ifdef ENABLE_TASK_TEST
+#include <avr/io.h>
+void test_task_1ms()
+{
+    static int init_led = 0;
+    if(!init_led)
+    {
+        init_led = 1;
+        DDRD |= 1;
+    }
+    PORTD ^= 1;
+    
+}
+void test_task_10ms()
+{
+    static int init_led = 0;
+    if(!init_led)
+    {
+        init_led = 1;
+        DDRD |= 2;
+    }
+    PORTD ^= 2;
+    
+}
+
+void test_task_1s()
+{
+    static int init_led = 0;
+    if(!init_led)
+    {
+        init_led = 1;
+        DDRB |= 1;
+    }
+    PORTB ^= 1;
+    
+} 
+#endif
 
 volatile uint8_t oneMsFlag = 0;
 
@@ -60,11 +99,17 @@ void notify1ms(uint8_t ch)
 
 int  main()
 {
-    voidFunctionTypeVoid oneMsTask = getPointerTo1msTask();
+    voidFunctionTypeVoid oneMsTask = scheduler_getPointerTo1msTask();
 
     MAIN_timer_config();
     // We use timer on channel 0
     timer_register_callback(0, (timer_callback) notify1ms, 1);
+
+#ifdef ENABLE_TASK_TEST
+    scheduler_add_task(sch_type_task_1s, test_task_1s);
+#endif
+
+
     timer_start(0,0);
 
     INT_GLOBAL_EN();

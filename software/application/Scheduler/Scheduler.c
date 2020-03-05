@@ -19,66 +19,27 @@
 
 #include "Scheduler.h"
 #include "Humidity.h"
-#include "stdint.h"
+#include "stdlib.h"
 
+typedef void (**ptr_voidFunctionTypeVoid)();
 
-#define TASK_NUMBER_1MS 	((uint8_t)1)
-#define TASK_NUMBER_10MS 	((uint8_t)0)
-#define TASK_NUMBER_100MS 	((uint8_t)0)
-#define TASK_NUMBER_1S 		((uint8_t)0)
+#define TASK_1MS_MAX        ((uint8_t)8)
+#define TASK_10MS_MAX       ((uint8_t)8)
+#define TASK_100MS_MAX      ((uint8_t)8)
+#define TASK_1S_MAX         ((uint8_t)8)
+
+uint8_t TASK_NUMBER_1MS =	((uint8_t)0);
+uint8_t TASK_NUMBER_10MS =	((uint8_t)0);
+uint8_t TASK_NUMBER_100MS =	((uint8_t)0);
+uint8_t TASK_NUMBER_1S =	((uint8_t)0);
 
 
 uint16_t taskCounter = 0;
-//#define ENABLE_TASK_TEST 1
 
-#ifdef ENABLE_TASK_TEST
-#include <avr/io.h>
-void test_task_1ms()
-{
-    static init_led = 0;
-    if(!init_led)
-    {
-        init_led = 1;
-        DDRD |= 1;
-    }
-    PORTD ^= 1;
-    
-}
-void test_task_10ms()
-{
-    static init_led = 0;
-    if(!init_led)
-    {
-        init_led = 1;
-        DDRD |= 2;
-    }
-    PORTD ^= 2;
-    
-}
-
-void test_task_1s()
-{
-    static init_led = 0;
-    if(!init_led)
-    {
-        init_led = 1;
-        DDRB |= 1;
-    }
-    PORTB ^= 1;
-    
-} 
-
-
-
-#endif
-
-voidFunctionTypeVoid table_task_1ms     [TASK_NUMBER_1MS]   = 
-{
-    HUM_Acquire,    
-};
-voidFunctionTypeVoid table_task_10ms    [TASK_NUMBER_10MS]  = { };
-voidFunctionTypeVoid table_task_100ms   [TASK_NUMBER_100MS] = { };
-voidFunctionTypeVoid table_task_1s      [TASK_NUMBER_1S]    = { };
+voidFunctionTypeVoid table_task_1ms     [TASK_1MS_MAX];
+voidFunctionTypeVoid table_task_10ms    [TASK_10MS_MAX];
+voidFunctionTypeVoid table_task_100ms   [TASK_100MS_MAX];
+voidFunctionTypeVoid table_task_1s      [TASK_1S_MAX];
 
 typedef struct Timer
 {
@@ -95,15 +56,104 @@ Timer timer1s       = {table_task_1s,       0};
 
 void task_1ms();
 
-voidFunctionTypeVoid getPointerTo1msTask()
+inline void shift_task(ptr_voidFunctionTypeVoid ptrTask, uint8_t task_no, int8_t task_id)
+{
+    //shift the rest of tasks
+    for(uint8_t idx = task_id; idx < task_no; idx++)
+    {
+        if(idx + 1 == task_no)
+        {
+            *(ptrTask + idx) = NULL;
+        }
+        else
+        {
+            *(ptrTask + idx) = *(ptrTask + idx + 1);
+        }  
+    }
+}
+
+int8_t scheduler_remove_task(scheduler_task_type tasktype, int8_t task_id)
+{
+    int8_t task_found = -1;
+    switch(tasktype){
+        case sch_type_task_1ms:
+            if(task_id < TASK_NUMBER_1MS)
+            {
+                shift_task(table_task_1ms, TASK_1MS_MAX, task_id);
+                task_found = task_id;
+            }
+        break;
+        case sch_type_task_10ms:
+            if(task_id < TASK_NUMBER_10MS)
+            {
+                shift_task(table_task_1ms, TASK_10MS_MAX, task_id);
+                task_found = task_id;
+            }
+        break;
+        case sch_type_task_100ms:
+            if(task_id < TASK_NUMBER_100MS)
+            {
+                shift_task(table_task_1ms, TASK_100MS_MAX, task_id);
+                task_found = task_id;
+            }
+        break;
+        case sch_type_task_1s:
+            if(task_id < TASK_NUMBER_1S)
+            {
+                shift_task(table_task_1ms, TASK_1S_MAX, task_id);
+                task_found = task_id;
+            }
+        break;
+        default:
+        break;
+    }
+
+    return task_found;
+}
+
+int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid task)
+{
+    int8_t task_id = -1;
+    switch(tasktype){
+        case sch_type_task_1ms:
+            if(TASK_NUMBER_1MS < TASK_1MS_MAX){
+                task_id = (int8_t)TASK_NUMBER_1MS;
+                table_task_1ms[TASK_NUMBER_1MS++] = task;
+            }
+        break;
+        case sch_type_task_10ms:
+            if(TASK_NUMBER_10MS < TASK_10MS_MAX){
+                task_id =  (int8_t)TASK_NUMBER_10MS;
+                table_task_1ms[TASK_NUMBER_10MS++] = task;
+            }
+        break;
+        case sch_type_task_100ms:
+            if(TASK_NUMBER_100MS < TASK_100MS_MAX){
+                task_id =  (int8_t)TASK_NUMBER_100MS;
+                table_task_1ms[TASK_NUMBER_100MS++] = task;
+            }
+        break;
+        case sch_type_task_1s:
+            if(TASK_NUMBER_1S < TASK_1S_MAX){
+                task_id =  (int8_t)TASK_NUMBER_1S;
+                table_task_1ms[TASK_NUMBER_1S++] = task;
+            }
+        break;
+        default:
+        break;
+    }
+
+    return task_id;    
+}
+
+voidFunctionTypeVoid scheduler_getPointerTo1msTask()
 {
     return task_1ms;
 }
 
 
 void task_1ms()
-{    
-    int8_t multiplier;
+{  
 
     // Call all the 1ms tasks
     for (uint8_t taskIterator = 0; taskIterator < TASK_NUMBER_1MS; taskIterator++)
