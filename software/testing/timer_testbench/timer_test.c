@@ -24,6 +24,7 @@
 
 typedef enum{
     funct_timer_mode_normal_mode,
+    funct_timer_mode_pwm,
 }funct_timer;
 
 void exec_test(funct_timer funct, uint8_t inst, uint8_t reg_initial, uint8_t expected, volatile uint8_t * reg)
@@ -37,7 +38,10 @@ void exec_test(funct_timer funct, uint8_t inst, uint8_t reg_initial, uint8_t exp
         uart_printString("Execute MODE_NORMAL_MODE",1);
         TIMER_FUNCTIONS(MODE_NORMAL_MODE, inst);
         break;
-    
+    case funct_timer_mode_pwm:
+        uart_printString("Execute MODE_PWM",1);
+        TIMER_FUNCTIONS(MODE_PWM, inst);
+        break;
     default:
         break;
     }
