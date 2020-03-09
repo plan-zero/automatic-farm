@@ -54,4 +54,5 @@ add_subdirectory(application)
 
 #compile the testbench env
 add_subdirectory(testing/timer_testbench)
+add_subdirectory(testing/aes_testbench)
 

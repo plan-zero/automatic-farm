@@ -37,7 +37,9 @@ ExternalProject_Add(AES_EXT
             INSTALL_COMMAND cmake -E echo "Skipping install step."
 )
 ExternalProject_Get_Property(AES_EXT binary_dir)
-message(WARNING "${binary_dir}")
+#get AES include directory
+ExternalProject_Get_Property(AES_EXT source_dir)
+set(AES_INC_PATH ${source_dir} CACHE INTERNAL "")
 
 add_library(tiny-aes STATIC IMPORTED GLOBAL)
 set_target_properties(tiny-aes PROPERTIES 
