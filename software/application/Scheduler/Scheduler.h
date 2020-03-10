@@ -23,7 +23,8 @@ typedef void (*voidFunctionTypeVoid)();
 extern voidFunctionTypeVoid scheduler_getPointerTo1msTask(void);
 int8_t scheduler_remove_task(scheduler_task_type tasktype, int8_t task_id);
 int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid task);
-void scheduler_add_custom_period_task(voidFunctionTypeVoid task, uint_least16_t period);
+void scheduler_add_custom_period_task(voidFunctionTypeVoid task, uint16_t period);
 void scheduler_clear_all_custom_period_task();
+void scheduler_add_alarm(voidFunctionTypeVoid task, uint16_t time);
 
 #endif /* SCHEDULER_SCHEDULER_H_ */

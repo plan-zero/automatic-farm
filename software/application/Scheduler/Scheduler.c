@@ -171,7 +171,7 @@ int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid tas
 }
 
 
-void scheduler_add_custom_period_task(voidFunctionTypeVoid task, uint_least16_t period)
+void scheduler_add_custom_period_task(voidFunctionTypeVoid task, uint16_t period)
 {
     if (customTaskListCount == 0)
     {
@@ -194,7 +194,7 @@ void scheduler_clear_all_custom_period_task()
     customTaskListCount = 0;
 }
 
-void scheduler_add_alarm(voidFunctionTypeVoid task, uint_least16_t time)
+void scheduler_add_alarm(voidFunctionTypeVoid task, uint16_t time)
 {
     if (alarmListCount == 0)
     {
