@@ -25,7 +25,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}")
 project(EXTERNAL)
 
 
-if(ENABLE_AES)
+if(ENABLE_AES_TINY)
 #add AES external project
 set(AES_REPO "https://github.com/plan-zero/tiny-AES-c.git")
 set(aec_DESTDIR ${CMAKE_CURRENT_BINARY_DIR}/lib/)
@@ -45,5 +45,4 @@ add_library(tiny-aes STATIC IMPORTED GLOBAL)
 set_target_properties(tiny-aes PROPERTIES 
         IMPORTED_LOCATION ${binary_dir}/libtiny-aes.a
 )
-
 endif()

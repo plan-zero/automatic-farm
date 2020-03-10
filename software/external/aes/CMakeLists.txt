@@ -19,20 +19,15 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../../cmake_config/generic-avr-gcc.cmake")
 
 # Name your project
-project(AES_TEST)
+project(AES)
 
 set(HEADER_INC
-    ./../../libraries/drivers/uart/inc
-    ./../../libraries/hardware/${AVR_MCU}
-    ./../../external/aes
-    ${AES_INC_PATH}
+    ./
 )
-include_directories(${HEADER_INC})
 
 set(SOURCE_FILES
-    ./aes_test.c
+    ./aes.c
 )
-avr_add_executable(aes_test ${SOURCE_FILES})
-target_link_libraries(aes_test.elf uart aes)
+avr_add_library(aes ${SOURCE_FILES})
 
 
