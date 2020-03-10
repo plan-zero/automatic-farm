@@ -25,6 +25,13 @@ project(AUTOMATIC_FARM)
 
 include(CheckArguments.cmake)
 
+#download external dependencies
+add_subdirectory(external)
+
+if(ENABLE_AES)
+add_subdirectory(external/aes)
+add_subdirectory(testing/aes_testbench)
+endif()
 
 #generate the driver headers
 add_subdirectory(libraries/hardware/${AVR_MCU})
@@ -52,4 +59,5 @@ add_subdirectory(application)
 
 #compile the testbench env
 add_subdirectory(testing/timer_testbench)
+
 
