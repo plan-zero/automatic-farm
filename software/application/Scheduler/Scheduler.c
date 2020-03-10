@@ -49,13 +49,13 @@ typedef struct Timer
 typedef struct CustomPeriodTask
 {
     voidFunctionTypeVoid pFunction;
-    uint_least16_t period;
-    uint_least16_t counter;
+    uint16_t period;
+    uint16_t counter;
 }CustomPeriodTask;
 typedef struct Alarm
 {
     voidFunctionTypeVoid pFunction;
-    uint_least16_t counter;
+    uint16_t counter;
 }Alarm;
 
 
@@ -148,19 +148,19 @@ int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid tas
         case sch_type_task_10ms:
             if(taskNumber10ms < TASK_10MS_MAX){
                 task_id =  (int8_t)taskNumber10ms;
-                table_task_1ms[taskNumber10ms++] = task;
+                table_task_10ms[taskNumber10ms++] = task;
             }
         break;
         case sch_type_task_100ms:
             if(taskNumber100ms < TASK_100MS_MAX){
                 task_id =  (int8_t)taskNumber100ms;
-                table_task_1ms[taskNumber100ms++] = task;
+                table_task_100ms[taskNumber100ms++] = task;
             }
         break;
         case sch_type_task_1s:
             if(taskNumber1s < TASK_1S_MAX){
                 task_id =  (int8_t)taskNumber1s;
-                table_task_1ms[taskNumber1s++] = task;
+                table_task_1s[taskNumber1s++] = task;
             }
         break;
         default:
@@ -175,17 +175,18 @@ void scheduler_add_custom_period_task(voidFunctionTypeVoid task, uint16_t period
 {
     if (customTaskListCount == 0)
     {
-        customTaskListCount++;
         customTaskList = (CustomPeriodTask *)malloc(sizeof(CustomPeriodTask));
     }
     else
-    {
-        customTaskListCount++;
-        customTaskList = realloc(customTaskList, customTaskListCount * sizeof(CustomPeriodTask));        
+    {     
+        customTaskList = realloc(customTaskList, (customTaskListCount + 1) * sizeof(CustomPeriodTask));        
     }
+
     customTaskList[customTaskListCount].pFunction = task;
     customTaskList[customTaskListCount].period = period;
     customTaskList[customTaskListCount].counter = period;
+
+    customTaskListCount++;
 }
 void scheduler_clear_all_custom_period_task()
 {
@@ -197,17 +198,16 @@ void scheduler_clear_all_custom_period_task()
 void scheduler_add_alarm(voidFunctionTypeVoid task, uint16_t time)
 {
     if (alarmListCount == 0)
-    {
-        alarmListCount++;
+    {        
         alarmList = (Alarm *)malloc(sizeof(Alarm));
     }
     else
     {
-        alarmListCount++;
-        alarmList = realloc(alarmList, alarmListCount * sizeof(Alarm));        
+        alarmList = realloc(alarmList, (alarmListCount + 1) * sizeof(Alarm));        
     }
     alarmList[alarmListCount].pFunction = task;
     alarmList[alarmListCount].counter = time;
+    alarmListCount++;
 }
 
 
@@ -256,7 +256,7 @@ void task_1ms()
     }
    
    
-    // Call the 1 tasks in their respective slots
+    // Call the 1 s tasks in their respective slots
     if ((taskCounter + 1) % 100 == 0)
     {
         if(timer1s.slot > 0)
@@ -271,51 +271,58 @@ void task_1ms()
         taskCounter = 0;
     }
 
+    taskCounter++;
+
     // Call the custom period tasks if needed
-    for (uint8_t taskIterator = 0; taskIterator < customTaskListCount; taskIterator++)
+    if (customTaskList != NULL)
     {
-        if (customTaskList[taskIterator].counter == 0)
+        for (uint8_t taskIterator = 0; taskIterator < customTaskListCount; taskIterator++)
         {
-            customTaskList[taskIterator].counter = customTaskList[taskIterator].period;
-            customTaskList[taskIterator].pFunction();
+            customTaskList[taskIterator].counter--;    
+            if (customTaskList[taskIterator].counter == 0)
+            {
+                customTaskList[taskIterator].counter = customTaskList[taskIterator].period;
+                customTaskList[taskIterator].pFunction();
+            }
         }
-        customTaskList[taskIterator].counter--;
     }
 
 
     // Call the alarm requests if needed
-    for (uint8_t alarmIterator = 0; alarmIterator < alarmListCount; alarmIterator++)
+    if(alarmList != NULL)
     {
-        if (alarmList[alarmIterator].counter == 0)
+        for (uint8_t alarmIterator = 0; alarmIterator < alarmListCount; alarmIterator++)
         {
-            alarmList[alarmIterator].pFunction();
-            if (alarmListCount > 1) 
-            {           
-                Alarm* tempAlarmList;
-                tempAlarmList = (Alarm *)malloc((alarmListCount - 1) * sizeof(Alarm));
-                uint8_t tempIterator = 0;
-                for (uint8_t it = 0; it < alarmListCount; it ++)
-                {
-                    if (it != alarmIterator)
-                    {
-                        tempAlarmList[tempIterator].counter = alarmList[it].counter;
-                        tempAlarmList[tempIterator].pFunction = alarmList[it].pFunction;
-                        tempIterator++;
-                    }
-                }
-                free(alarmList);
-                alarmList = tempAlarmList;
-            }
-            else
+            alarmList[alarmIterator].counter--; 
+            if (alarmList[alarmIterator].counter == 0)
             {
-                free(alarmList);
-                alarmList = NULL;
-            }
+                alarmList[alarmIterator].pFunction();
+                if (alarmListCount > 1) 
+                {           
+                    Alarm* tempAlarmList;
+                    tempAlarmList = (Alarm *)malloc((alarmListCount - 1) * sizeof(Alarm));
+                    uint8_t tempIterator = 0;
+                    for (uint8_t it = 0; it < alarmListCount; it ++)
+                    {
+                        if (it != alarmIterator)
+                        {
+                            tempAlarmList[tempIterator].counter = alarmList[it].counter;
+                            tempAlarmList[tempIterator].pFunction = alarmList[it].pFunction;
+                            tempIterator++;
+                        }
+                    }
+                    free(alarmList);
+                    alarmList = tempAlarmList;
+                    alarmIterator--;
+                    alarmListCount--;
+                }
+                else
+                {
+                    free(alarmList);
+                    alarmList = NULL;
+                }
+            }        
         }
-        else
-        {
-            customTaskList[alarmIterator].counter--;               
-        }        
     }
 
 }
