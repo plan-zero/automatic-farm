@@ -28,10 +28,10 @@ typedef void (**ptr_voidFunctionTypeVoid)();
 #define TASK_100MS_MAX      ((uint8_t)8)
 #define TASK_1S_MAX         ((uint8_t)8)
 
-uint8_t TASK_NUMBER_1MS =	((uint8_t)0);
-uint8_t TASK_NUMBER_10MS =	((uint8_t)0);
-uint8_t TASK_NUMBER_100MS =	((uint8_t)0);
-uint8_t TASK_NUMBER_1S =	((uint8_t)0);
+uint8_t taskNumber1ms   =	((uint8_t)0);
+uint8_t taskNumber10ms  =	((uint8_t)0);
+uint8_t taskNumber100ms =	((uint8_t)0);
+uint8_t taskNumber1s    =	((uint8_t)0);
 
 
 uint16_t taskCounter = 0;
@@ -46,11 +46,32 @@ typedef struct Timer
     voidFunctionTypeVoid* table;
     uint8_t slot;
 }Timer;
+typedef struct CustomPeriodTask
+{
+    voidFunctionTypeVoid pFunction;
+    uint_least16_t period;
+    uint_least16_t counter;
+}CustomPeriodTask;
+typedef struct Alarm
+{
+    voidFunctionTypeVoid pFunction;
+    uint_least16_t counter;
+}Alarm;
+
+
+
 
 Timer timer1ms      = {table_task_1ms,      0};
 Timer timer10ms     = {table_task_10ms,     0};
 Timer timer100ms    = {table_task_100ms,    0};
 Timer timer1s       = {table_task_1s,       0};
+
+
+CustomPeriodTask* customTaskList = NULL;
+uint8_t customTaskListCount = 0;
+
+Alarm* alarmList = NULL;
+uint8_t alarmListCount = 0;
 
 
 
@@ -77,31 +98,35 @@ int8_t scheduler_remove_task(scheduler_task_type tasktype, int8_t task_id)
     int8_t task_found = -1;
     switch(tasktype){
         case sch_type_task_1ms:
-            if(task_id < TASK_NUMBER_1MS)
+            if(task_id < taskNumber1ms)
             {
                 shift_task(table_task_1ms, TASK_1MS_MAX, task_id);
                 task_found = task_id;
+                taskNumber1ms--;
             }
         break;
         case sch_type_task_10ms:
-            if(task_id < TASK_NUMBER_10MS)
+            if(task_id < taskNumber10ms)
             {
-                shift_task(table_task_1ms, TASK_10MS_MAX, task_id);
+                shift_task(table_task_10ms, TASK_10MS_MAX, task_id);
                 task_found = task_id;
+                taskNumber10ms--;
             }
         break;
         case sch_type_task_100ms:
-            if(task_id < TASK_NUMBER_100MS)
+            if(task_id < taskNumber100ms)
             {
-                shift_task(table_task_1ms, TASK_100MS_MAX, task_id);
+                shift_task(table_task_100ms, TASK_100MS_MAX, task_id);
                 task_found = task_id;
+                taskNumber100ms--;
             }
         break;
         case sch_type_task_1s:
-            if(task_id < TASK_NUMBER_1S)
+            if(task_id < taskNumber1s)
             {
-                shift_task(table_task_1ms, TASK_1S_MAX, task_id);
+                shift_task(table_task_1s, TASK_1S_MAX, task_id);
                 task_found = task_id;
+                taskNumber1s--;
             }
         break;
         default:
@@ -110,33 +135,32 @@ int8_t scheduler_remove_task(scheduler_task_type tasktype, int8_t task_id)
 
     return task_found;
 }
-
 int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid task)
 {
     int8_t task_id = -1;
     switch(tasktype){
         case sch_type_task_1ms:
-            if(TASK_NUMBER_1MS < TASK_1MS_MAX){
-                task_id = (int8_t)TASK_NUMBER_1MS;
-                table_task_1ms[TASK_NUMBER_1MS++] = task;
+            if(taskNumber1ms < TASK_1MS_MAX){
+                task_id = (int8_t)taskNumber1ms;
+                table_task_1ms[taskNumber1ms++] = task;
             }
         break;
         case sch_type_task_10ms:
-            if(TASK_NUMBER_10MS < TASK_10MS_MAX){
-                task_id =  (int8_t)TASK_NUMBER_10MS;
-                table_task_1ms[TASK_NUMBER_10MS++] = task;
+            if(taskNumber10ms < TASK_10MS_MAX){
+                task_id =  (int8_t)taskNumber10ms;
+                table_task_1ms[taskNumber10ms++] = task;
             }
         break;
         case sch_type_task_100ms:
-            if(TASK_NUMBER_100MS < TASK_100MS_MAX){
-                task_id =  (int8_t)TASK_NUMBER_100MS;
-                table_task_1ms[TASK_NUMBER_100MS++] = task;
+            if(taskNumber100ms < TASK_100MS_MAX){
+                task_id =  (int8_t)taskNumber100ms;
+                table_task_1ms[taskNumber100ms++] = task;
             }
         break;
         case sch_type_task_1s:
-            if(TASK_NUMBER_1S < TASK_1S_MAX){
-                task_id =  (int8_t)TASK_NUMBER_1S;
-                table_task_1ms[TASK_NUMBER_1S++] = task;
+            if(taskNumber1s < TASK_1S_MAX){
+                task_id =  (int8_t)taskNumber1s;
+                table_task_1ms[taskNumber1s++] = task;
             }
         break;
         default:
@@ -146,17 +170,61 @@ int8_t scheduler_add_task(scheduler_task_type tasktype, voidFunctionTypeVoid tas
     return task_id;    
 }
 
+
+void scheduler_add_custom_period_task(voidFunctionTypeVoid task, uint_least16_t period)
+{
+    if (customTaskListCount == 0)
+    {
+        customTaskListCount++;
+        customTaskList = (CustomPeriodTask *)malloc(sizeof(CustomPeriodTask));
+    }
+    else
+    {
+        customTaskListCount++;
+        customTaskList = realloc(customTaskList, customTaskListCount * sizeof(CustomPeriodTask));        
+    }
+    customTaskList[customTaskListCount].pFunction = task;
+    customTaskList[customTaskListCount].period = period;
+    customTaskList[customTaskListCount].counter = period;
+}
+void scheduler_clear_all_custom_period_task()
+{
+    free(customTaskList);
+    customTaskList = NULL;
+    customTaskListCount = 0;
+}
+
+void scheduler_add_alarm(voidFunctionTypeVoid task, uint_least16_t time)
+{
+    if (alarmListCount == 0)
+    {
+        alarmListCount++;
+        alarmList = (Alarm *)malloc(sizeof(Alarm));
+    }
+    else
+    {
+        alarmListCount++;
+        alarmList = realloc(alarmList, alarmListCount * sizeof(Alarm));        
+    }
+    alarmList[alarmListCount].pFunction = task;
+    alarmList[alarmListCount].counter = time;
+}
+
+
 voidFunctionTypeVoid scheduler_getPointerTo1msTask()
 {
     return task_1ms;
 }
 
 
+
+
+
 void task_1ms()
 {  
 
     // Call all the 1ms tasks
-    for (uint8_t taskIterator = 0; taskIterator < TASK_NUMBER_1MS; taskIterator++)
+    for (uint8_t taskIterator = 0; taskIterator < taskNumber1ms; taskIterator++)
     {
         timer1ms.table[taskIterator]();
     }
@@ -164,16 +232,13 @@ void task_1ms()
     // Call the 10ms tasks in their respective slots
     if(timer10ms.slot > 0)
     {
-        timer10ms.table[TASK_NUMBER_10MS - timer10ms.slot]();       
+        timer10ms.table[taskNumber10ms - timer10ms.slot]();       
         timer10ms.slot --;
     }
-
     if (taskCounter % 10 == 0)
     {
-        timer10ms.slot = TASK_NUMBER_10MS;
-        
+        timer10ms.slot = taskNumber10ms;        
     }
-
 
 
     // Call the 100ms tasks in their respective slots
@@ -181,13 +246,13 @@ void task_1ms()
     {
         if(timer100ms.slot > 0)
         {
-            timer100ms.table[TASK_NUMBER_100MS - timer100ms.slot]();                
+            timer100ms.table[taskNumber100ms - timer100ms.slot]();                
             timer100ms.slot --;
         }
     }  
     if (taskCounter % 100 == 0)
     {
-        timer100ms.slot = TASK_NUMBER_100MS;
+        timer100ms.slot = taskNumber100ms;
     }
    
    
@@ -196,21 +261,68 @@ void task_1ms()
     {
         if(timer1s.slot > 0)
         {
-            timer1s.table[TASK_NUMBER_1S - timer1s.slot]();       
+            timer1s.table[taskNumber1s - timer1s.slot]();       
             timer1s.slot --;
         }        
     }
     if (taskCounter % 1000 == 0)
     {
-        timer1s.slot = TASK_NUMBER_1S;
+        timer1s.slot = taskNumber1s;
         taskCounter = 0;
     }
+
+    // Call the custom period tasks if needed
+    for (uint8_t taskIterator = 0; taskIterator < customTaskListCount; taskIterator++)
+    {
+        if (customTaskList[taskIterator].counter == 0)
+        {
+            customTaskList[taskIterator].counter = customTaskList[taskIterator].period;
+            customTaskList[taskIterator].pFunction();
+        }
+        customTaskList[taskIterator].counter--;
+    }
+
+
+    // Call the alarm requests if needed
+    for (uint8_t alarmIterator = 0; alarmIterator < alarmListCount; alarmIterator++)
+    {
+        if (alarmList[alarmIterator].counter == 0)
+        {
+            alarmList[alarmIterator].pFunction();
+            if (alarmListCount > 1) 
+            {           
+                Alarm* tempAlarmList;
+                tempAlarmList = (Alarm *)malloc((alarmListCount - 1) * sizeof(Alarm));
+                uint8_t tempIterator = 0;
+                for (uint8_t it = 0; it < alarmListCount; it ++)
+                {
+                    if (it != alarmIterator)
+                    {
+                        tempAlarmList[tempIterator].counter = alarmList[it].counter;
+                        tempAlarmList[tempIterator].pFunction = alarmList[it].pFunction;
+                        tempIterator++;
+                    }
+                }
+                free(alarmList);
+                alarmList = tempAlarmList;
+            }
+            else
+            {
+                free(alarmList);
+                alarmList = NULL;
+            }
+        }
+        else
+        {
+            customTaskList[alarmIterator].counter--;               
+        }        
+    }
+
 }
 
 
-
 // TODO: adaugat alarma (dai sa iti apeleze o functie dupa x secunde)
-// TODO adaugat custom task la x ms
+
 
 
 
