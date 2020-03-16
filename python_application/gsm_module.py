@@ -1,12 +1,29 @@
+# Copyright (C) 2020 Coding Night Romania
+# 
+# This file is part of automatic-farm.
+# 
+# automatic-farm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# automatic-farm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
+
+
 import util_module as util
 import support_gsm7 as gsm7
 import time
 import sys,os
 import re
 
-#admin = ["0743566434", "+40743566434", "0741457348", "+40741457348"]
-phonebook = ["0743566434"] #, "0757791322", "0741457348"]
-
+admin_number = ""
+phonebook = [admin_number]
 
 admin = []
 definedCommands = []
@@ -76,7 +93,7 @@ def formatNumber(number):
 		e = sys.exc_info()
 		print("formatNumber: error during formating")
 		print(e)
-		return "0743566434"
+		return admin_number
 
 
 def checkMessages():
@@ -105,7 +122,6 @@ def checkMessages():
 
 def main():
 	print("testing area")
-	#sendSMS("0743566434", "salut andrei")
 	while True:
 		checkMessages()
 		time.sleep(1)

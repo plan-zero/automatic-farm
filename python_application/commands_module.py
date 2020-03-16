@@ -1,6 +1,25 @@
+# Copyright (C) 2020 Coding Night Romania
+# 
+# This file is part of automatic-farm.
+# 
+# automatic-farm is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# automatic-farm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
+
+
 import log_module as logger
 
 definedCommands = []
+admin_number=""
 
 
 def registerCommandHandler(commandString, commandHandler):
@@ -37,11 +56,11 @@ def main():
 		print(arg + " handler 2")
 	def myHandler3(arg):
 		print(arg + " handler 3")
-	addAdministrator("0743566434")
+	addAdministrator(admin_number)
 	registerCommandHandler("getBattery", myHandler1)
 	registerCommandHandler("cancelReboot", myHandler2)
 	registerCommandHandler("reboot", myHandler3)
-	mes = [ ["0", "0743566434", "cancelReboot"], ["0", "0743566434", "getBattery"] ]
+	mes = [ ["0", admin_number, "cancelReboot"], ["0", admin_number, "getBattery"] ]
 	executeCommand(mes)
 
 	print("Remove handler 2")
@@ -49,7 +68,7 @@ def main():
 	executeCommand(mes)
 
 	print("Remove admin")
-	removeAdministrator("0743566434")
+	removeAdministrator(admin_number)
 	executeCommand(mes)
 
 if __name__ == "__main__":
