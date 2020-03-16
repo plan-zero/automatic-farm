@@ -98,17 +98,7 @@ INTERRUPT_ROUTINE(IRQ_TIMER2_CMP)
     }
 }
 #endif
-#ifdef EN_TIMER2_OVF_IRQ
-INTERRUPT_ROUTINE(IRQ_TIMER2_OVF)
-{
-    cb_count[TIMER_2]++;
-    if(cb_count[TIMER_2] == cb_period[TIMER_2])
-    {
-        cb_count[TIMER_2] = 0;
-        trigger_cb[TIMER_2](TIMER_2);
-    }
-}
-#endif
+
 
 timer_prescaler cached_timer_pres[TIMER_COUNT];
 
@@ -181,7 +171,7 @@ timer_status timer_init(timer_instance inst, timer_cfg cfg)
     else if(cfg.channel == timer_ch_b)
         TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_b, TIMER_CH_B);
     else
-        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_b, TIMER_CH_A);
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val, TIMER_CH_A);
 
     timer_internal_state[inst] = timer_ready;
     return timer_ready;
@@ -213,19 +203,40 @@ void timer_start(timer_instance inst, uint16_t initial_value)
         switch (cached_timer_pres[inst])
         {
         case timer_prescaler_1:
-            TIMER_FUNCTIONS(CLOCK_PRE_1,inst);
+            if(TIMER_8_ASYNC == TIMER_GET_TYPE_SYNC(inst))
+                TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_1,inst);
+            else
+                TIMER_FUNCTIONS(CLOCK_PRE_1,inst);
             break;
         case timer_prescaler_8:
-            TIMER_FUNCTIONS(CLOCK_PRE_8,inst);
+            if(TIMER_8_ASYNC == TIMER_GET_TYPE_SYNC(inst))
+                TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_8,inst);
+            else
+                TIMER_FUNCTIONS(CLOCK_PRE_8,inst);
+            break;
+        case timer_prescaler_32:
+            TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_32,inst);
             break;
         case timer_prescaler_64:
-            TIMER_FUNCTIONS(CLOCK_PRE_64,inst);
+            if(TIMER_8_ASYNC == TIMER_GET_TYPE_SYNC(inst))
+                TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_64,inst);
+            else
+                TIMER_FUNCTIONS(CLOCK_PRE_64,inst);
+            break;
+        case timer_prescaler_128:
+            TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_32,inst);
             break;
         case timer_prescaler_256:
-            TIMER_FUNCTIONS(CLOCK_PRE_256,inst);
+            if(TIMER_8_ASYNC == TIMER_GET_TYPE_SYNC(inst))
+                TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_256,inst);
+            else
+                TIMER_FUNCTIONS(CLOCK_PRE_256,inst);
             break;
         case timer_prescaler_1024:
-            TIMER_FUNCTIONS(CLOCK_PRE_1024,inst);
+            if(TIMER_8_ASYNC == TIMER_GET_TYPE_SYNC(inst))
+                TIMER_FUNCTIONS(ASYNC_CLOCK_PRE_1024,inst);
+            else
+                TIMER_FUNCTIONS(CLOCK_PRE_1024,inst);
             break;
         default:
             break;
