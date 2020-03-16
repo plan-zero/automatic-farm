@@ -35,9 +35,12 @@
 #define TIMER_8_BITS 99
 //tiemr type 16BITS
 #define TIMER_16_BITS 98
+#define TIMER_8_ASYNC   100
+#define TIMER_8_SYNC    101
 
 //return the timer type based on instance parameter (can be used at runtime)
 #define TIMER_GET_TYPE(inst) ( inst == TIMER_0 || inst == TIMER_2 ) ? TIMER_8_BITS : TIMER_16_BITS
+#define TIMER_GET_TYPE_SYNC(inst) ((inst == TIMER_2 ) ? TIMER_8_ASYNC : TIMER_8_SYNC )
 
 //timer channel A - used just for 16BITs timers
 #define TIMER_CH_A   A
@@ -156,6 +159,15 @@
 #define _TIMER8_CLOCK_EXT_T0FE(inst, ...)         NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,0))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1))
 #define _TIMER8_CLOCK_EXT_T0RE(inst, ...)         NAME(TCCR, inst) |= _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2))
 
+//ASYNC specific prescaler
+#define _TIMER8_ASYNC_CLOCK_PRE_1(inst, ...)            NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1)))) | _BV(NAME(CS,inst,0))
+#define _TIMER8_ASYNC_CLOCK_PRE_8(inst, ...)            NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~(_BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,1))
+#define _TIMER8_ASYNC_CLOCK_PRE_32(inst, ...)           NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,2))) | _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1))
+#define _TIMER8_ASYNC_CLOCK_PRE_64(inst, ...)           NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~(_BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,0)))) | _BV(NAME(CS,inst,2))
+#define _TIMER8_ASYNC_CLOCK_PRE_128(inst, ...)          NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,1))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,0))
+#define _TIMER8_ASYNC_CLOCK_PRE_256(inst, ...)          NAME(TCCR, inst) = ( NAME(TCCR, inst) & ~_BV(NAME(CS,inst,0))) | _BV(NAME(CS,inst,2)) | _BV(NAME(CS,inst,1))
+#define _TIMER8_ASYNC_CLOCK_PRE_1024(inst, ...)         NAME(TCCR, inst) |= _BV(NAME(CS,inst,0)) | _BV(NAME(CS,inst,1)) | _BV(NAME(CS,inst,2))
+
 //unsuported macros
 #define _TIMER8_MODE_PWM_8BIT(inst, ...)             -1
 #define _TIMER8_MODE_PWM_9BIT(inst, ...)             -1
@@ -182,6 +194,14 @@
 #define _TIMER16_MODE_PWM(inst, ...)             -1
 #define _TIMER16_MODE_CTC(inst, ...)             -1
 #define _TIMER16_MODE_FAST_PWM(inst, ...)        -1
+//ASYNC specific prescaler
+#define _TIMER16_ASYNC_CLOCK_PRE_1(inst, ...)      -1     
+#define _TIMER16_ASYNC_CLOCK_PRE_8(inst, ...)      -1          
+#define _TIMER16_ASYNC_CLOCK_PRE_32(inst, ...)     -1      
+#define _TIMER16_ASYNC_CLOCK_PRE_64(inst, ...)     -1      
+#define _TIMER16_ASYNC_CLOCK_PRE_128(inst, ...)    -1      
+#define _TIMER16_ASYNC_CLOCK_PRE_256(inst, ...)    -1      
+#define _TIMER16_ASYNC_CLOCK_PRE_1024(inst, ...)   -1
 
 
 //

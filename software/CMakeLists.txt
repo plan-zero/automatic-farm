@@ -46,6 +46,7 @@ add_subdirectory(libraries/drivers/wdg)
 
 #compile the libs modules
 add_subdirectory(libraries/modules/nrf24)
+add_subdirectory(libraries/modules/system-timer)
 
 #compile the firmware
 add_subdirectory(firmware)
@@ -59,5 +60,7 @@ add_subdirectory(application)
 
 #compile the testbench env
 add_subdirectory(testing/timer_testbench)
+add_subdirectory(testing/system_timer_testbench)
+                         
 
 

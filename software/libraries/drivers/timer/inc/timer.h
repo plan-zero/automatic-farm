@@ -59,7 +59,9 @@ typedef enum{
 typedef enum{
   timer_prescaler_1,
   timer_prescaler_8,
+  timer_prescaler_32,
   timer_prescaler_64,
+  timer_prescaler_128,
   timer_prescaler_256,
   timer_prescaler_1024,
   timer_prescaler_ext_1,
@@ -113,6 +115,15 @@ typedef struct{
     timer_ch channel;
     timer_interrupt interrupt;
 }timer_cfg;
+
+#if defined(ADD_TIMER2_OVF_INT) && (ADD_TIMER2_OVF_INT == 1)
+#include "interrupt_hw.h"
+extern uint32_t timer2_ovf_int;
+INTERRUPT_ROUTINE(IRQ_TIMER2_OVF)
+{
+    timer2_ovf_int++;
+}
+#endif
 
 timer_status timer_init(timer_instance inst, timer_cfg cfg);
 void timer_register_callback(timer_instance inst, timer_callback cb, uint8_t period );
