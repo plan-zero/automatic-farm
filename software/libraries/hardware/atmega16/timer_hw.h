@@ -281,6 +281,63 @@
 //@instance: timer instance
 //usage: ##MODE_NORMAL_MODE(instance)
 #define MODE_NORMAL_MODE    MODE_NORMAL_MODE
+#define MODE_PWM            MODE_PWM
+#define MODE_CTC            MODE_CTC
+#define MODE_FAST_PWM       MODE_FAST_PWM
+
+#define SET_OVF_INT         SET_OVF_INT
+#define GET_OVF_INT         GET_OVF_INT
+
+#define SET_OCMP_INT        SET_OCMP_INT
+#define GET_OCMP_INT        GET_OCMP_INT
+
+#define CLEAR_OVF_INT_FLAG  CLEAR_OVF_INT_FLAG
+#define GET_OVF_INT_FLAG    GET_OVF_INT_FLAG
+
+#define CLEAR_OCMP_INT_FLAG     CLEAR_OCMP_INT_FLAG
+#define GET_OCMP_INT_FLAG       GET_OCMP_INT_FLAG
+
+#define NORMAL_OPERATION    NORMAL_OPERATION
+#define TOGGLE_CMP_MATCH    TOGGLE_CMP_MATCH
+#define CLEAR_CMP_MATCH     CLEAR_CMP_MATCH
+#define SET_CMP_MATCH       SET_CMP_MATCH
+
+#define GET_COUNTER         GET_COUNTER
+#define SET_COUNTER         SET_COUNTER
+
+#define CLOCK_DISABLED      CLOCK_DISABLED
+#define CLOCK_PRE_1         CLOCK_PRE_1
+#define CLOCK_PRE_8         CLOCK_PRE_8
+#define CLOCK_PRE_64        CLOCK_PRE_64
+#define CLOCK_PRE_256       CLOCK_PRE_256
+#define CLOCK_PRE_1024      CLOCK_PRE_1024
+#define CLOCK_EXT_T0FE      CLOCK_EXT_T0FE
+#define CLOCK_EXT_T0RE      CLOCK_EXT_T0RE
+
+#define MODE_PWM_8BIT       MODE_PWM_8BIT          
+#define MODE_PWM_9BIT       MODE_PWM_9BIT           
+#define MODE_PWM_10BIT      MODE_PWM_10BIT      
+#define MODE_CTC_1          MODE_CTC_1     
+#define MODE_FASTPWM_8BIT   MODE_FASTPWM_8BIT    
+#define MODE_FASTPWM_9BIT   MODE_FASTPWM_9BIT      
+#define MODE_FASTPWM_10BIT  MODE_FASTPWM_10BIT        
+#define MODE_PWM_PFC1       MODE_PWM_PFC1    
+#define MODE_PWM_PFC2       MODE_PWM_PFC2      
+#define MODE_PWM_PC1        MODE_PWM_PC1             
+#define MODE_PWM_PC2        MODE_PWM_PC2     
+#define MODE_CTC_2          MODE_CTC_2      
+#define MODE_FASTPWM_1      MODE_FASTPWM_1     
+#define MODE_FASTPWM_2      MODE_FASTPWM_2    
+#define SET_IC_INT          SET_IC_INT           
+#define GET_IC_INT          GET_IC_INT   
+
+#define GET_OUTPUT_CMP      GET_OUTPUT_CMP
+#define SET_OUTPUT_CMP      SET_OUTPUT_CMP
+
+#define GET_INPUT_CAPTURE   GET_INPUT_CAPTURE
+#define SET_INPUT_CAPTURE   SET_INPUT_CAPTURE
+
+#define SET_OUTPUT_CMP(inst, value, ...)
 
 #define __TIMER_FUNCTIONS(function, inst, ...)          inst == TIMER_2 ? _TIMER8_ ## function(TIMER_2, __VA_ARGS__) : 0
 #define _TIMER_FUNCTIONS(function, inst, ...)           inst == TIMER_0 ? _TIMER8_ ## function(TIMER_0, __VA_ARGS__) : __TIMER_FUNCTIONS(function, inst, __VA_ARGS__)
