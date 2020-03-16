@@ -19,10 +19,10 @@
 
 
 #include "timer.h"
-#include "stdint.h"
 #include "stdlib.h"
 
 #include "interrupt_hw.h"
+#include "timer_hw.h"
 
 #define EN_TIMER0_CMP_IRQ
 
@@ -181,7 +181,7 @@ timer_status timer_init(timer_instance inst, timer_cfg cfg)
     else if(cfg.channel == timer_ch_b)
         TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_b, TIMER_CH_B);
     else
-        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_b, TIMER_CH_A);
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val, TIMER_CH_A);
 
     timer_internal_state[inst] = timer_ready;
     return timer_ready;

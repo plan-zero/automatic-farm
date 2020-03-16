@@ -18,8 +18,7 @@
 
 #ifndef _TIMER_H
 #define _TIMER_H
-
-#include "timer_hw.h"
+#include "stdint.h"
 
 typedef enum{
     timer_noinit,
@@ -116,7 +115,7 @@ typedef struct{
 }timer_cfg;
 
 timer_status timer_init(timer_instance inst, timer_cfg cfg);
-//void timer_register_callback(timer_instance inst, timer_cb_type cb_type, timer_callback cb, uint8_t period );
+void timer_register_callback(timer_instance inst, timer_callback cb, uint8_t period );
 void timer_start(timer_instance inst, uint16_t initial_value);
 void timer_reset(timer_instance inst);
 uint16_t timer_get(timer_instance inst);
