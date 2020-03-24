@@ -275,7 +275,7 @@ void startFlash(uint8_t * rx_address)
 							uint8_t flash_byte = 0;
 							uint16_t crc = 0;
 							//read application byte by byte
-							for(uint32_t addr = APP_CODE_ADDR; addr < (APP_CODE_ADDR + APP_CODE_SIZE); addr++)
+							for(uint32_t addr = APP_CODE_ADDR; addr < ( (currentPage+1) * FLASH_PAGE_SIZE); addr++)
 							{
 								flash_byte = pgm_read_byte(addr);
 								crc = _crc16_update(crc, flash_byte);
