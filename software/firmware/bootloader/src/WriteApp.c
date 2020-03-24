@@ -37,6 +37,7 @@
 #include "flash.h"
 #include "e2p.h"
 #include "interrupt_hw.h"
+#include "wdg.h"
 
 
 #define BUFFER_LENGTH				((uint8_t) 32)
@@ -151,13 +152,8 @@ void initNrf(uint8_t * rx_address)
 
 
 
-void wdgReset(void)
-{
-    WDTCR=0x18;
-    WDTCR=0x08;
-    asm("wdr");
-    while(1);
-}
+#define wdgReset() while(1)
+
 
 void startFlash(uint8_t * rx_address)
 {
@@ -177,8 +173,11 @@ void startFlash(uint8_t * rx_address)
 	bootloader_state = BOOTLOADER_FLASH_INIT;
 	ackResponse[0] = BOOTLOADER_FLASH_INIT;
 	__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, RESPONSE_SIZE);
+	//enable wdg at 500 ms
+	wdg_init(wdgto_500MS);
 	do 
 	{
+		wdg_kick();
 		__nrfRadio_Main();
 		
 		if (rxData.hasMessage)
