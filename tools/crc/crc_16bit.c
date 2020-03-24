@@ -25,7 +25,7 @@
 #include <string.h>
 
 #define CRCVER "v1.0.0"
-#define APP_SIZE (uint32_t)10240
+#define APP_SIZE (uint32_t)24576
 #define BYTES_INLINE_16 16
 
 int verbose = 0;

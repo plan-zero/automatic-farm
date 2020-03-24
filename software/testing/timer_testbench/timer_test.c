@@ -146,7 +146,7 @@ int main()
     uartNewLine();
     uart_printString("Timer testing env", 1);
 
-
+/*
     exec_test(  funct_timer_mode_normal_mode,   //timer function
                 TIMER_0,                        //timer instance
                 0x48,                           //timer's reg init value
@@ -164,7 +164,7 @@ int main()
             0x48,                           //timer's reg init value
             0,                              //expected result
             &TCCR2A );                       //target register
-
+*/
 
     
     while(1);
