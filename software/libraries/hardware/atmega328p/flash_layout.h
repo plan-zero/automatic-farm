@@ -32,7 +32,7 @@
 #define NRF_HOOKS_ADDR             0x6000            //NRF24 HOOKS code starting address in flash
 #define NRF_HOOKS_SIZE             64            //NRF24 HOOKS SIZE [Bytes]
 
-#define FLASH_PAGE_COUNT           80          //The total number of flash pages
+#define FLASH_PAGE_COUNT           192          //The total number of flash pages
 #define FLASH_PAGE_SIZE            128           //The size of one page in [Bytes]
 
 #define APP_CODE_ADDR              0x0             //APP code starting address in flash

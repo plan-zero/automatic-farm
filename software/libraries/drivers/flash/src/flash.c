@@ -52,7 +52,7 @@ void boot_erase_pages(uint16_t start_page, uint16_t end_page)
 {
     uint8_t sreg = SREG;
     INT_GLOBAL_DIS();
-    for(uint16_t page = start_page + 1; end_page < FLASH_PAGE_COUNT; page++)
+    for(uint16_t page = start_page + 1; page < end_page; page++)
     {
         eeprom_busy_wait ();
         boot_page_erase (page * 128);

@@ -174,7 +174,7 @@ void startFlash(uint8_t * rx_address)
 	ackResponse[0] = BOOTLOADER_FLASH_INIT;
 	__nrfRadio_LoadAckPayload(flashPipe, (uint8_t*)ackResponse, RESPONSE_SIZE);
 	//enable wdg at 500 ms
-	wdg_init(wdgto_500MS);
+	wdg_init(wdgto_1S);
 	do 
 	{
 		wdg_kick();
@@ -256,7 +256,7 @@ void startFlash(uint8_t * rx_address)
 						else if (rxData.command == COMM_CHECK_CKS)
 						{
 							//erase the remaning pages
-							boot_erase_pages(currentPage, 80);
+							boot_erase_pages(currentPage, FLASH_PAGE_COUNT);
 							recvCKS = (rxData.data[0] << 8) | (rxData.data[1]);
 							bootloader_state = BOOTLOADER_CHECK_CKS;
 						}
