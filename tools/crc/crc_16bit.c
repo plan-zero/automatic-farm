@@ -24,8 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define CRCVER "v1.0.0"
-#define APP_SIZE (uint32_t)10240
+#define CRCVER "v2.0.0"
 #define BYTES_INLINE_16 16
 
 int verbose = 0;
@@ -98,7 +97,7 @@ int main(int argc, char *argv[])
 	if(3 == argc || 5 == argc)
 	{
 		if (strcmp(argv[1], "-x") == 0 || strcmp(argv[1], "-xv") == 0) {
-			
+
 			if(strcmp(argv[1], "-xv") == 0)
 				verbose = 1;
 			//read hex file here and do crc
@@ -127,7 +126,6 @@ int main(int argc, char *argv[])
 				for(int i = 0; i < filelen ; i++)
 				{
 					//printf(" %d ", buffer[i]);
-					
 					
 					if(linechar_idx == 1)
 					{
@@ -247,14 +245,14 @@ int main(int argc, char *argv[])
 						linechar_idx++;
 						
 				}
-				
-				printf("Verified bytes: %d \n", bytes_verified);
+
 				//do the CRC for all bytes that are FF
-				while(bytes_verified < APP_SIZE)
-				{
-					bytes_verified++;
+				int remaning = 128 - (bytes_verified % 128); //one page is 128 long
+				while(remaning--){
 					_CRC16 = crc16_update(_CRC16, 255);
+					bytes_verified++;
 				}
+				printf("Verified bytes: %d \n", bytes_verified);
 				printf("CRC16 calculated: <%d>\n", _CRC16);
 				
 				if(write_file)

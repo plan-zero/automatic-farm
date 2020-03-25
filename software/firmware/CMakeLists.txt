@@ -32,6 +32,7 @@ set(HEADER_INC
     ./bootloader/inc
     ./../libraries/drivers/e2p/inc
     ./../libraries/drivers/flash/inc
+    ./../libraries/drivers/wdg/inc
     ./../libraries/modules/nrf24/inc
     ./../libraries/hardware/${AVR_MCU}
 )
@@ -45,7 +46,7 @@ set(SOURCE_FILES
     ./bootloader/src/WriteApp.c
 )
 avr_add_executable(firmware ${SOURCE_FILES})
-target_link_libraries(firmware.elf nrf24 e2p flash)
+target_link_libraries(firmware.elf nrf24 e2p flash wdg)
 
 #install binaries
 install(

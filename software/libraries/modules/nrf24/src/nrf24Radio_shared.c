@@ -55,7 +55,7 @@ radio_context _radio_instance;
 
 NRF24_MEMORY INTERRUPT_ROUTINE(IRQ_INT0_HANDLER)
 {
-	GIFR = (1<<INTF0);
+	//GIFR = (1<<INTF0);
 	_radio_instance.irq_triggered++;
 	CSN_LOW();
 	//load status
