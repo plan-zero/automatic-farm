@@ -44,8 +44,8 @@
 	EICRA |= _BV(IRQ_INT0_EDGE)
 
 //USART_TXC and USART_RXC used by uart module
-#define IRQ_USART_TXC_HANDLER       USART_TXC_vect
-#define IRQ_USART_RXC_HANDLER       USART_RXC_vect
+#define IRQ_USART_TXC_HANDLER       USART_TX_vect
+#define IRQ_USART_RXC_HANDLER       USART_RX_vect
 
 //TIMERS
 
@@ -53,13 +53,18 @@
 #define IRQ_TIMER1_OVF  TIMER1_OVF_vect
 #define IRQ_TIMER2_OVF  TIMER2_OVF_vect
 
-#define IRQ_TIMER0_CMP      TIMER0_COMP_vect
+#define IRQ_TIMER0A_CMP     TIMER0_COMPA_vect
+#define IRQ_TIMER0B_CMP     TIMER0_COMPB_vect
 #define IRQ_TIMER1A_CMP     TIMER1_COMPA_vect
 #define IRQ_TIMER1B_CMP     TIMER1_COMPB_vect
-#define IRQ_TIMER2_CMP      TIMER2_COMP_vect
+#define IRQ_TIMER2A_CMP     TIMER2_COMPA_vect
+#define IRQ_TIMER2B_CMP     TIMER2_COMPB_vect
 
 #define IRQ_TIMER1_CAPT     TIMER1_CAPT_vect
 
+#if defined(IRQ_TIMER0A_CMP)
+    #define EN_TIMER0_CMPA_IRQ 1
+#endif
 
 
 

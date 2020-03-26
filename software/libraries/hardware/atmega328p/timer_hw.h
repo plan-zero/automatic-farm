@@ -38,6 +38,8 @@
 #define TIMER_8_ASYNC   100
 #define TIMER_8_SYNC    101
 
+#define TIMER_GET_CH_COUNT(inst) 2 //all timers have two CHs
+
 //return the timer type based on instance parameter (can be used at runtime)
 #define TIMER_GET_TYPE(inst) ( inst == TIMER_0 || inst == TIMER_2 ) ? TIMER_8_BITS : TIMER_16_BITS
 #define TIMER_GET_TYPE_SYNC(inst) ((inst == TIMER_2 ) ? TIMER_8_ASYNC : TIMER_8_SYNC )
@@ -142,8 +144,8 @@
     3       1       1       Set
 */
 #define _TIMER8_NORMAL_OPERATION(inst, ...)     NAME(TCCR, inst, TIMER_CH_A) &= ~(_BV(NAME(COM,inst,__VA_ARGS__,0)) | _BV(NAME(COM,inst,__VA_ARGS__,1)))
-#define _TIMER8_TOGGLE_CMP_MATCH(inst, ...)     NAME(TCCR, inst, TIMER_CH_A) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(COM,inst,__VA_ARGS__,1)) ) | _BV(NAME(COM,inst,__VA_ARGS__,0))
-#define _TIMER8_CLEAR_CMP_MATCH(inst, ...)      NAME(TCCR, inst, TIMER_CH_A) = ( NAME(TCCR, inst, __VA_ARGS__) & ~_BV(NAME(COM,inst,__VA_ARGS__,0)) ) | _BV(NAME(COM,inst,__VA_ARGS__,1))
+#define _TIMER8_TOGGLE_CMP_MATCH(inst, ...)     NAME(TCCR, inst, TIMER_CH_A) = ( NAME(TCCR, inst, TIMER_CH_A) & ~_BV(NAME(COM,inst,__VA_ARGS__,1)) ) | _BV(NAME(COM,inst,__VA_ARGS__,0))
+#define _TIMER8_CLEAR_CMP_MATCH(inst, ...)      NAME(TCCR, inst, TIMER_CH_A) = ( NAME(TCCR, inst, TIMER_CH_A) & ~_BV(NAME(COM,inst,__VA_ARGS__,0)) ) | _BV(NAME(COM,inst,__VA_ARGS__,1))
 #define _TIMER8_SET_CMP_MATCH(inst, ...)        NAME(TCCR, inst, TIMER_CH_A) |= _BV(NAME(COM,inst,__VA_ARGS__,0)) | _BV(NAME(COM,inst,__VA_ARGS__,1))
 
 #define _TIMER8_GET_COUNTER(inst, ...)                  NAME(TCNT, inst ,__VA_ARGS__)
@@ -353,7 +355,6 @@
 #define GET_INPUT_CAPTURE   GET_INPUT_CAPTURE
 #define SET_INPUT_CAPTURE   SET_INPUT_CAPTURE
 
-#define SET_OUTPUT_CMP(inst, value, ...)
 
 #define __TIMER_FUNCTIONS(function, inst, ...)          inst == TIMER_2 ? _TIMER8_ ## function(TIMER_2, __VA_ARGS__) : 0
 #define _TIMER_FUNCTIONS(function, inst, ...)           inst == TIMER_0 ? _TIMER8_ ## function(TIMER_0, __VA_ARGS__) : __TIMER_FUNCTIONS(function, inst, __VA_ARGS__)

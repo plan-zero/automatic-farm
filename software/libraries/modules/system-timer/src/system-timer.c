@@ -63,6 +63,7 @@ void system_timer_init()
     OSCCAL = 175;
     timer_interrupt ti;
     ti.overflow_en = 1;
+    timer_type inst_tim_t = timer_get_type(0);
     timer_cfg tc = {
         timer_mode_fast_pwm,
         timer_normal_operationm,
@@ -70,9 +71,7 @@ void system_timer_init()
         0,
         127,
         0,
-        0,
-        0,
-        timer_8_bits,
+        inst_tim_t,
         timer_ch_none,
         ti,
     };

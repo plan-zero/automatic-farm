@@ -34,6 +34,7 @@ set(HEADER_INC
     ./Abstractization/Actuators/Valve
     ./../libraries/drivers/timer/inc
     ./../libraries/drivers/uart/inc
+    ./../libraries/drivers/wdg/inc
     ./../libraries/hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
@@ -46,7 +47,7 @@ set(SOURCE_FILES
 )
 avr_add_executable(app ${SOURCE_FILES})
 
-target_link_libraries(app.elf nrf24_api uart timer)
+target_link_libraries(app.elf nrf24_api uart timer wdg)
 
 #install binaries
 install(

@@ -95,8 +95,6 @@ typedef union{
     struct{
         uint8_t overflow : 1;
         uint8_t output_cmp_match : 1;
-        uint8_t output_cmp_a_match : 1;
-        uint8_t output_cmp_b_match : 1;
         uint8_t input_cmp_match : 1;
     };
     uint8_t flags;
@@ -107,9 +105,7 @@ typedef struct{
     timer_compare_behaviour cmp_behaviour;
     timer_prescaler prescaler;
     uint16_t initial_count_val;
-    uint8_t initial_output_cmp_val;
-    uint16_t initial_output_cmp_val_ch_a;
-    uint16_t initial_output_cmp_val_ch_b;
+    uint16_t initial_output_cmp;
     uint16_t initial_input_cmp_val;
     timer_type type;
     timer_ch channel;
@@ -130,5 +126,6 @@ void timer_register_callback(timer_instance inst, timer_callback cb, uint8_t per
 void timer_start(timer_instance inst, uint16_t initial_value);
 void timer_reset(timer_instance inst);
 uint16_t timer_get(timer_instance inst);
+timer_type timer_get_type(timer_instance inst);
 
 #endif
