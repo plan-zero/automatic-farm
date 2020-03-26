@@ -24,16 +24,14 @@
 #include "interrupt_hw.h"
 #include "timer_hw.h"
 
-#define EN_TIMER0_CMP_IRQ
-
 timer_callback trigger_cb[TIMER_COUNT] = {NULL, NULL, NULL};
 uint8_t cb_period[TIMER_COUNT] = {0, 0, 0};
 uint8_t cb_count[TIMER_COUNT] = {0, 0, 0};
 uint8_t cb_count_ch[2] = {0, 0};
 timer_status timer_internal_state[TIMER_COUNT] = {timer_noinit,timer_noinit,timer_noinit};
 //define ISRs
-#ifdef EN_TIMER0_CMP_IRQ
-INTERRUPT_ROUTINE(TIMER0_COMPA_vect)
+#if defined(EN_TIMER0_CMPA_IRQ) && (EN_TIMER0_CMPA_IRQ == 1)
+INTERRUPT_ROUTINE(IRQ_TIMER0A_CMP)
 {
     cb_count[TIMER_0]++;
     if(cb_count[TIMER_0] == cb_period[TIMER_0])
@@ -43,7 +41,18 @@ INTERRUPT_ROUTINE(TIMER0_COMPA_vect)
     }
 }
 #endif
-#ifdef EN_TIMER0_OVF_IRQ
+#if defined(EN_TIMER0_CMPB_IRQ) && (EN_TIMER0_CMPB_IRQ == 1)
+INTERRUPT_ROUTINE(IRQ_TIMER0B_CMP)
+{
+    cb_count[TIMER_0]++;
+    if(cb_count[TIMER_0] == cb_period[TIMER_0])
+    {
+        cb_count[TIMER_0] = 0;
+        trigger_cb[TIMER_0](TIMER_0);
+    }
+}
+#endif
+#if defined(EN_TIMER0_OVF_IRQ) && (EN_TIMER0_OVF_IRQ == 1)
 INTERRUPT_ROUTINE(IRQ_TIMER0_OVF)
 {
     cb_count[TIMER_0]++;
@@ -54,7 +63,7 @@ INTERRUPT_ROUTINE(IRQ_TIMER0_OVF)
     }
 }
 #endif
-#ifdef EN_TIMER1_OVF_IRQ
+#if defined(EN_TIMER1_OVF_IRQ) && (EN_TIMER1_OVF_IRQ == 1)
 INTERRUPT_ROUTINE(IRQ_TIMER1_OVF)
 {
     cb_count[TIMER_1]++;
@@ -65,7 +74,7 @@ INTERRUPT_ROUTINE(IRQ_TIMER1_OVF)
     }
 }
 #endif
-#ifdef EN_TIMER1A_CMP_IRQ
+#if defined(EN_TIMER1_CMPA_IRQ) && (EN_TIMER1_CMPA_IRQ == 1)
 INTERRUPT_ROUTINE(IRQ_TIMER1A_CMP)
 {
     cb_count_ch[0]++;
@@ -76,7 +85,7 @@ INTERRUPT_ROUTINE(IRQ_TIMER1A_CMP)
     }
 }
 #endif
-#ifdef EN_TIMER1B_CMP_IRQ
+#if defined(EN_TIMER1_CMPB_IRQ) && (EN_TIMER1_CMPB_IRQ == 1)
 INTERRUPT_ROUTINE(IRQ_TIMER1B_CMP)
 {
     cb_count_ch[1]++;
@@ -87,8 +96,19 @@ INTERRUPT_ROUTINE(IRQ_TIMER1B_CMP)
     }
 }
 #endif
-#ifdef EN_TIMER2_CMP_IRQ
-INTERRUPT_ROUTINE(IRQ_TIMER2_CMP)
+#if defined(EN_TIMER2_CMPA_IRQ) && (EN_TIMER2_CMPA_IRQ == 1)
+INTERRUPT_ROUTINE(IRQ_TIMER2A_CMP)
+{
+    cb_count[TIMER_2]++;
+    if(cb_count[TIMER_2] == cb_period[TIMER_2])
+    {
+        cb_count[TIMER_2] = 0;
+        trigger_cb[TIMER_2](TIMER_2);
+    }
+}
+#endif
+#if defined(EN_TIMER2_CMPB_IRQ) && (EN_TIMER2_CMPB_IRQ == 1)
+INTERRUPT_ROUTINE(IRQ_TIMER2B_CMP)
 {
     cb_count[TIMER_2]++;
     if(cb_count[TIMER_2] == cb_period[TIMER_2])

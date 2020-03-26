@@ -62,6 +62,9 @@
 
 #define IRQ_TIMER1_CAPT     TIMER1_CAPT_vect
 
+#if defined(IRQ_TIMER0A_CMP)
+    #define EN_TIMER0_CMPA_IRQ 1
+#endif
 
 
 

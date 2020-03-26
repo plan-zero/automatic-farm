@@ -53,12 +53,17 @@
 #define IRQ_TIMER1_OVF  TIMER1_OVF_vect
 #define IRQ_TIMER2_OVF  TIMER2_OVF_vect
 
-#define IRQ_TIMER0_CMP      TIMER0_COMP_vect
+#define IRQ_TIMER0A_CMP     TIMER0_COMP_vect
 #define IRQ_TIMER1A_CMP     TIMER1_COMPA_vect
 #define IRQ_TIMER1B_CMP     TIMER1_COMPB_vect
-#define IRQ_TIMER2_CMP      TIMER2_COMP_vect
+#define IRQ_TIMER2A_CMP     TIMER2_COMP_vect
 
 #define IRQ_TIMER1_CAPT     TIMER1_CAPT_vect
+
+//enable timer interrupts
+#if defined(IRQ_TIMER0A_CMP)
+    #define EN_TIMER0_CMPA_IRQ 1
+#endif
 
 
 

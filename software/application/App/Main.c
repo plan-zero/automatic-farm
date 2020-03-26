@@ -30,9 +30,11 @@
 #include "timer.h"
 #include "interrupt_hw.h"
 #include "stdint.h"
+#include "uart.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
+#include <util/delay.h>
 void test_task_1ms()
 {
     static int init_led = 0;
@@ -80,12 +82,12 @@ inline void MAIN_timer_config()
         timer_normal_operationm,
         timer_prescaler_64,
         0,
+        0,
         123,
         0,
         0,
-        0,
-        timer_8_bits,
-        timer_ch_none,
+        timer_16_bits,
+        timer_ch_a,
         ti,
     };
     timer_init(0,tc);
@@ -107,6 +109,9 @@ void notify1ms(uint8_t ch)
 
 int  main()
 {
+    wdg_disable();
+    uart_init(UART_9600BAUD, UART_8MHZ, UART_PARITY_NONE);
+    uart_printString("Application", 1);
     voidFunctionTypeVoid oneMsTask = scheduler_getPointerTo1msTask();
 
     MAIN_timer_config();
@@ -114,17 +119,16 @@ int  main()
     timer_register_callback(0, (timer_callback) notify1ms, 1);
 
 #ifdef ENABLE_TASK_TEST
-    scheduler_add_task(sch_type_task_1s, test_task_1s);
+    scheduler_add_task(sch_type_task_1ms, test_task_1s);
 #endif
 
-
     timer_start(0,0);
-
     INT_GLOBAL_EN();
 
-   
     while(1)
     {
+
+        
         if (oneMsFlag != 0)
         {
             oneMsFlag--;
