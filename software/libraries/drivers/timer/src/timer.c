@@ -33,7 +33,7 @@ uint8_t cb_count_ch[2] = {0, 0};
 timer_status timer_internal_state[TIMER_COUNT] = {timer_noinit,timer_noinit,timer_noinit};
 //define ISRs
 #ifdef EN_TIMER0_CMP_IRQ
-INTERRUPT_ROUTINE(IRQ_TIMER0_CMP)
+INTERRUPT_ROUTINE(TIMER0_COMPA_vect)
 {
     cb_count[TIMER_0]++;
     if(cb_count[TIMER_0] == cb_period[TIMER_0])
