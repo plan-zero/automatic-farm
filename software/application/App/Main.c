@@ -25,12 +25,13 @@
  *      Author: Adi
  */
 
-
+#include "stdlib.h"
 #include "Scheduler.h"
 #include "timer.h"
 #include "interrupt_hw.h"
 #include "stdint.h"
 #include "uart.h"
+#include "wdg.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -71,10 +72,18 @@ void test_task_1s()
 } 
 #endif
 
-volatile uint8_t oneMsFlag = 0;
+void notify1ms(uint8_t ch);
 
-inline void MAIN_timer_config()
+volatile uint8_t oneMsFlag = 0;
+volatile uint8_t trigger_wdg_reset = 0;
+
+voidFunctionTypeVoid oneMsTask = NULL;
+
+inline void MAIN_setup()
 {
+    uart_init(UART_9600BAUD, UART_8MHZ, UART_PARITY_NONE);
+    uart_printString("Application", 1);
+
     timer_interrupt ti;
     ti.output_cmp_match_en = 1;
     timer_type inst_tim_t = timer_get_type(0);
@@ -90,6 +99,22 @@ inline void MAIN_timer_config()
         ti,
     };
     timer_init(0,tc);
+    timer_register_callback(0, (timer_callback) notify1ms, 1);
+    timer_start(0,0);
+    oneMsTask = scheduler_getPointerTo1msTask();
+
+#ifdef ENABLE_TASK_TEST
+    scheduler_add_task(sch_type_task_1ms, test_task_1s);
+#endif
+    uint8_t tmp = wdg_sw_reset_reason();
+    uart_printString("wdg previous sw reset: ", 0);
+    uart_printRegister(tmp);
+    uartNewLine();
+    tmp = wdg_get_hw_reason();
+    uart_printString("wdg previous hw reset: ", 0);
+    uart_printRegister(tmp);
+    uartNewLine();
+    wdg_init(wdgto_120MS);
 }
 
 // We use timer on channel 0
@@ -100,7 +125,7 @@ void notify1ms(uint8_t ch)
         oneMsFlag += 1;
         if (oneMsFlag >= 10)
         {
-            // TODO: WDG reset
+            trigger_wdg_reset = 1;
         }
     }
 }
@@ -108,30 +133,24 @@ void notify1ms(uint8_t ch)
 
 int  main()
 {
-    wdg_disable();
-    uart_init(UART_9600BAUD, UART_8MHZ, UART_PARITY_NONE);
-    uart_printString("Application", 1);
-    voidFunctionTypeVoid oneMsTask = scheduler_getPointerTo1msTask();
-
-    MAIN_timer_config();
-    // We use timer on channel 0
-    timer_register_callback(0, (timer_callback) notify1ms, 1);
-
-#ifdef ENABLE_TASK_TEST
-    scheduler_add_task(sch_type_task_1ms, test_task_1s);
-#endif
-
-    timer_start(0,0);
+    MAIN_setup();
     INT_GLOBAL_EN();
 
+    
     while(1)
     {
 
-        
+        wdg_kick();
         if (oneMsFlag != 0)
         {
             oneMsFlag--;
-            oneMsTask();
+            if(oneMsTask)
+                oneMsTask();
+        }
+        if(trigger_wdg_reset)
+        {
+            //do wdg reset
+            wdg_explicit_reset(0x01);
         }
     }
     return 0;
