@@ -77,17 +77,16 @@ inline void MAIN_timer_config()
 {
     timer_interrupt ti;
     ti.output_cmp_match_en = 1;
+    timer_type inst_tim_t = timer_get_type(0);
     timer_cfg tc = {
         timer_mode_ctc,
         timer_normal_operationm,
         timer_prescaler_64,
-        0,
-        0,
-        123,
-        0,
-        0,
-        timer_16_bits,
-        timer_ch_a,
+        0, //initial counter value
+        123, //initial output cmp value
+        0, //initial input cmp value
+        inst_tim_t, //timer type
+        timer_ch_a,//target timer channel
         ti,
     };
     timer_init(0,tc);

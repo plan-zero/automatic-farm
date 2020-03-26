@@ -187,11 +187,10 @@ timer_status timer_init(timer_instance inst, timer_cfg cfg)
 
     TIMER_FUNCTIONS(SET_COUNTER, inst, cfg.initial_count_val);
     if(cfg.channel == timer_ch_a)
-        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_a, TIMER_CH_A);
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp, TIMER_CH_A);
     else if(cfg.channel == timer_ch_b)
-        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val_ch_b, TIMER_CH_B);
-    else
-        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp_val, TIMER_CH_A);
+        TIMER_FUNCTIONS(SET_OUTPUT_CMP,inst, cfg.initial_output_cmp, TIMER_CH_B);
+
 
     timer_internal_state[inst] = timer_ready;
     return timer_ready;
@@ -284,4 +283,12 @@ void timer_reset(timer_instance inst)
 uint16_t timer_get(timer_instance inst)
 {
     return (uint16_t)TIMER_FUNCTIONS(GET_COUNTER, inst);
+}
+
+timer_type timer_get_type(timer_instance inst)
+{
+    if( TIMER_GET_TYPE(inst) == TIMER_8_BITS)
+        return timer_8_bits;
+    if( TIMER_GET_TYPE(inst) == TIMER_16_BITS)
+        return timer_16_bits;
 }
