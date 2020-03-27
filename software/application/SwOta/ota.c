@@ -51,13 +51,6 @@ void ota_check_key(uint8_t *data, uint8_t msglen)
 
     if(PROGRAMMER_KEY_LENGTH == data_len)
     {
-        char tmp[11] = {0};
-        memcpy(&tmp, &data[1], 10);
-        tmp[10] = '\0';
-        uart_printString(tmp, 1);
-
-        memcpy(&tmp, &boot_key[0], 10);
-        uart_printString(tmp, 1);
         if(0 == memcmp(&boot_key, &data[1], data_len))
         {
             //the application has to enter in programming mode
