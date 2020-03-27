@@ -247,7 +247,9 @@ int main(int argc, char *argv[])
 				}
 
 				//do the CRC for all bytes that are FF
-				int remaning = 128 - (bytes_verified % 128); //one page is 128 long
+				int remaning = 0;
+				if(bytes_verified % 128 != 0)
+					remaning = 128 - (bytes_verified % 128); //one page is 128 long
 				while(remaning--){
 					_CRC16 = crc16_update(_CRC16, 255);
 					bytes_verified++;

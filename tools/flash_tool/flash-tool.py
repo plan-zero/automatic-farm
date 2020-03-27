@@ -342,7 +342,7 @@ def show_progress(current, total):
 def send_HEX_Data(crc, hexFileData):
 	counterLinesOfPage = 0
 	t = len(hexFileData)
-	c = 0;
+	c = 0
 	for data in hexFileData:
 		command = CMD_PREFIX + CMD_SEND_16B_ASCII + data
 		resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)

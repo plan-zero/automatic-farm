@@ -27,8 +27,9 @@ set(E2P_DATA_VAR_NAME e2p_default_data CACHE INTERNAL "")
 
 #check BOOT key value
 if(BOOT_KEY)
+    string(REPLACE "x" ";" BOOT_KEY_LIST ${BOOT_KEY})
     set(BYTE_IDX 0)
-    foreach(BYTE_VALUE ${BOOT_KEY})
+    foreach(BYTE_VALUE ${BOOT_KEY_LIST})
         add_definitions(-DE2P_BOOT_KEY_BYTE_${BYTE_IDX}=0x${BYTE_VALUE})
         MATH(EXPR BYTE_IDX "${BYTE_IDX} + 1")
     endforeach()
