@@ -32,9 +32,13 @@ set(HEADER_INC
     ./Abstractization/Sensors/Light
     ./Abstractization/Actuators/Relay
     ./Abstractization/Actuators/Valve
+    ./Communication
+    ./SwOta
     ./../libraries/drivers/timer/inc
     ./../libraries/drivers/uart/inc
+    ./../libraries/drivers/e2p/inc
     ./../libraries/drivers/wdg/inc
+    ./../libraries/modules/nrf24/inc
     ./../libraries/hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
@@ -44,10 +48,12 @@ set(SOURCE_FILES
     ./App/Main.c
     ./Scheduler/Scheduler.c
     ./Abstractization/Sensors/Humidity/Humidity.c
+    ./Communication/Communication.c
+    ./SwOta/ota.c
 )
 avr_add_executable(app ${SOURCE_FILES})
 
-target_link_libraries(app.elf nrf24_api uart timer wdg)
+target_link_libraries(app.elf nrf24_api uart timer wdg nrf24_api)
 
 #install binaries
 install(

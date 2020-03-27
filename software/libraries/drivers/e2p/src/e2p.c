@@ -21,7 +21,7 @@
 #include "e2p_layout.h"
 #include "stdint.h"
 #include "string.h"
-#include <avr/eeprom.h>
+
 
 union e2p_data
 {
@@ -43,6 +43,19 @@ union e2p_data
 
 union e2p_data e2p_default_data EEP_MEMORY_SECTION = 
 {
+    .e2p_fields.programmer_key =
+        {
+         E2P_BOOT_KEY_BYTE_0,
+         E2P_BOOT_KEY_BYTE_1,
+         E2P_BOOT_KEY_BYTE_2,
+         E2P_BOOT_KEY_BYTE_3,
+         E2P_BOOT_KEY_BYTE_4,
+         E2P_BOOT_KEY_BYTE_5,
+         E2P_BOOT_KEY_BYTE_6,
+         E2P_BOOT_KEY_BYTE_7,
+         E2P_BOOT_KEY_BYTE_8,
+         E2P_BOOT_KEY_BYTE_9,
+        },
     .e2p_fields.rx_address = 
         {
          E2P_RX_ADDRESS_BYTE_0,
