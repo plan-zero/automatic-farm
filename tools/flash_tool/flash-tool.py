@@ -171,10 +171,10 @@ def read_flash_data(hexFilePath):
 	output.append(line_data)
 	counterLine += 1
 	
-	if all_bytes < APP_MAX_SIZE:
+	if (all_bytes/2) < APP_MAX_SIZE:
 		print_message("Preparing " + str(all_bytes) + " B to write", INFO)
 	else:
-		print_message("The hex file is to big, the maximum size is 10kB", ERROR)
+		print_message("The hex file is to big: " + str(all_bytes) + ", the maximum size is 10kB", ERROR)
 		return []
 	#print_message("output len is: " + str(len(output)), DEBUG)
 	dummyLinesToAdd = len(output) % 8
@@ -225,7 +225,7 @@ def send_command(command, sleeptime):
 
 def send_bootloader_key(key):
 	print_message("Put target in programming mode", INFO)
-	command = CMD_PREFIX + "D10" + key
+	command = CMD_PREFIX + "D11K" + key
 	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)
 	
 	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
@@ -342,7 +342,7 @@ def show_progress(current, total):
 def send_HEX_Data(crc, hexFileData):
 	counterLinesOfPage = 0
 	t = len(hexFileData)
-	c = 0;
+	c = 0
 	for data in hexFileData:
 		command = CMD_PREFIX + CMD_SEND_16B_ASCII + data
 		resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)

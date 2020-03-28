@@ -25,6 +25,27 @@ project(E2P)
 set(E2P_DATA_VAR_NAME e2p_default_data CACHE INTERNAL "")
 #check if E2P values are set, otherwise use the default ones
 
+#check BOOT key value
+if(BOOT_KEY)
+    string(REPLACE "x" ";" BOOT_KEY_LIST ${BOOT_KEY})
+    set(BYTE_IDX 0)
+    foreach(BYTE_VALUE ${BOOT_KEY_LIST})
+        add_definitions(-DE2P_BOOT_KEY_BYTE_${BYTE_IDX}=0x${BYTE_VALUE})
+        MATH(EXPR BYTE_IDX "${BYTE_IDX} + 1")
+    endforeach()
+else()
+    add_definitions(-DE2P_BOOT_KEY_BYTE_0=0x30)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_1=0x31)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_2=0x32)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_3=0x33)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_4=0x34)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_5=0x35)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_6=0x36)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_7=0x37)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_8=0x38)
+    add_definitions(-DE2P_BOOT_KEY_BYTE_9=0x39)
+endif(BOOT_KEY)
+
 #check RX address value
 if(E2P_RX_ADDRESS)
     string(REPLACE "x" ";" E2P_RX_ADDRESS_LIST ${E2P_RX_ADDRESS})

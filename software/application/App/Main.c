@@ -25,12 +25,19 @@
  *      Author: Adi
  */
 
-
+#include "stdlib.h"
 #include "Scheduler.h"
+#include "Communication.h"
+#include "ota.h"
+
 #include "timer.h"
 #include "interrupt_hw.h"
 #include "stdint.h"
 #include "uart.h"
+#include "wdg.h"
+#include "e2p.h"
+#include "nrf24Radio.h"
+#include "nrf24Radio_API.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -71,10 +78,19 @@ void test_task_1s()
 } 
 #endif
 
-volatile uint8_t oneMsFlag = 0;
+void notify1ms(uint8_t ch);
 
-inline void MAIN_timer_config()
+volatile uint8_t oneMsFlag = 0;
+volatile uint8_t trigger_wdg_reset = 0;
+
+voidFunctionTypeVoid oneMsTask = NULL;
+
+inline void MAIN_setup()
 {
+    //uart initialization
+    uart_init(UART_9600BAUD, UART_8MHZ, UART_PARITY_NONE);
+    uart_printString("Application", 1);
+    //Timer initialization
     timer_interrupt ti;
     ti.output_cmp_match_en = 1;
     timer_type inst_tim_t = timer_get_type(0);
@@ -90,6 +106,59 @@ inline void MAIN_timer_config()
         ti,
     };
     timer_init(0,tc);
+    timer_register_callback(0, (timer_callback) notify1ms, 1);
+    timer_start(0,0);
+    oneMsTask = scheduler_getPointerTo1msTask();
+
+#ifdef ENABLE_TASK_TEST
+    scheduler_add_task(sch_type_task_1ms, test_task_1s);
+#endif
+    //WDG initialization
+    uint8_t tmp = wdg_sw_reset_reason();
+    uart_printString("wdg previous sw reset: ", 0);
+    uart_printRegister(tmp);
+    uartNewLine();
+    tmp = wdg_get_hw_reason();
+    uart_printString("wdg previous hw reset: ", 0);
+    uart_printRegister(tmp);
+    uartNewLine();
+    
+
+    //Radio communication initialization
+    uint8_t rx_address[RADIO_RX_LENGTH] = {0};
+    e2p_read_rxaddress(rx_address);
+	radio_config cfg = {
+		RADIO_ADDRESS_5BYTES,
+		RADIO_RETRANSMIT_WAIT_3000US,
+		RADIO_RETRANSMIT_15,
+		CHANNEL_112,
+		RADIO_250KBIT,
+		RADIO_CRC2_ENABLED,
+		RADIO_COUNT_WAVE_DISABLED,
+		RADIO_HIGHEST_0DBM,
+		RADIO_DYNAMIC_PAYLOAD_ENABLED,
+		RADIO_ACK_PAYLOAD_ENABLED,
+		RADIO_DYNAMIC_ACK_DISABLED,
+		RADIO_APPLICATION
+	};
+	__nrfRadio_Init(cfg);
+	
+	pipe_config pipe_cfg0 =
+	{
+		RADIO_PIPE0,
+		rx_address,
+		5,
+		RADIO_PIPE_RX_ENABLED,
+		RADIO_PIPE_AA_ENABLED,
+		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
+	};
+	__nrfRadio_PipeConfig(pipe_cfg0);
+	__nrfRadio_SetRxCallback(rx_handler);
+	__nrfRadio_PowerUp();
+	__nrfRadio_ListeningMode();
+
+    //read BOOT key
+    ota_get_key();
 }
 
 // We use timer on channel 0
@@ -100,7 +169,7 @@ void notify1ms(uint8_t ch)
         oneMsFlag += 1;
         if (oneMsFlag >= 10)
         {
-            // TODO: WDG reset
+            trigger_wdg_reset = 1;
         }
     }
 }
@@ -108,31 +177,26 @@ void notify1ms(uint8_t ch)
 
 int  main()
 {
-    wdg_disable();
-    uart_init(UART_9600BAUD, UART_8MHZ, UART_PARITY_NONE);
-    uart_printString("Application", 1);
-    voidFunctionTypeVoid oneMsTask = scheduler_getPointerTo1msTask();
-
-    MAIN_timer_config();
-    // We use timer on channel 0
-    timer_register_callback(0, (timer_callback) notify1ms, 1);
-
-#ifdef ENABLE_TASK_TEST
-    scheduler_add_task(sch_type_task_1ms, test_task_1s);
-#endif
-
-    timer_start(0,0);
+    MAIN_setup();
     INT_GLOBAL_EN();
 
+    wdg_init(wdgto_120MS);
     while(1)
     {
 
-        
+        wdg_kick();
         if (oneMsFlag != 0)
         {
             oneMsFlag--;
-            oneMsTask();
+            if(oneMsTask)
+                oneMsTask();
         }
+        if(trigger_wdg_reset)
+        {
+            //do wdg reset
+            wdg_explicit_reset(0x01);
+        }
+        __nrfRadio_Main();
     }
     return 0;
 }

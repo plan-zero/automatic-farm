@@ -21,6 +21,9 @@
 
 #include "stdlib.h"
 #include "e2p_layout.h"
+#include <avr/eeprom.h>
+
+#define e2p_download_enable 0xAA
 
 #define e2p_update_downloadflag(value) eeprom_update_block ((void*)value, (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH)
 #define e2p_read_downloadflag(value) eeprom_read_block ((void*)&value,(void*)DOWNLOAD_FLAG_ADDRESS,DOWNLOAD_FLAG_LENGTH)
@@ -40,5 +43,6 @@
 
 #define e2p_read_eep_version(value) eeprom_read_block ((void*)&value,(void*)E2P_VERS_ADDRESS,E2P_VERS_LENGTH)
 
+#define e2p_read_boot_key(value) eeprom_read_block ((void*)&value,(void*)PROGRAMMER_SECRET_KEY,PROGRAMMER_KEY_LENGTH)
 
 #endif
