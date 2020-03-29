@@ -30,8 +30,10 @@
 #include "uart.h"
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
+#include "interrupt_hw.h"
 
 #include <util/delay.h>
+#include "system-timer.h"
 
 uint8_t uart_data[UART_RX_MAX];
 
@@ -59,8 +61,9 @@ uint8_t cmd_available = 0;
 #define CMD_CONFIGURE_RADIO			'C'
 #define CMD_SEND_TX					'D'
 #define CMD_SEND_ASCII_HEX			'E'
+#define CMD_SEND_PING				'P'
 
-#define PROG_VERSION "1.0.1"
+#define PROG_VERSION "2.0.1"
 
 #define INVALID_HEX 255
 #define _ASCII_HEX_TO_INT(x) (x >= '0' && x <= '9') ? x - '0' : INVALID_HEX
@@ -194,7 +197,12 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
+	//OSCCAL = 175;
 	uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
+	system_timer_init();
+	INT_GLOBAL_EN();
+	system_timer_start();
+	
 	uart_printString("<NRF24L01_programmer:",0);
 	uart_printString(PROG_VERSION, 0);
 	uart_printString(">",1);
@@ -219,12 +227,51 @@ int main(void)
 			uart_printString(">",1);
 			_delay_ms(1000);
 		}
-		
 		if(cmd_available)
 		{
 			uart_printString("<EXECUTE_CMD:",0);
 			switch(command_type) 
 			{
+				case CMD_SEND_PING:
+					uart_printRegister(command_type);
+					uart_printString(">",1);
+					if(command_len < MAX_CMD_LEN)
+					{
+						uart_printString("<SEND_PING:",0);
+						uint8_t payload[33] = {0};
+						for(uint8_t idx = 0; idx < command_len; idx++)
+						{
+							payload[idx] = cmd[idx];
+						}
+						payload[command_len] = '\0';
+						uart_printString((char*)payload,0);
+						uart_printString(">",1);
+						__nrfRadio_LoadMessages(payload, command_len);
+						//calculate the round travel time here
+						system_timer_timestamp _start =  system_timer_get_timestamp();
+						uint8_t status = __nrfRadio_Transmit(tx_addr, RADIO_WAIT_TX);
+						system_timer_timestamp _end =  system_timer_get_timestamp();
+						if( status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL)
+						{
+							char str[11] = {0};
+							str[10] = '\0';
+							uint32_t us_trave_time = system_timer_getus(_start, _end);
+							sprintf(str, "%lu",us_trave_time);
+							uart_printString("<SEND_PING:ACK>",1);
+							uart_printString("<PING:",0);
+							uart_printString(str, 0);
+							uart_printString(">",1);
+						}
+						else
+						{
+							uart_printString("<SEND_PING:NACK>",1);
+						}
+					}
+					else
+					{
+						uart_printString("<SEND_PING:LENGTH_ERR>", 1);
+					}
+					break;
 				case CMD_SET_TX_ADDR:
 					uart_printRegister(command_type);
 					uart_printString(">",1);

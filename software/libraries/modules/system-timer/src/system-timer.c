@@ -60,7 +60,6 @@ timer_instance _timer_2 = 2;
 
 void system_timer_init()
 {
-    OSCCAL = 175;
     timer_interrupt ti;
     ti.overflow_en = 1;
     timer_type inst_tim_t = timer_get_type(0);
