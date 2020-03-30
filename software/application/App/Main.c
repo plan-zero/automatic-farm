@@ -38,6 +38,7 @@
 #include "e2p.h"
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
+#include "radio_link.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -109,9 +110,9 @@ inline void MAIN_setup()
     timer_register_callback(0, (timer_callback) notify1ms, 1);
     timer_start(0,0);
     oneMsTask = scheduler_getPointerTo1msTask();
-
+    scheduler_add_task(sch_type_task_1s, radio_link_task);
 #ifdef ENABLE_TASK_TEST
-    scheduler_add_task(sch_type_task_1ms, test_task_1s);
+    //scheduler_add_task(sch_type_task_1s, radio_link_task);
 #endif
     //WDG initialization
     uint8_t tmp = wdg_sw_reset_reason();
@@ -143,19 +144,9 @@ inline void MAIN_setup()
 	};
 	__nrfRadio_Init(cfg);
 	
-	pipe_config pipe_cfg0 =
-	{
-		RADIO_PIPE0,
-		rx_address,
-		5,
-		RADIO_PIPE_RX_ENABLED,
-		RADIO_PIPE_AA_ENABLED,
-		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
-	};
-	__nrfRadio_PipeConfig(pipe_cfg0);
+
 	__nrfRadio_SetRxCallback(rx_handler);
-	__nrfRadio_PowerUp();
-	__nrfRadio_ListeningMode();
+
 
     //read BOOT key
     ota_get_key();
@@ -194,7 +185,7 @@ int  main()
         if(trigger_wdg_reset)
         {
             //do wdg reset
-            wdg_explicit_reset(0x01);
+            //wdg_explicit_reset(0x01);
         }
         __nrfRadio_Main();
     }

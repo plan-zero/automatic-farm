@@ -19,7 +19,7 @@
 #include "Communication.h"
 #include "ota.h"
 #include "uart.h"
-
+#include "radio_link.h"
 
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
@@ -29,6 +29,14 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
         if(data[0] == 'K') //check if this is a key message
         {
             ota_check_key(data, payload_length);
+        }
+        else if(data[0] == 'P') //this is a pipe config message
+        {
+            radio_link_configure(&data[1], &data[6], 5);
+        }
+        else if(data[0] == 'O')
+        {
+            
         }
     }
 }

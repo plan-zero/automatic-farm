@@ -49,6 +49,7 @@ set(SOURCE_FILES
     ./Scheduler/Scheduler.c
     ./Abstractization/Sensors/Humidity/Humidity.c
     ./Communication/Communication.c
+    ./Communication/radio_link.c
     ./SwOta/ota.c
 )
 avr_add_executable(app ${SOURCE_FILES})
