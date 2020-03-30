@@ -22,29 +22,4 @@
 #define NETWORK_MAX_DEPTH 5
 #define CHILD_MAX   4
 
-typedef struct addr_table{
-    addr_table * next;
-    uint8_t *address[CHILD_MAX];
-}addr_table_t;
 
-uint8_t this_depth = 0;
-uint8_t this_state = 0;
-uint8_t address_count;
-
-addr_table_t network_addr_tables[NETWORK_MAX_DEPTH];
-
-void addr_table_add(uint8_t *address)
-{
-    if(this_depth < NETWORK_MAX_DEPTH)
-    {
-        if(address_count < CHILD_MAX)
-        {
-            //allocate memory for address
-            uint8_t * _address = (uint8_t*)malloc(sizeof(uint8_t) * ADDRESS_LENGTH);
-            memcpy(_address, address, ADDRESS_LENGTH);
-            network_addr_tables[this_depth].address[address_count] = _address;
-
-        }
-        
-    }
-}
