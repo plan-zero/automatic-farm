@@ -39,6 +39,7 @@
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
 #include "radio_link.h"
+#include "network_common.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -108,7 +109,7 @@ inline void MAIN_setup()
     };
     timer_init(0,tc);
     timer_register_callback(0, (timer_callback) notify1ms, 1);
-    timer_start(0,0);
+    
     oneMsTask = scheduler_getPointerTo1msTask();
     scheduler_add_task(sch_type_task_1s, radio_link_task);
 #ifdef ENABLE_TASK_TEST
@@ -126,8 +127,6 @@ inline void MAIN_setup()
     
 
     //Radio communication initialization
-    uint8_t rx_address[RADIO_RX_LENGTH] = {0};
-    e2p_read_rxaddress(rx_address);
 	radio_config cfg = {
 		RADIO_ADDRESS_5BYTES,
 		RADIO_RETRANSMIT_WAIT_3000US,
@@ -150,6 +149,10 @@ inline void MAIN_setup()
 
     //read BOOT key
     ota_get_key();
+    //read network parameters
+    network_read_parameters();
+    //start the scheduler
+    timer_start(0,0);
 }
 
 // We use timer on channel 0

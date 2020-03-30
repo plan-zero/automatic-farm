@@ -24,10 +24,13 @@
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
 #include <util/delay.h>
+#include "network_common.h"
+#include "e2p.h"
 
-uint8_t rx_test[5] = {'A','B','C','D','E'};
+
 uint8_t radio_tx_address[RADIO_MAX_ADDRESS];
-uint8_t radio_broadcast_address[RADIO_MAX_ADDRESS];
+uint8_t inbox_msg[32];
+uint8_t inbox_unread = 0;
 
 typedef enum{
     link_none,
@@ -43,40 +46,49 @@ typedef struct{
     uint8_t radio_rx_pipe_address[RADIO_MAX_ADDRESS];
 }radio_link_t;
 
-radio_link_t parent = {link_none, {0,0,0,0,0}, {0,0,0,0,0}};
+radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}};
 
-void radio_link_init(uint8_t * broadcast_address, uint8_t _address_length)
+void radio_link_init()
 {
-    if(_address_length <= RADIO_MAX_ADDRESS)
-        memcpy(radio_broadcast_address, broadcast_address, _address_length);
     __nrfRadio_PowerDown();
-	pipe_config broadcast_pipe_rec =
+
+    
+	pipe_config default_pipe =
 	{
 		RADIO_PIPE0,
-		rx_test,
-		_address_length,
+		network_rx_default_address,
+		RADIO_MAX_ADDRESS,
 		RADIO_PIPE_RX_ENABLED,
 		RADIO_PIPE_AA_ENABLED,
 		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 	};
     
-	__nrfRadio_PipeConfig(broadcast_pipe_rec);
+	__nrfRadio_PipeConfig(default_pipe);
     __nrfRadio_PowerUp();
     __nrfRadio_TransmitMode();
+}
+
+void radio_link_inbox_cpy(uint8_t *msg, uint8_t length)
+{
+    if(!inbox_unread)
+    {
+        memcpy(inbox_msg, msg, length);
+        inbox_unread = 1;
+    }
 }
 
 uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _address_length)
 {
     if(address_rx && _address_length <= RADIO_MAX_ADDRESS)
     {
-        memcpy(parent.radio_tx_pipe_address, address_tx, _address_length);
-        memcpy(parent.radio_rx_pipe_address, address_rx, _address_length);
+        memcpy(root.radio_tx_pipe_address, address_tx, _address_length);
+        memcpy(root.radio_rx_pipe_address, address_rx, _address_length);
     }
     __nrfRadio_PowerDown();
     pipe_config rx_root =
 	{
 		RADIO_PIPE0,
-		parent.radio_rx_pipe_address,
+		root.radio_rx_pipe_address,
 		_address_length,
 		RADIO_PIPE_RX_ENABLED,
 		RADIO_PIPE_AA_ENABLED,
@@ -85,7 +97,7 @@ uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _
     __nrfRadio_PipeConfig(rx_root);
     __nrfRadio_PowerUp();
     __nrfRadio_ListeningMode();
-    parent.radio_link_status = link_establising;
+    root.radio_link_status = link_establising;
     
 }
 
@@ -95,9 +107,9 @@ uint8_t radio_link_discovery()
     
     uint8_t broadcast_msg[6] = {0};
     broadcast_msg[0] = 'B';
-    memcpy(&broadcast_msg[1], rx_test, 5);
+    memcpy(&broadcast_msg[1], &network_rx_default_address[0], 5);
     __nrfRadio_LoadMessages(broadcast_msg, 6);
-    uint8_t status = __nrfRadio_Transmit(radio_broadcast_address, RADIO_WAIT_TX);
+    uint8_t status = __nrfRadio_Transmit(network_broadcast_address, RADIO_WAIT_TX);
     if(status == RADIO_TX_OK){
         //the mesage was received, enter in listening and wait instructions on pipe0
         __nrfRadio_ListeningMode();
@@ -123,8 +135,7 @@ void radio_link_task()
     {
     case link_init:
         {
-            uint8_t board_castaddr[5] = {'A','A','A','A','A'};
-            radio_link_init(board_castaddr,5);
+            radio_link_init(network_broadcast_address,5);
             DDRB |= 1;
             state = link_discovery;
         }
@@ -138,7 +149,34 @@ void radio_link_task()
        }
         break;
     case link_pairing:
-
+        if(inbox_unread)
+        {
+            switch (inbox_msg[0])
+            {
+            case '1':
+            {
+                radio_link_configure(&inbox_msg[1],&inbox_msg[6], RADIO_MAX_ADDRESS);
+            }
+                break;
+            case '2':
+            {
+                uint8_t config_ack_msg[2] = {'O','K'};
+                __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 2);
+                break;
+            }
+            case '3':
+            {
+                root.radio_link_status = link_established;
+                state = link_paired;
+                break;
+            }
+            default:
+                break;
+            }
+            inbox_unread = 0;
+        }
+        break;
+    case link_paired:
         break;
     default:
         break;

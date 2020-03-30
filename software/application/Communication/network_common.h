@@ -15,8 +15,24 @@
 // You should have received a copy of the GNU General Public License
 // along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
 
-void radio_link_discovery();
-void radio_link_init(uint8_t * broadcast_address, uint8_t _address_length);
-void radio_link_task();
-uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _address_length);
-void radio_link_inbox_cpy(uint8_t *msg, uint8_t length);
+#ifndef _NETWORK_COMMON_H
+#define _NETWORK_COMMON_H
+
+#include "stdint.h"
+#include "nrf24Radio.h"
+#define NETWORK_VERSION "1.0.0"
+
+typedef enum{
+    MSG_IDX_TYPE = 0,
+}network_msg_idx_t;
+
+typedef enum{
+    network_broadcast_msg = 'B',
+}network_msg_t;
+
+extern const uint8_t network_broadcast_address[RADIO_MAX_ADDRESS];
+extern uint8_t network_rx_default_address[RADIO_MAX_ADDRESS];
+
+void network_read_parameters();
+
+#endif
