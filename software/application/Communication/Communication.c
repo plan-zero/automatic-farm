@@ -20,23 +20,72 @@
 #include "ota.h"
 #include "uart.h"
 #include "radio_link.h"
+#include "messages.h"
+#include "string.h"
 
+#define COMMUNICATION_MAX_IN_BUFFER 5
+message_t msg_in_buffer[COMMUNICATION_MAX_IN_BUFFER];
+uint8_t msg_in_count = 0;
+
+#define COMMUNICATION_MAX_OUT_BUFFER 5
+message_t msg_out_buffer[COMMUNICATION_MAX_OUT_BUFFER];
+uint8_t msg_out_count = 0;
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
 {
-    if(payload_length)
+    //assemble the message in a known format
+    //message_t * msg_ptr = msg_in_buffer + msg_in_count;
+    //if(payload_length <= MSG_STRUCT_SIZE && msg_in_count < COMMUNICATION_MAX_IN_BUFFER)
     {
-        if(data[0] == 'K') //check if this is a key message
-        {
-            ota_check_key(data, payload_length);
-        }
-        else if(data[0] == 'P') //this is a pipe config message
-        {
-            radio_link_inbox_cpy(&data[1], payload_length - 1);
-        }
-        else if(data[0] == 'O')
-        {
-            
-        }
+        msg_in_buffer[msg_in_count].type = data[0];
+        memcpy(msg_in_buffer[msg_in_count].rx_address, &data[1], RADIO_MAX_ADDRESS);
+        memcpy(msg_in_buffer[msg_in_count].tx_address, &data[6], RADIO_MAX_ADDRESS);
+        memcpy((void*)msg_in_buffer[msg_in_count].timestamp, &data[11], 2);
+        msg_in_buffer[msg_in_count].TTL = (uint8_t)data[13];
+        memcpy(msg_in_buffer[msg_in_count].data, &data[14], MESSAGE_MAX_LENGTH);
+        msg_in_count++;
     }
+}
+
+void communication_execute_messages()
+{
+    for(uint8_t idx = 0; idx < msg_in_count; idx++)
+    {
+        switch (msg_in_buffer[idx].type)
+        {
+        case START_BYTE_BROADCAST:
+            {
+
+            }
+            break;
+        case START_BYTE_BOOTKEY:
+            {
+                //ota_check_key(data, payload_length);
+            }
+            break;
+        case START_BYTE_PAIRING:
+            {
+                if(radio_link_execute(msg_in_buffer[idx]))
+                {
+                    //TODO add a warning because this message will be lost
+                }
+            }
+            break;
+        case START_BYTE_DATA:
+            {
+
+            }
+            break;
+        case START_BYTE_PING:
+            {
+
+            }
+            break;
+        default:
+            break;
+        }
+        memset(&msg_in_buffer[idx],0,MSG_STRUCT_SIZE);
+    }
+    
+    msg_in_count = 0;
 }

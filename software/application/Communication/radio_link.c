@@ -17,8 +17,8 @@
  * along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "radio_link.h"
 #include "stdlib.h"
-#include "stdint.h"
 #include "string.h"
 
 #include "nrf24Radio.h"
@@ -27,10 +27,6 @@
 #include "network_common.h"
 #include "e2p.h"
 
-
-uint8_t radio_tx_address[RADIO_MAX_ADDRESS];
-uint8_t inbox_msg[32];
-uint8_t inbox_unread = 0;
 
 typedef enum{
     link_none,
@@ -45,6 +41,19 @@ typedef struct{
     uint8_t radio_tx_pipe_address[RADIO_MAX_ADDRESS];
     uint8_t radio_rx_pipe_address[RADIO_MAX_ADDRESS];
 }radio_link_t;
+
+typedef union{
+    struct{
+        uint8_t rx_address[5];
+        uint8_t tx_address[5];
+        uint8_t cmd_data[2];
+    };
+    uint8_t data[12];
+}radio_link_cmd_t;
+
+#define MAX_CMD 3
+radio_link_cmd_t _cmds[MAX_CMD];
+uint8_t cmd_idx = 0;
 
 radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}};
 
@@ -68,13 +77,17 @@ void radio_link_init()
     __nrfRadio_TransmitMode();
 }
 
-void radio_link_inbox_cpy(uint8_t *msg, uint8_t length)
+uint8_t radio_link_execute(message_t msg)
 {
-    if(!inbox_unread)
+    if(cmd_idx < MAX_CMD)
     {
-        memcpy(inbox_msg, msg, length);
-        inbox_unread = 1;
+        memcpy(_cmds[cmd_idx].tx_address, msg.tx_address, RADIO_MAX_ADDRESS);
+        memcpy(_cmds[cmd_idx].rx_address, msg.rx_address, RADIO_MAX_ADDRESS);
+        memcpy(_cmds[cmd_idx].data, msg.data, 2);
+        cmd_idx++;
+        return 1;
     }
+    return 0;
 }
 
 uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _address_length)
@@ -98,7 +111,7 @@ uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _
     __nrfRadio_PowerUp();
     __nrfRadio_ListeningMode();
     root.radio_link_status = link_establising;
-    
+    return 1;
 }
 
 uint8_t radio_link_discovery()
@@ -149,13 +162,15 @@ void radio_link_task()
        }
         break;
     case link_pairing:
-        if(inbox_unread)
+        while(cmd_idx--)
         {
-            switch (inbox_msg[0])
+            switch (_cmds[cmd_idx].data[0])
             {
             case '1':
             {
-                radio_link_configure(&inbox_msg[1],&inbox_msg[6], RADIO_MAX_ADDRESS);
+                radio_link_configure(_cmds[cmd_idx].tx_address,
+                                    _cmds[cmd_idx].tx_address, 
+                                    RADIO_MAX_ADDRESS);
             }
                 break;
             case '2':
@@ -173,7 +188,6 @@ void radio_link_task()
             default:
                 break;
             }
-            inbox_unread = 0;
         }
         break;
     case link_paired:

@@ -14,7 +14,32 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
-#include "stdint.h"
 
-void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length);
-void communication_execute_messages();
+
+#ifndef _MESSAGES_H
+#define _MESSAGES_H
+
+#include "stdint.h"
+#include "nrf24Radio.h"
+
+#define MESSAGE_MAX_LENGTH 16
+
+#define START_BYTE_BROADCAST    (uint8_t)('B')
+#define START_BYTE_PAIRING      (uint8_t)('P')
+#define START_BYTE_DATA         (uint8_t)('D')
+#define START_BYTE_PING         (uint8_t)('U')
+#define START_BYTE_BOOTKEY      (uint8_t)('K')
+
+
+typedef struct{
+    uint8_t type; // first byte is the message type
+    uint8_t rx_address[RADIO_MAX_ADDRESS];
+    uint8_t tx_address[RADIO_MAX_ADDRESS];
+    uint16_t timestamp;
+    uint8_t TTL;
+    uint8_t data[MESSAGE_MAX_LENGTH];
+}message_t;
+
+#define MSG_STRUCT_SIZE 30//(uint8_t)(sizeof(message_t) / sizeof(uint8_t))
+
+#endif //_MESSAGES_H
