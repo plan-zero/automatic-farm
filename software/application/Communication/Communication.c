@@ -22,6 +22,7 @@
 #include "radio_link.h"
 #include "messages.h"
 #include "string.h"
+#include "uart.h"
 
 #define COMMUNICATION_MAX_IN_BUFFER 5
 message_t msg_in_buffer[COMMUNICATION_MAX_IN_BUFFER];
@@ -38,9 +39,9 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
     //if(payload_length <= MSG_STRUCT_SIZE && msg_in_count < COMMUNICATION_MAX_IN_BUFFER)
     {
         msg_in_buffer[msg_in_count].type = data[0];
-        memcpy(msg_in_buffer[msg_in_count].rx_address, &data[1], RADIO_MAX_ADDRESS);
-        memcpy(msg_in_buffer[msg_in_count].tx_address, &data[6], RADIO_MAX_ADDRESS);
-        memcpy((void*)msg_in_buffer[msg_in_count].timestamp, &data[11], 2);
+        memcpy(msg_in_buffer[msg_in_count].tx_address, &data[1], RADIO_MAX_ADDRESS);
+        memcpy(msg_in_buffer[msg_in_count].rx_address, &data[6], RADIO_MAX_ADDRESS);
+        memcpy((uint8_t*)&msg_in_buffer[msg_in_count].timestamp, &data[11], 2);
         msg_in_buffer[msg_in_count].TTL = (uint8_t)data[13];
         memcpy(msg_in_buffer[msg_in_count].data, &data[14], MESSAGE_MAX_LENGTH);
         msg_in_count++;
@@ -65,6 +66,7 @@ void communication_execute_messages()
             break;
         case START_BYTE_PAIRING:
             {
+                uart_printString("Pairing message received...",1);
                 if(radio_link_execute(msg_in_buffer[idx]))
                 {
                     //TODO add a warning because this message will be lost

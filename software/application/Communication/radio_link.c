@@ -26,7 +26,7 @@
 #include <util/delay.h>
 #include "network_common.h"
 #include "e2p.h"
-
+#include "uart.h"
 
 typedef enum{
     link_none,
@@ -42,11 +42,12 @@ typedef struct{
     uint8_t radio_rx_pipe_address[RADIO_MAX_ADDRESS];
 }radio_link_t;
 
+#define CMD_STRUCT_SIZE 13
 typedef union{
     struct{
         uint8_t rx_address[5];
         uint8_t tx_address[5];
-        uint8_t cmd_data[2];
+        uint8_t cmd_data[3];
     };
     uint8_t data[12];
 }radio_link_cmd_t;
@@ -54,6 +55,9 @@ typedef union{
 #define MAX_CMD 3
 radio_link_cmd_t _cmds[MAX_CMD];
 uint8_t cmd_idx = 0;
+
+uint16_t min_latency = 0xFFFF;
+uint8_t tx_address_latency[RADIO_MAX_ADDRESS];
 
 radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}};
 
@@ -81,9 +85,10 @@ uint8_t radio_link_execute(message_t msg)
 {
     if(cmd_idx < MAX_CMD)
     {
+        uart_printString("Received execute cmd...",1);
         memcpy(_cmds[cmd_idx].tx_address, msg.tx_address, RADIO_MAX_ADDRESS);
         memcpy(_cmds[cmd_idx].rx_address, msg.rx_address, RADIO_MAX_ADDRESS);
-        memcpy(_cmds[cmd_idx].data, msg.data, 2);
+        memcpy(_cmds[cmd_idx].cmd_data, msg.data, 3);
         cmd_idx++;
         return 1;
     }
@@ -155,40 +160,99 @@ void radio_link_task()
         break;
     case link_discovery:
         PORTB ^= 1;
+        uart_printString("Discovering...",1);
        if(radio_link_discovery())
         {
             
            state = link_pairing;
+           min_latency = 0xFFFF;
+           memset(tx_address_latency, 0, RADIO_MAX_ADDRESS);
        }
         break;
     case link_pairing:
-        while(cmd_idx--)
+        //TODO: Add a timeout for pairing, then go back in discovery if there is no answer
+        for(uint8_t idx = 0; idx < cmd_idx; idx++)
         {
-            switch (_cmds[cmd_idx].data[0])
+            uart_printString("execute cmd...",1);
+            switch (_cmds[idx].cmd_data[0])
             {
+            //the master node has to ping for a while the slave in order to check the latency
+            //if another master has a better signal, then that will be selected instead
             case '1':
             {
-                radio_link_configure(_cmds[cmd_idx].tx_address,
-                                    _cmds[cmd_idx].tx_address, 
-                                    RADIO_MAX_ADDRESS);
+                uart_printString("execute cmd 1", 1);
+                uint16_t latency = 0;
+                //extract the latency;
+                memcpy(&latency, &_cmds[idx].cmd_data[1], 2);
+                uint8_t tmp[12] = {0};
+                sprintf(tmp, "%u",latency);
+                tmp[11] = '\0';
+                uart_printString(tmp, 1);
+                if(latency < min_latency)
+                {
+                    min_latency = latency;
+                    //extract the TX address
+                    memcpy(tx_address_latency,_cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                }
             }
                 break;
+            //The master send a request to the slave for pairing, the slave answer 
             case '2':
             {
-                uint8_t config_ack_msg[2] = {'O','K'};
-                __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 2);
+                uart_printString("radio_link execute cmd 2",1);
+                //check if this master has the lowest ping rate
+                if(0 == memcmp(_cmds[idx].tx_address, tx_address_latency, RADIO_MAX_ADDRESS))
+                {
+                    //request pair
+                    if(_cmds[idx].cmd_data[1] == 'R')
+                    {
+                        uart_printString("request pair...", 1);
+                        uint8_t config_ack_msg[2] = {'O','K'};
+                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 2);
+                    }
+                    //Configure with the following configuration
+                    else if(_cmds[idx].cmd_data[1] == 'P')
+                    {
+                        uart_printString("configure link...", 1);
+                        radio_link_configure(_cmds[idx].tx_address,
+                                            _cmds[idx].rx_address, 
+                                            RADIO_MAX_ADDRESS);
+                    }
+                }
+                else
+                {
+                    //refuse the pairing, there is another master that is more suitable
+                    uint8_t config_ack_msg[3] = {'N','O','K'};
+                    __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 3);
+                }
                 break;
             }
+            //check the connection and if this is stable, then the pairing is complete
             case '3':
             {
-                root.radio_link_status = link_established;
-                state = link_paired;
+                if(0 == memcmp(_cmds[idx].tx_address, tx_address_latency, RADIO_MAX_ADDRESS))
+                {
+                    if(_cmds[idx].cmd_data[1] == 'C')
+                    {
+                        uart_printString("check connection...", 1);
+                        uint8_t config_ack_msg[2] = {'O','K'};
+                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 2);
+                    }
+                    else if(_cmds[idx].cmd_data[1] == 'D')
+                    {
+                        uart_printString("connection established...", 1);
+                        root.radio_link_status = link_established;
+                        state = link_paired;
+                    }
+                }
                 break;
             }
             default:
                 break;
             }
+            memset(&_cmds[idx], 0, CMD_STRUCT_SIZE);
         }
+        cmd_idx = 0;
         break;
     case link_paired:
         break;

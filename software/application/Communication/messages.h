@@ -33,8 +33,8 @@
 
 typedef struct{
     uint8_t type; // first byte is the message type
-    uint8_t rx_address[RADIO_MAX_ADDRESS];
     uint8_t tx_address[RADIO_MAX_ADDRESS];
+    uint8_t rx_address[RADIO_MAX_ADDRESS];
     uint16_t timestamp;
     uint8_t TTL;
     uint8_t data[MESSAGE_MAX_LENGTH];
