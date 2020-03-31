@@ -36,14 +36,18 @@ typedef enum{
     link_error,
 }link_status_t;
 
+#define MAX_FAILED_ACK 5
+
 typedef struct{
     uint8_t radio_link_status;
     uint8_t radio_tx_pipe_address[RADIO_MAX_ADDRESS];
     uint8_t radio_rx_pipe_address[RADIO_MAX_ADDRESS];
     radio_pipe pipe;
+    uint8_t failed_ack;
 }radio_link_t;
 
 #define CMD_STRUCT_SIZE 13
+
 typedef union{
     struct{
         uint8_t rx_address[5];
@@ -143,6 +147,7 @@ typedef enum{
     link_discovery,
     link_pairing,
     link_paired,
+    link_failed,
 }link_state_t;
 
 #include <avr/io.h>
@@ -241,10 +246,12 @@ void radio_link_task()
                         uart_printString("check connection...", 1);
                         uint8_t check_con_msg[7] = {'O','K'};
                         memcpy(&check_con_msg[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
-                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, check_con_msg, 2);
+                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, check_con_msg, 7);
                     }
                     else if(_cmds[idx].cmd_data[1] == 'D')
                     {
+                        memset(tx_address_latency, 0, RADIO_MAX_ADDRESS);
+                        min_latency = 0xFFFF;
                         uart_printString("connection established...", 1);
                         state = link_paired;
                         root.radio_link_status = link_established;
@@ -255,11 +262,37 @@ void radio_link_task()
             default:
                 break;
             }
-            memset(&_cmds[idx], 0, CMD_STRUCT_SIZE);
+            memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
         }
         cmd_idx = 0;
         break;
     case link_paired:
+        //send an ACK msg to parent to make sure that the connection is still working
+        __nrfRadio_TransmitMode();
+        uint8_t ack_msg[1] = {'A'};
+        __nrfRadio_LoadMessages(ack_msg, 1);
+        radio_tx_status status = __nrfRadio_Transmit(root.radio_tx_pipe_address, RADIO_WAIT_TX);
+        __nrfRadio_ListeningMode();
+        if(RADIO_TX_OK == status)
+        {
+            uart_printString("ACK Root: OK",1);
+            if(root.failed_ack)
+                root.failed_ack--;
+        }
+        else
+        {
+            uart_printString("ACK Root: NOK",1);
+            root.failed_ack++;
+        }
+        if(root.failed_ack >= MAX_FAILED_ACK)
+        {
+            uart_printString("Connection lost...",1);
+            state = link_failed;
+        }
+        break;
+    case link_failed:
+        memset(&root, 0, sizeof(radio_link_t));
+        state = link_init;
         break;
     default:
         break;

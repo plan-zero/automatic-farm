@@ -29,6 +29,7 @@
 #define START_BYTE_DATA         (uint8_t)('D')
 #define START_BYTE_PING         (uint8_t)('U')
 #define START_BYTE_BOOTKEY      (uint8_t)('K')
+#define START_BYTE_ACK          (uint8_t)('A')
 
 
 typedef struct{
@@ -38,6 +39,7 @@ typedef struct{
     uint16_t timestamp;
     uint8_t TTL;
     uint8_t data[MESSAGE_MAX_LENGTH];
+    uint16_t ID;
 }message_t;
 
 #define MSG_STRUCT_SIZE 30//(uint8_t)(sizeof(message_t) / sizeof(uint8_t))

@@ -23,6 +23,8 @@
 #include "messages.h"
 #include "string.h"
 #include "uart.h"
+#include "nrf24Radio_API.h"
+#include "nrf24Radio.h"
 
 #define COMMUNICATION_MAX_IN_BUFFER 5
 message_t msg_in_buffer[COMMUNICATION_MAX_IN_BUFFER];
@@ -35,7 +37,6 @@ uint8_t msg_out_count = 0;
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
 {
     //assemble the message in a known format
-    //message_t * msg_ptr = msg_in_buffer + msg_in_count;
     //if(payload_length <= MSG_STRUCT_SIZE && msg_in_count < COMMUNICATION_MAX_IN_BUFFER)
     {
         msg_in_buffer[msg_in_count].type = data[0];
@@ -46,6 +47,32 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
         memcpy(msg_in_buffer[msg_in_count].data, &data[14], MESSAGE_MAX_LENGTH);
         msg_in_count++;
     }
+}
+
+void tx_handler(radio_tx_status status)
+{
+
+}
+
+void communication_send_messages()
+{
+    if(msg_out_count)
+    {
+        __nrfRadio_TransmitMode();
+        for(uint8_t idx = 0; idx < msg_out_count; idx++)
+        {
+            uint8_t msg[32] = {0};
+            msg[0] = msg_out_buffer[idx].type;
+            memcpy(&msg[1], msg_out_buffer[idx].rx_address, RADIO_MAX_ADDRESS);
+            memcpy(&msg[6], msg_out_buffer[idx].tx_address, RADIO_MAX_ADDRESS);
+            memcpy(&msg[11], (uint8_t*)&msg_out_buffer[idx].timestamp, 2);
+            msg[13] = msg_out_buffer[idx].TTL;
+            memcpy(&msg[14], msg_out_buffer[idx].data, MESSAGE_MAX_LENGTH);
+            __nrfRadio_LoadMessages(msg, MSG_STRUCT_SIZE);
+            __nrfRadio_Transmit(msg_out_buffer[idx].tx_address, RADIO_RETURN_ON_TX);
+        }
+    }
+    __nrfRadio_ListeningMode();
 }
 
 void communication_execute_messages()
