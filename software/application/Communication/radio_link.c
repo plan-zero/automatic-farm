@@ -40,6 +40,7 @@ typedef struct{
     uint8_t radio_link_status;
     uint8_t radio_tx_pipe_address[RADIO_MAX_ADDRESS];
     uint8_t radio_rx_pipe_address[RADIO_MAX_ADDRESS];
+    radio_pipe pipe;
 }radio_link_t;
 
 #define CMD_STRUCT_SIZE 13
@@ -59,7 +60,7 @@ uint8_t cmd_idx = 0;
 uint16_t min_latency = 0xFFFF;
 uint8_t tx_address_latency[RADIO_MAX_ADDRESS];
 
-radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}};
+radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE0};
 
 void radio_link_init()
 {
@@ -116,6 +117,7 @@ uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _
     __nrfRadio_PowerUp();
     __nrfRadio_ListeningMode();
     root.radio_link_status = link_establising;
+    root.pipe = RADIO_PIPE0;
     return 1;
 }
 
@@ -207,8 +209,9 @@ void radio_link_task()
                     if(_cmds[idx].cmd_data[1] == 'R')
                     {
                         uart_printString("request pair...", 1);
-                        uint8_t config_ack_msg[2] = {'O','K'};
-                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 2);
+                        uint8_t config_ack_msg[7] = {'O','K'};
+                        memcpy(&config_ack_msg[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 7);
                     }
                     //Configure with the following configuration
                     else if(_cmds[idx].cmd_data[1] == 'P')
@@ -222,8 +225,9 @@ void radio_link_task()
                 else
                 {
                     //refuse the pairing, there is another master that is more suitable
-                    uint8_t config_ack_msg[3] = {'N','O','K'};
-                    __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 3);
+                    uint8_t config_ack_msg[8] = {'N','O','K'};
+                    memcpy(&config_ack_msg[3], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                    __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 8);
                 }
                 break;
             }
@@ -235,14 +239,15 @@ void radio_link_task()
                     if(_cmds[idx].cmd_data[1] == 'C')
                     {
                         uart_printString("check connection...", 1);
-                        uint8_t config_ack_msg[2] = {'O','K'};
-                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 2);
+                        uint8_t check_con_msg[7] = {'O','K'};
+                        memcpy(&check_con_msg[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, check_con_msg, 2);
                     }
                     else if(_cmds[idx].cmd_data[1] == 'D')
                     {
                         uart_printString("connection established...", 1);
-                        root.radio_link_status = link_established;
                         state = link_paired;
+                        root.radio_link_status = link_established;
                     }
                 }
                 break;
