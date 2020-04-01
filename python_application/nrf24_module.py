@@ -68,14 +68,16 @@ try:
     #we should do the ping part here, anyway this procedure will change so we just send 0A
     res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "00010A", 0.1)
     res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "0002R", 1)
-    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0002P", 3)
+    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0002P", 0.5)
     if not "OK" + rx_address in res:
         raise Exception("Slave refused the pairing!")
     res = nrf24_cmds["set_tx_addr"](salve_new_tx,1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.1)
-    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 3)
+    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 0.5)
     if not "OK" + rx_address in res:
         raise Exception("Connection test failed!")
+    res = nrf24_cmds["set_rx_addr"](rx_address,0.01)
+    res = nrf24_cmds["set_rx_mode"](0.1)
     print("Successfully connected with " + salve_new_tx)
     
 except Exception as e:
@@ -83,7 +85,7 @@ except Exception as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(exc_type, fname, exc_tb.tb_lineno)
-    res = nrf24_cmds["set_tx_mode"](0.1)
+    res = nrf24_cmds["set_tx_mode"](0.01)
     ser.close()
 
 ser.close()

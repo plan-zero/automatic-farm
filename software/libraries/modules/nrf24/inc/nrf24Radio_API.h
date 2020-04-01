@@ -157,6 +157,6 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_FlushBuffer)(radio_conte
 // Returns:		radio_error_code
 // buffer_type:	radio_buffer_t: RADIO_RX_BUFFER, RADIO_TX_BUFFER, RADIO_BOTH_BUFFER (tx+rx buffers)
 //**************************
-#define __nrfRadio_FlushBuffer(buffer_type) fptr_nrfRadio_FlushBuffer(&_radio_instance, buffer_type)
+#define __nrfRadio_FlushBuffer(buffer_type) (*fptr_nrfRadio_FlushBuffer)(&_radio_instance, buffer_type)
 
 #endif /* RADIO_FPTR_H_ */

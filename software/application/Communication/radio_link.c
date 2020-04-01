@@ -273,30 +273,35 @@ void radio_link_task()
         break;
     case link_paired:
         //send an ACK msg to parent to make sure that the connection is still working
-        __nrfRadio_TransmitMode();
-        uint8_t ack_msg[1] = {'A'};
-        __nrfRadio_LoadMessages(ack_msg, 1);
-        radio_tx_status status = __nrfRadio_Transmit(root.radio_tx_pipe_address, RADIO_WAIT_TX);
-        __nrfRadio_ListeningMode();
-        if(RADIO_TX_OK == status)
+        if(state_count % STATE_COUNT_1S == 0)
         {
-            uart_printString("ACK Root: OK",1);
-            if(root.failed_ack)
-                root.failed_ack--;
-        }
-        else
-        {
-            uart_printString("ACK Root: NOK",1);
-            root.failed_ack++;
-        }
-        if(root.failed_ack >= MAX_FAILED_ACK)
-        {
-            uart_printString("Connection lost...",1);
-            state = link_failed;
+            state_count = 0;
+            __nrfRadio_TransmitMode();
+            uint8_t ack_msg[1] = {'A'};
+            __nrfRadio_LoadMessages(ack_msg, 1);
+            radio_tx_status status = __nrfRadio_Transmit(root.radio_tx_pipe_address, RADIO_WAIT_TX);
+            __nrfRadio_ListeningMode();
+            if(RADIO_TX_OK == status)
+            {
+                uart_printString("ACK Root: OK",1);
+                if(root.failed_ack)
+                    root.failed_ack--;
+            }
+            else
+            {
+                uart_printString("ACK Root: NOK",1);
+                root.failed_ack++;
+            }
+            if(root.failed_ack >= MAX_FAILED_ACK)
+            {
+                uart_printString("Connection lost...",1);
+                state = link_failed;
+            }
         }
         break;
     case link_failed:
         memset(&root, 0, sizeof(radio_link_t));
+        __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
         state = link_init;
         break;
     default:
