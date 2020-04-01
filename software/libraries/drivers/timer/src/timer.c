@@ -179,7 +179,7 @@ timer_status timer_init(timer_instance inst, timer_cfg cfg)
     {
         if(cfg.channel == timer_ch_a)
             TIMER_FUNCTIONS(SET_OCMP_INT, inst, TIMER_CH_A);
-        else
+        else if(cfg.channel == timer_ch_b)
             TIMER_FUNCTIONS(SET_OCMP_INT, inst, TIMER_CH_B);
     } 
     if(cfg.interrupt.overflow_en)

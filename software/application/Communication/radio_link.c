@@ -27,6 +27,7 @@
 #include "network_common.h"
 #include "e2p.h"
 #include "uart.h"
+#include "system-timer.h"
 
 #define STATE_COUNT_1S      100
 #define STATE_COUNT_500MS   50
@@ -193,13 +194,42 @@ void radio_link_task()
             case '1':
             {
                 uart_printString("execute cmd 1", 1);
-                uint16_t latency = 0;
-                //extract the latency;
-                memcpy(&latency, &_cmds[idx].cmd_data[1], 2);
+                int32_t latency = 0;
+                //ping the master four times and calculate the latency
+                uint8_t ping[1] = {'A'};
+                system_timer_timestamp _start = {0};
+                system_timer_timestamp _end = {0};
+                int32_t delta = 0;
+                for(uint8_t itr = 0; itr < 1; itr++)
+                {
+                    uart_printString("Ping test",1);
+                    __nrfRadio_TransmitMode();
+                    __nrfRadio_LoadMessages(ping, 1);
+                     _start =  system_timer_get_timestamp();
+                    radio_tx_status ping_status =  __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
+                    _end = system_timer_get_timestamp();
+                    if(RADIO_TX_OK == ping_status)
+                    {
+                        delta = system_timer_getms(_start,_end);
+                        latency += delta;
+                    }
+                    else
+                    {
+                        uart_printString("NACK",1);
+                        //TODO: raise an error since we don't get the ack
+                    }
+                    __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
+                    __nrfRadio_ListeningMode();
+                }
+                //extract the latency: mean
+                //latency = latency / 4;
+                //DBG INFO
                 uint8_t tmp[12] = {0};
                 sprintf(tmp, "%u",latency);
                 tmp[11] = '\0';
                 uart_printString(tmp, 1);
+                /////////////////////////
+
                 if(latency < min_latency)
                 {
                     min_latency = latency;
@@ -283,7 +313,7 @@ void radio_link_task()
             __nrfRadio_ListeningMode();
             if(RADIO_TX_OK == status)
             {
-                uart_printString("ACK Root: OK",1);
+                //uart_printString("ACK Root: OK",1);
                 if(root.failed_ack)
                     root.failed_ack--;
             }

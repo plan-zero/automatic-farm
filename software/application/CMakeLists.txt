@@ -39,6 +39,7 @@ set(HEADER_INC
     ./../libraries/drivers/e2p/inc
     ./../libraries/drivers/wdg/inc
     ./../libraries/modules/nrf24/inc
+    ./../libraries/modules/system-timer/inc
     ./../libraries/hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
@@ -55,7 +56,7 @@ set(SOURCE_FILES
 )
 avr_add_executable(app ${SOURCE_FILES})
 
-target_link_libraries(app.elf nrf24_api uart timer wdg nrf24_api)
+target_link_libraries(app.elf nrf24_api uart timer wdg nrf24_api system-timer)
 
 #install binaries
 install(

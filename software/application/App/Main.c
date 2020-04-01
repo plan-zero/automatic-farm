@@ -40,6 +40,7 @@
 #include "nrf24Radio_API.h"
 #include "radio_link.h"
 #include "network_common.h"
+#include "system-timer.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -154,6 +155,9 @@ inline void MAIN_setup()
     network_read_parameters();
     //start the scheduler
     timer_start(0,0);
+    //init and start the system timer used for measurments
+    system_timer_init();
+    system_timer_start();
 }
 
 // We use timer on channel 0
@@ -175,7 +179,7 @@ int  main()
     MAIN_setup();
     INT_GLOBAL_EN();
 
-    wdg_init(wdgto_120MS);
+    wdg_init(wdgto_1S);
     while(1)
     {
 
