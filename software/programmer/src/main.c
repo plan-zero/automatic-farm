@@ -63,7 +63,7 @@ uint8_t cmd_available = 0;
 #define CMD_SEND_ASCII_HEX			'E'
 #define CMD_SEND_PING				'P'
 
-#define PROG_VERSION "2.0.1"
+#define PROG_VERSION "2.0.2"
 
 #define INVALID_HEX 255
 #define _ASCII_HEX_TO_INT(x) (x >= '0' && x <= '9') ? x - '0' : INVALID_HEX
@@ -98,7 +98,7 @@ void process_uart_data(uint8_t * data, uint8_t len)
 	//static uint8_t leng_num = 0;
 	for(uint8_t idx = 0; idx < len; idx ++)
 	{
-		uart_sendByte(data[idx]);
+		//uart_sendByte(data[idx]);
 		switch(uart_state)
 		{
 			case UART_S0:

@@ -21,6 +21,25 @@
 
 #include "stdint.h"
 #include "nrf24Radio.h"
+/* COMMON  :ID:PIPEID
+DEVICE 00 SLAVE
+P0 AA:AA:AA:AA:AA - broadcast
+P1 AA:AA:AA:00:01 - master tx
+P2 AA:AA:AA:00:02
+P3 AA:AA:AA:00:03
+P4 AA:AA:AA:00:04
+P5 AA:AA:AA:00:05
+*/
+
+/* COMMON  :ID:PIPEID
+DEVICE 01 MASTER
+P0 AA:AA:AA:AA:AA - broadcast
+P1 AA:AA:AA:01:01 - *
+P2 AA:AA:AA:01:02
+P3 AA:AA:AA:01:03
+P4 AA:AA:AA:01:04
+P5 AA:AA:AA:01:05
+*/
 
 #define MESSAGE_MAX_LENGTH 16
 
