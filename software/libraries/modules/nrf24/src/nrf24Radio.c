@@ -263,6 +263,28 @@ NRF24_MEMORY radio_error_code nrfRadio_Init(radio_context *instance, radio_confi
 	return err;
 }
 
+NRF24_MEMORY radio_error_code nrfRadio_FlushBuffer(radio_context *instance, radio_buffer_t buffer)
+{
+	radio_error_code err = RADIO_ERR_OK;
+	switch (buffer)
+	{
+	case RADIO_RX_BUFFER:
+		send_instruction(FLUSH_RX, NULL, NULL, 0);
+		break;
+	case RADIO_TX_BUFFER:
+		send_instruction(FLUSH_TX, NULL, NULL, 0);
+		break;
+	case RADIO_BOTH_BUFFER:
+		send_instruction(FLUSH_TX, NULL, NULL, 0);
+		send_instruction(FLUSH_RX, NULL, NULL, 0);
+		break;
+	default:
+		err = RADIO_ERR_INVALID;
+		break;
+	}
+	return err;
+}
+
 NRF24_MEMORY radio_error_code nrfRadio_PipeConfig(radio_context *instance, pipe_config pipe_cfg){
 	radio_error_code err = RADIO_ERR_OK;
 	uint8_t value = 0;
@@ -709,5 +731,6 @@ fptr_t ptrs[] RADIO_FPTRS_MEMORY = {
 	(fptr_t)nrfRadio_ChangePower,
 	(fptr_t)nrfRadio_SetTxCallback,
 	(fptr_t)nrfRadio_SetRxCallback,
-	(fptr_t)nrfRadio_LoadAckPayload
+	(fptr_t)nrfRadio_LoadAckPayload,
+	(fptr_t)nrfRadio_FlushBuffer
 };

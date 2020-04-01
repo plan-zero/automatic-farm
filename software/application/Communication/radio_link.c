@@ -28,6 +28,10 @@
 #include "e2p.h"
 #include "uart.h"
 
+#define STATE_COUNT_1S      100
+#define STATE_COUNT_500MS   50
+#define STATE_COUNT_100MS   10
+
 typedef enum{
     link_none,
     link_establising,
@@ -45,8 +49,6 @@ typedef struct{
     radio_pipe pipe;
     uint8_t failed_ack;
 }radio_link_t;
-
-#define CMD_STRUCT_SIZE 13
 
 typedef union{
     struct{
@@ -155,26 +157,29 @@ typedef enum{
 void radio_link_task()
 {
     static link_state_t state = 0;
+    static uint8_t state_count = 0;
 
+    state_count++;
     switch (state)
     {
     case link_init:
         {
             radio_link_init(network_broadcast_address,5);
-            DDRB |= 1;
             state = link_discovery;
         }
         break;
     case link_discovery:
-        PORTB ^= 1;
-        uart_printString("Discovering...",1);
-       if(radio_link_discovery())
+        if(state_count % STATE_COUNT_1S == 0)
         {
-            
-           state = link_pairing;
-           min_latency = 0xFFFF;
-           memset(tx_address_latency, 0, RADIO_MAX_ADDRESS);
-       }
+            state_count = 0;
+            uart_printString("Discovering...",1);
+            if(radio_link_discovery())
+            {
+                state = link_pairing;
+                min_latency = 0xFFFF;
+                memset(tx_address_latency, 0, RADIO_MAX_ADDRESS);
+            }
+        }
         break;
     case link_pairing:
         //TODO: Add a timeout for pairing, then go back in discovery if there is no answer

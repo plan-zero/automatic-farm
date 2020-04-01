@@ -174,6 +174,12 @@ typedef enum {
 }radio_tx_status;
 
 typedef enum {
+	RADIO_RX_BUFFER,
+	RADIO_TX_BUFFER,
+	RADIO_BOTH_BUFFER,
+}radio_buffer_t;
+
+typedef enum {
 	RADIO_RX_OK
 }radio_rx_status;
 

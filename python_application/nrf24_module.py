@@ -63,15 +63,16 @@ try:
             raise Exception("Get TX:Invalid format or no response")
     else:
         raise Exception("Get TX:Invalid format or no response")
+    res = nrf24_cmds["set_tx_addr"](tx_address, 0.1)
     res = nrf24_cmds["set_tx_mode"](0.1)
     #we should do the ping part here, anyway this procedure will change so we just send 0A
-    res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "00010A", 1)
+    res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "00010A", 0.1)
     res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "0002R", 1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0002P", 3)
     if not "OK" + rx_address in res:
         raise Exception("Slave refused the pairing!")
     res = nrf24_cmds["set_tx_addr"](salve_new_tx,1)
-    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 1)
+    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 3)
     if not "OK" + rx_address in res:
         raise Exception("Connection test failed!")

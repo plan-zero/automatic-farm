@@ -49,7 +49,7 @@ radio_error_code (* const __flash *fptr_nrfRadio_ChangePower)(radio_context *, r
 radio_error_code (* const __flash *fptr_nrfRadio_SetTxCallback)(radio_context *, void (*)(radio_tx_status)) = (radio_error_code(* const __flash *)(radio_context *, void (*)(radio_tx_status)))(NRF_LIB_HOOKS_BASE_ADDR + 24);
 radio_error_code (* const __flash *fptr_nrfRadio_SetRxCallback)(radio_context *, void (*)(uint8_t, uint8_t *, uint8_t)) = (radio_error_code(* const __flash *)(radio_context *, void (*)(uint8_t, uint8_t *, uint8_t)))(NRF_LIB_HOOKS_BASE_ADDR + 26);
 radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_context *, radio_pipe, uint8_t*, uint8_t) = (radio_error_code(* const __flash *)(radio_context *, radio_pipe, uint8_t*, uint8_t))(NRF_LIB_HOOKS_BASE_ADDR + 28);
-
+radio_error_code (* const __flash *fptr_nrfRadio_FlushBuffer)(radio_context *,radio_buffer_t) = (radio_error_code(* const __flash *)(radio_context *,radio_buffer_t))(NRF_LIB_HOOKS_BASE_ADDR + 30);
 //the instance that is used to store the radio details (states, pipes configuration and so on)
 radio_context _radio_instance;
 
