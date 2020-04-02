@@ -7,18 +7,22 @@ ser = serial.Serial ()
 
 ser_status = 0
 ser.port = "/dev/ttyUSB0"
-ser.baudrate = 250000
+ser.baudrate = 115200
 ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 ser.parity = serial.PARITY_NONE #set parity check: no parity
-ser.stopbits = serial.STOPBITS_TWO #number of stop bits
+ser.stopbits = serial.STOPBITS_ONE_POINT_FIVE #number of stop bits
 ser.timeout = None          #block read
 ser.xonxoff = False     #disable software flow control
 ser.rtscts = False     #disable hardware (RTS/CTS) flow control
 ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
 ser.writeTimeout = 2     #timeout for write
 
-ser.open()
 
+ser.open()
+time.sleep(0.5)
+if(ser.isOpen() == False):
+    raise Exception("Can't open the port!")
+ser.flush()
 
 
 def serial_write_cmd(cmd, timeout):
@@ -30,7 +34,7 @@ def serial_write_cmd(cmd, timeout):
     time.sleep(timeout)  #give the serial port sometime to receive the data
     response += ser.read(ser.in_waiting)
     #print(response)
-    response = response.decode('cp437', errors='replace')
+    response = response.decode('cp437', errors='ignore')
     print("RES:" + response)
     return response
 
@@ -80,7 +84,7 @@ try:
         raise Exception("Slave refused the pairing!")
     res = nrf24_cmds["set_tx_addr"](salve_new_tx,1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.1)
-    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 0.5)
+    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 1)
     if not "OK" + rx_address in res:
         raise Exception("Connection test failed!")
     res = nrf24_cmds["set_rx_addr"](rx_address,0.01)

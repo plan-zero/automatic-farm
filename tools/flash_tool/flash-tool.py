@@ -96,7 +96,7 @@ def connect_to_com_port(comPort, baud):
 	ser.baudrate = baud
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 	ser.parity = serial.PARITY_NONE #set parity check: no parity
-	ser.stopbits = serial.STOPBITS_TWO #number of stop bits
+	ser.stopbits = serial.STOPBITS_ONE_POINT_FIVE #number of stop bits
 	ser.timeout = None          #block read
 	ser.xonxoff = False     #disable software flow control
 	ser.rtscts = False     #disable hardware (RTS/CTS) flow control

@@ -29,6 +29,7 @@ set(HEADER_INC
     ./../libraries/modules/nrf24/inc
     ./../libraries/modules/system-timer/inc
     ./../libraries/drivers/uart/inc
+    ./../libraries/drivers/wdg/inc
     ./../libraries/hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
@@ -39,7 +40,7 @@ set (SOURCE_FILES
 avr_add_executable(${TARGET_NAME} ${SOURCE_FILES})
 
 #link target with libraries
-target_link_libraries(${TARGET_NAME}.elf nrf24_api uart system-timer)
+target_link_libraries(${TARGET_NAME}.elf nrf24_api uart system-timer wdg)
 
 #set postbuild command to concatenate programmer with nrf24
 add_custom_command(TARGET programmer POST_BUILD

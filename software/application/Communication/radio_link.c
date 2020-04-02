@@ -28,6 +28,7 @@
 #include "e2p.h"
 #include "uart.h"
 #include "system-timer.h"
+#include <avr/io.h>
 
 #define STATE_COUNT_1S      100
 #define STATE_COUNT_500MS   50
@@ -200,17 +201,18 @@ void radio_link_task()
                 system_timer_timestamp _start = {0};
                 system_timer_timestamp _end = {0};
                 int32_t delta = 0;
-                for(uint8_t itr = 0; itr < 1; itr++)
+                _delay_ms(100);
+                for(uint8_t itr = 0; itr < 4; itr++)
                 {
                     uart_printString("Ping test",1);
                     __nrfRadio_TransmitMode();
                     __nrfRadio_LoadMessages(ping, 1);
-                     _start =  system_timer_get_timestamp();
+                    _start =  system_timer_get_timestamp();
                     radio_tx_status ping_status =  __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
                     _end = system_timer_get_timestamp();
                     if(RADIO_TX_OK == ping_status)
                     {
-                        delta = system_timer_getms(_start,_end);
+                        delta = system_timer_getus(_start,_end);
                         latency += delta;
                     }
                     else
@@ -222,7 +224,7 @@ void radio_link_task()
                     __nrfRadio_ListeningMode();
                 }
                 //extract the latency: mean
-                //latency = latency / 4;
+                latency = latency / 4;
                 //DBG INFO
                 uint8_t tmp[12] = {0};
                 sprintf(tmp, "%u",latency);

@@ -34,6 +34,7 @@
 
 #include <util/delay.h>
 #include "system-timer.h"
+#include "wdg.h"
 
 uint8_t uart_data[UART_RX_MAX];
 
@@ -63,7 +64,10 @@ uint8_t cmd_available = 0;
 #define CMD_SEND_ASCII_HEX			'E'
 #define CMD_SEND_PING				'P'
 
-#define PROG_VERSION "2.0.2"
+#define CMD_TOGGLE_CONSOLE			'O'
+uint8_t uart_console = 0;
+
+#define PROG_VERSION "2.1.0"
 
 #define INVALID_HEX 255
 #define _ASCII_HEX_TO_INT(x) (x >= '0' && x <= '9') ? x - '0' : INVALID_HEX
@@ -98,7 +102,8 @@ void process_uart_data(uint8_t * data, uint8_t len)
 	//static uint8_t leng_num = 0;
 	for(uint8_t idx = 0; idx < len; idx ++)
 	{
-		//uart_sendByte(data[idx]);
+		if(uart_console)
+			uart_sendByte(data[idx]);
 		switch(uart_state)
 		{
 			case UART_S0:
@@ -197,8 +202,8 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
-	//OSCCAL = 175;
-	uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
+	OSCCAL = 160;
+	uart_init(UART_115200BAUD, UART_8MHZ, UART_PARITY_NONE);
 	system_timer_init();
 	INT_GLOBAL_EN();
 	system_timer_start();
@@ -213,9 +218,12 @@ int main(void)
 	uint8_t rx_addr[MAX_ADDR] = {0};
 	//uint8_t init = 0;
 	uint8_t uart_rx_err = 0;
+
+	wdg_init(wdgto_500MS);
 	
     while (1) 
     {
+		wdg_kick();
 		__nrfRadio_Main();
 		uart_data_len = uart_rx_flush(uart_data, &uart_rx_err);
 		if(UART_RX_ERR != uart_data_len)
@@ -225,6 +233,7 @@ int main(void)
 			uart_printString("<UART_RX_ERROR:", 0);
 			uart_printRegister(uart_rx_err);
 			uart_printString(">",1);
+			wdg_explicit_reset(0x1);
 			_delay_ms(1000);
 		}
 		if(cmd_available)
@@ -232,6 +241,13 @@ int main(void)
 			uart_printString("<EXECUTE_CMD:",0);
 			switch(command_type) 
 			{
+				case CMD_TOGGLE_CONSOLE:
+					uart_console ^= 1;
+					if (uart_console)
+						uart_printString("CONSOLE_ON>",1);
+					else
+						uart_printString("CONSOLE_OFF>",1);
+					break;
 				case CMD_SEND_PING:
 					uart_printRegister(command_type);
 					uart_printString(">",1);
