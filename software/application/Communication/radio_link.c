@@ -74,6 +74,8 @@ uint8_t selected_tx[RADIO_MAX_ADDRESS];
 uint8_t tx_address_idx = 0;
 uint8_t *tx_address_latency[3];
 
+const uint8_t ok_answer[2] = {'O','K'};
+
 radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE0};
 
 void radio_link_init()
@@ -233,7 +235,7 @@ void radio_link_task()
                 memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
             }
             cmd_idx = 0;
-            //after 2 seconds
+            //after 3 seconds
             if(state_count >= STATE_COUNT_3S)
             {
                 state_count = 0;
@@ -303,17 +305,22 @@ void radio_link_task()
             }
 
             //send the request to the master
-            uint8_t request_msg[10] = {0};
-            request_msg[0] = 'P';
-            request_msg[1] = 'O';
-            request_msg[2] = 'K';
-            __nrfRadio_LoadMessages(request_msg, 3);
+            message_t msg = {0};
+            msg.type = 'P';
+            //the rx goes to tx, cross connected
+            memcpy(&msg.tx_address, &network_rx_default_address, RADIO_MAX_ADDRESS);
+            memcpy(&msg.rx_address, &selected_tx, RADIO_MAX_ADDRESS); //same here
+            memcpy(&msg.data, &ok_answer, RADIO_MAX_ADDRESS);
+            msg.TTL = 0x30; //ASCII 0
+            msg.timestamp = 0x3030; //it is 00
+            __nrfRadio_LoadMessages(msg.raw, 16);
             radio_tx_status res = __nrfRadio_Transmit(selected_tx, RADIO_WAIT_TX);
             if(RADIO_TX_OK == res)
             {
                 __nrfRadio_ListeningMode();
                 __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
                 state = link_pairing;
+                state_count = 0;
             }
             else
             {
@@ -325,7 +332,7 @@ void radio_link_task()
         }
         break;
     case link_pairing:
-        //TODO: Add a timeout for pairing, then go back in discovery if there is no answer
+        //TODO: add a timeout to this state, otherwise the procedure will stuck here
         for(uint8_t idx = 0; idx < cmd_idx; idx++)
         {
             uart_printString("execute cmd...",1);

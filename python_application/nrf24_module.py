@@ -73,7 +73,7 @@ try:
     #switch back to rx
     res = nrf24_cmds["set_rx_addr"](rx_address,0.001)
     res = nrf24_cmds["set_rx_mode"](3)
-    if not "POK" in res:
+    if not tx_address + rx_address + "000OK" in res:
         raise Exception("The slave refused the connection")
     #go back in tx mode
     res = nrf24_cmds["set_tx_addr"](tx_address, 0.1)
