@@ -96,7 +96,7 @@ def connect_to_com_port(comPort, baud):
 	ser.baudrate = baud
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 	ser.parity = serial.PARITY_NONE #set parity check: no parity
-	ser.stopbits = serial.STOPBITS_ONE_POINT_FIVE #number of stop bits
+	ser.stopbits = serial.STOPBITS_ONE #number of stop bits
 	ser.timeout = None          #block read
 	ser.xonxoff = False     #disable software flow control
 	ser.rtscts = False     #disable hardware (RTS/CTS) flow control
@@ -196,7 +196,7 @@ def send_command(command, sleeptime):
 		try:
 			#write data
 			ser.write(str.encode(command))
-			ser.write('\r'.encode())
+			ser.write('\r'.encode('cp437'))
 			print_message(f"write data: {command}", DEBUG)
 
 			noOfRetries = 5
@@ -207,7 +207,7 @@ def send_command(command, sleeptime):
 				response = ser.read()
 				time.sleep(sleeptime)  #give the serial port sometime to receive the data
 				response += ser.read(ser.in_waiting)
-				response = response.decode("utf-8")
+				response = response.decode('cp437', errors='ignore')
 				if response != "":
 					print_message(str(response), DEBUG)
 					return response

@@ -114,6 +114,7 @@ inline void MAIN_setup()
     oneMsTask = scheduler_getPointerTo1msTask();
     scheduler_add_task(sch_type_task_10ms, radio_link_task);
     scheduler_add_task(sch_type_task_10ms, communication_execute_messages);
+    scheduler_add_task(sch_type_task_10ms, communication_send_messages);
 #ifdef ENABLE_TASK_TEST
     //scheduler_add_task(sch_type_task_1s, radio_link_task);
 #endif

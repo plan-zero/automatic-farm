@@ -50,7 +50,31 @@ P5 AA:AA:AA:01:05
 #define START_BYTE_BOOTKEY      (uint8_t)('K')
 #define START_BYTE_ACK          (uint8_t)('A')
 
+typedef enum{
+    msg_status_pending,
+    msg_status_empty,
+    msg_status_not_sent,
+}msg_status_t;
 
+typedef union{
+    struct{
+        uint8_t type; // first byte is the message type
+        uint8_t tx_address[RADIO_MAX_ADDRESS]; //the rx address of sending node is actually tx for this
+        uint8_t rx_address[RADIO_MAX_ADDRESS]; //same, the tx address of sending node is actually rx for this
+        uint16_t timestamp;
+        uint8_t TTL;
+        uint8_t data[MESSAGE_MAX_LENGTH];
+    };
+    uint8_t raw[32];
+}message_t;
+
+typedef struct{
+    message_t msg;
+    uint8_t data_length;
+    uint8_t id;
+    msg_status_t status;
+}message_packet_t;
+/*
 typedef struct{
     uint8_t type; // first byte is the message type
     uint8_t tx_address[RADIO_MAX_ADDRESS];
@@ -60,7 +84,7 @@ typedef struct{
     uint8_t data[MESSAGE_MAX_LENGTH];
     uint16_t ID;
 }message_t;
-
+*/
 #define MSG_STRUCT_SIZE 30//(uint8_t)(sizeof(message_t) / sizeof(uint8_t))
 
 #endif //_MESSAGES_H
