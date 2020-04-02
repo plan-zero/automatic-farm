@@ -116,7 +116,7 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 
 
 
-void initNrf(uint8_t * rx_address)
+inline void initNrf(uint8_t * rx_address)
 {
 	radio_config cfg = {
 		RADIO_ADDRESS_5BYTES,
@@ -144,6 +144,13 @@ void initNrf(uint8_t * rx_address)
 		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 	};
 	__nrfRadio_PipeConfig(pipe_cfg0);
+	pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
+	//disable other pipes
+	for(radio_pipe p = RADIO_PIPE1; p < RADIO_PIPE5; p++)
+	{
+		pipe_cfg0.pipe = p;
+		__nrfRadio_PipeConfig(pipe_cfg0);
+	}
 	
 	__nrfRadio_SetRxCallback(rx_handler);
 	__nrfRadio_PowerUp();

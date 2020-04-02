@@ -80,7 +80,7 @@ void radio_link_init()
 {
     __nrfRadio_PowerDown();
 
-    
+    //enable broadcast pipe
 	pipe_config default_pipe =
 	{
 		RADIO_PIPE0,
@@ -90,8 +90,24 @@ void radio_link_init()
 		RADIO_PIPE_AA_ENABLED,
 		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 	};
+    uint8_t pipe_def[5] = {0};
+    pipe_config rx_root =
+    {
+        RADIO_PIPE1,
+        pipe_def,
+        RADIO_MAX_ADDRESS,
+		RADIO_PIPE_RX_DISABLED,
+		RADIO_PIPE_AA_ENABLED,
+		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
+    };
+
+    for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
+    {
+        rx_root.pipe = p;
+        __nrfRadio_PipeConfig(rx_root);
+    }
     
-	__nrfRadio_PipeConfig(default_pipe);
+	__nrfRadio_PipeConfig(default_pipe); 
     __nrfRadio_PowerUp();
     __nrfRadio_TransmitMode();
 }
@@ -120,18 +136,19 @@ uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _
     __nrfRadio_PowerDown();
     pipe_config rx_root =
 	{
-		RADIO_PIPE0,
+		RADIO_PIPE1,
 		root.radio_rx_pipe_address,
 		_address_length,
 		RADIO_PIPE_RX_ENABLED,
 		RADIO_PIPE_AA_ENABLED,
 		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 	};
+    __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
     __nrfRadio_PipeConfig(rx_root);
     __nrfRadio_PowerUp();
     __nrfRadio_ListeningMode();
     root.radio_link_status = link_establising;
-    root.pipe = RADIO_PIPE0;
+    root.pipe = RADIO_PIPE1;
     return 1;
 }
 
@@ -357,7 +374,7 @@ void radio_link_task()
                         uart_printString("check connection...", 1);
                         uint8_t check_con_msg[7] = {'O','K'};
                         memcpy(&check_con_msg[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
-                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, check_con_msg, 7);
+                        __nrfRadio_LoadAckPayload(root.pipe, check_con_msg, 7);
                     }
                     else if(_cmds[idx].cmd_data[1] == 'D')
                     {
