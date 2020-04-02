@@ -171,11 +171,11 @@ def read_flash_data(hexFilePath):
 	output.append(line_data)
 	counterLine += 1
 	
-	if (all_bytes/2) < APP_MAX_SIZE:
-		print_message("Preparing " + str(all_bytes) + " B to write", INFO)
-	else:
-		print_message("The hex file is to big: " + str(all_bytes) + ", the maximum size is 10kB", ERROR)
-		return []
+	#if (all_bytes/2) < APP_MAX_SIZE:
+	print_message("Preparing " + str(all_bytes) + " B to write", INFO)
+	#else:
+	#	print_message("The hex file is to big: " + str(all_bytes) + ", the maximum size is 10kB", ERROR)
+	#	return []
 	#print_message("output len is: " + str(len(output)), DEBUG)
 	dummyLinesToAdd = len(output) % 8
 

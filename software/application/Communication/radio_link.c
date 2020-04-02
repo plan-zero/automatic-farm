@@ -30,6 +30,8 @@
 #include "system-timer.h"
 #include <avr/io.h>
 
+#define STATE_COUNT_3S      300
+#define STATE_COUNT_2S      200
 #define STATE_COUNT_1S      100
 #define STATE_COUNT_500MS   50
 #define STATE_COUNT_100MS   10
@@ -66,7 +68,11 @@ radio_link_cmd_t _cmds[MAX_CMD];
 uint8_t cmd_idx = 0;
 
 uint16_t min_latency = 0xFFFF;
-uint8_t tx_address_latency[RADIO_MAX_ADDRESS];
+uint8_t selected_tx[RADIO_MAX_ADDRESS];
+
+#define MAX_MASTER_COUNT 3
+uint8_t tx_address_idx = 0;
+uint8_t *tx_address_latency[3];
 
 radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE0};
 
@@ -140,6 +146,7 @@ uint8_t radio_link_discovery()
     uint8_t status = __nrfRadio_Transmit(network_broadcast_address, RADIO_WAIT_TX);
     if(status == RADIO_TX_OK){
         //the mesage was received, enter in listening and wait instructions on pipe0
+        uart_printString("Master ACK received!",1);
         __nrfRadio_ListeningMode();
         return 1;
     }
@@ -149,6 +156,8 @@ uint8_t radio_link_discovery()
 typedef enum{
     link_init,
     link_discovery,
+    link_wait_master,
+    link_ping_master,
     link_pairing,
     link_paired,
     link_failed,
@@ -158,8 +167,8 @@ typedef enum{
 
 void radio_link_task()
 {
-    static link_state_t state = 0;
-    static uint8_t state_count = 0;
+    static link_state_t state = link_init;
+    static uint16_t state_count = 0;
 
     state_count++;
     switch (state)
@@ -168,19 +177,134 @@ void radio_link_task()
         {
             radio_link_init(network_broadcast_address,5);
             state = link_discovery;
+            tx_address_idx = 0;
+            state_count = 0;
+            uart_printString("Enter discovering...",1);
         }
         break;
     case link_discovery:
         if(state_count % STATE_COUNT_1S == 0)
         {
             state_count = 0;
-            uart_printString("Discovering...",1);
+            
             if(radio_link_discovery())
             {
-                state = link_pairing;
+                uart_printString("Enter wait master...",1);
+                state = link_wait_master;
                 min_latency = 0xFFFF;
                 memset(tx_address_latency, 0, RADIO_MAX_ADDRESS);
             }
+        }
+        break;
+    case link_wait_master:
+        {
+            for(uint8_t idx = 0; idx < cmd_idx; idx++)
+            {
+                //check just the master answers
+                if(_cmds[idx].cmd_data[0] == '1' && tx_address_idx < MAX_MASTER_COUNT)
+                {
+                    uart_printString("Master request ...",1);
+                    //save master address
+                    tx_address_latency[tx_address_idx] = malloc(sizeof(uint8_t)* RADIO_MAX_ADDRESS);
+                    if(tx_address_latency[tx_address_idx])
+                    {
+                        memcpy(tx_address_latency[tx_address_idx], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                        tx_address_idx++;
+                    }
+                }
+                //clean cmd message
+                memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
+            }
+            cmd_idx = 0;
+            //after 2 seconds
+            if(state_count >= STATE_COUNT_3S)
+            {
+                state_count = 0;
+                if(tx_address_idx)
+                {
+                    uart_printString("Calculate ping for masters ...",1);
+                    state = link_ping_master;
+                    //change radio to transmit cause we'll start the ping the masters
+                    __nrfRadio_TransmitMode();
+                }
+                else
+                {
+                    state = link_init;
+                }
+                
+            }
+        }
+        break;
+    case link_ping_master:
+        {
+            for(uint8_t idx = 0; idx < tx_address_idx; idx++)
+            {
+                uart_printString("ping master ...",1);
+                int32_t delta = 0;
+                system_timer_timestamp _start = {0};
+                system_timer_timestamp _end = {0};
+                uint8_t ping[1] = {'A'};
+                uint8_t mean_latency = 0;
+                
+                
+                if(tx_address_latency[idx])
+                {
+                    for(uint8_t itr = 0; itr < 4; itr++)
+                    {
+                        uart_printString("Ping test",1);
+                        __nrfRadio_LoadMessages(ping, 1);
+                        _start =  system_timer_get_timestamp();
+                        radio_tx_status ping_status =  __nrfRadio_Transmit(tx_address_latency[idx], RADIO_WAIT_TX);
+                        _end = system_timer_get_timestamp();
+                        if(RADIO_TX_OK == ping_status)
+                        {
+                            delta = system_timer_getus(_start,_end);
+                            mean_latency += delta;
+                        }
+                        else
+                        {
+                            uart_printString("NACK",1);
+                            //TODO: raise an error since we don't get the ack
+                        }
+                    }
+                    mean_latency = mean_latency / 4;
+                    //DBG INFO
+                    uint8_t tmp[12] = {0};
+                    sprintf(tmp, "%u",mean_latency);
+                    tmp[11] = '\0';
+                    uart_printString(tmp, 1);
+                    /////////////////////////
+                    if(mean_latency < min_latency)
+                    {
+                        uart_printString("save new master..",1);
+                        min_latency = mean_latency;
+                        memcpy(selected_tx, tx_address_latency[idx], RADIO_MAX_ADDRESS);
+                    }
+                }
+                //free memory that was allocated for tx latency calculation
+                free(tx_address_latency[idx]); 
+            }
+
+            //send the request to the master
+            uint8_t request_msg[10] = {0};
+            request_msg[0] = 'P';
+            request_msg[1] = 'O';
+            request_msg[2] = 'K';
+            __nrfRadio_LoadMessages(request_msg, 3);
+            radio_tx_status res = __nrfRadio_Transmit(selected_tx, RADIO_WAIT_TX);
+            if(RADIO_TX_OK == res)
+            {
+                __nrfRadio_ListeningMode();
+                __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
+                state = link_pairing;
+            }
+            else
+            {
+                uart_printString("no master ack",1);
+                state = link_init;
+            }
+                
+            
         }
         break;
     case link_pairing:
@@ -190,62 +314,11 @@ void radio_link_task()
             uart_printString("execute cmd...",1);
             switch (_cmds[idx].cmd_data[0])
             {
-            //the master node has to ping for a while the slave in order to check the latency
-            //if another master has a better signal, then that will be selected instead
-            case '1':
-            {
-                uart_printString("execute cmd 1", 1);
-                int32_t latency = 0;
-                //ping the master four times and calculate the latency
-                uint8_t ping[1] = {'A'};
-                system_timer_timestamp _start = {0};
-                system_timer_timestamp _end = {0};
-                int32_t delta = 0;
-                _delay_ms(100);
-                for(uint8_t itr = 0; itr < 4; itr++)
-                {
-                    uart_printString("Ping test",1);
-                    __nrfRadio_TransmitMode();
-                    __nrfRadio_LoadMessages(ping, 1);
-                    _start =  system_timer_get_timestamp();
-                    radio_tx_status ping_status =  __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
-                    _end = system_timer_get_timestamp();
-                    if(RADIO_TX_OK == ping_status)
-                    {
-                        delta = system_timer_getus(_start,_end);
-                        latency += delta;
-                    }
-                    else
-                    {
-                        uart_printString("NACK",1);
-                        //TODO: raise an error since we don't get the ack
-                    }
-                    __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
-                    __nrfRadio_ListeningMode();
-                }
-                //extract the latency: mean
-                latency = latency / 4;
-                //DBG INFO
-                uint8_t tmp[12] = {0};
-                sprintf(tmp, "%u",latency);
-                tmp[11] = '\0';
-                uart_printString(tmp, 1);
-                /////////////////////////
-
-                if(latency < min_latency)
-                {
-                    min_latency = latency;
-                    //extract the TX address
-                    memcpy(tx_address_latency,_cmds[idx].tx_address, RADIO_MAX_ADDRESS);
-                }
-            }
-                break;
-            //The master send a request to the slave for pairing, the slave answer 
             case '2':
             {
                 uart_printString("radio_link execute cmd 2",1);
                 //check if this master has the lowest ping rate
-                if(0 == memcmp(_cmds[idx].tx_address, tx_address_latency, RADIO_MAX_ADDRESS))
+                if(0 == memcmp(_cmds[idx].tx_address, selected_tx, RADIO_MAX_ADDRESS))
                 {
                     //request pair
                     if(_cmds[idx].cmd_data[1] == 'R')
@@ -273,10 +346,11 @@ void radio_link_task()
                 }
                 break;
             }
+            break;
             //check the connection and if this is stable, then the pairing is complete
             case '3':
             {
-                if(0 == memcmp(_cmds[idx].tx_address, tx_address_latency, RADIO_MAX_ADDRESS))
+                if(0 == memcmp(_cmds[idx].tx_address, selected_tx, RADIO_MAX_ADDRESS))
                 {
                     if(_cmds[idx].cmd_data[1] == 'C')
                     {

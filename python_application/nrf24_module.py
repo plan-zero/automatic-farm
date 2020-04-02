@@ -67,17 +67,18 @@ try:
             raise Exception("Get TX:Invalid format or no response")
     else:
         raise Exception("Get TX:Invalid format or no response")
-    res = nrf24_cmds["set_tx_addr"](tx_address, 0.1)
-    res = nrf24_cmds["set_tx_mode"](0.1)
-    #send the RX address
+    res = nrf24_cmds["set_tx_addr"](tx_address, 0)
+    res = nrf24_cmds["set_tx_mode"](0)
     res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "0001", 0.1)
-    #just wait a while to get the pings
-    res = nrf24_cmds["set_rx_addr"](rx_address,0.01)
-    res = nrf24_cmds["set_rx_mode"](1)
-    #get back to tx and request the pairing
+    #switch back to rx
+    res = nrf24_cmds["set_rx_addr"](rx_address,0.001)
+    res = nrf24_cmds["set_rx_mode"](3)
+    if not "POK" in res:
+        raise Exception("The slave refused the connection")
+    #go back in tx mode
     res = nrf24_cmds["set_tx_addr"](tx_address, 0.1)
     res = nrf24_cmds["set_tx_mode"](0.1)
-
+    #start the pairing
     res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "0002R", 1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0002P", 0.5)
     if not "OK" + rx_address in res:
