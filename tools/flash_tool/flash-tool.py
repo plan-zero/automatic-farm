@@ -254,15 +254,15 @@ def send_bootloader_key(key, tx):
 	idx = res.find("OTAOK")
 	if idx == -1:
 		return 1
-	_rx_def = res[idx+5:].replace(">","")
+	_rx_def = res[idx+5:idx+10].replace(">","")
 	print_message("default rx: " + _rx_def, DEBUG)
 	if send_Init_NRF("TX") == 1:
 		return 1
 	command = CMD_PREFIX + "D24K" + RX_ADDRESS + tx + "000" + key
 	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)
-	time.sleep(1)
 	#wait to enter in bootloader
 	send_TX_Address(_rx_def)
+	
 	return 0
 		
 		

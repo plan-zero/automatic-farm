@@ -26,6 +26,7 @@
 #include "interrupt_hw.h"
 #include "Communication.h"
 #include "network_common.h"
+#include "nrf24Radio_API.h"
 
 typedef enum{
     ota_valid = 0,
@@ -62,6 +63,8 @@ inline void _ota_check_key(message_t msg, uint8_t datalen)
             e2p_update_txaddress(msg.tx_address);
             e2p_update_downloadflag(data);
             e2p_update_flashchecksum(data);
+            //power down the radio
+            __nrfRadio_PowerDown();
             wdg_init(wdgto_15MS);
             wdg_explicit_reset(OTA_UPDATE_RESET);
         }

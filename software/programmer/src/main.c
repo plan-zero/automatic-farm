@@ -358,9 +358,14 @@ int main(void)
 							RADIO_PIPE_AA_ENABLED,
 							RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 						};
-
 						__nrfRadio_PipeConfig(pipe_cfg0);
-							
+						pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
+						for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
+						{
+							pipe_cfg0.pipe = p;
+							__nrfRadio_PipeConfig(pipe_cfg0);
+						}
+						__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
 						__nrfRadio_SetRxCallback(rx_handler);
 						__nrfRadio_SetTxCallback(tx_handler);
 						__nrfRadio_PowerUp();
@@ -386,7 +391,6 @@ int main(void)
 							RADIO_APPLICATION
 						};
 						__nrfRadio_Init(cfg);
-
 						pipe_config pipe_cfg0 =
 						{
 							RADIO_PIPE0,
@@ -396,9 +400,14 @@ int main(void)
 							RADIO_PIPE_AA_ENABLED,
 							RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 						};
-
 						__nrfRadio_PipeConfig(pipe_cfg0);
-						
+						pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
+						for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
+						{
+							pipe_cfg0.pipe = p;
+							__nrfRadio_PipeConfig(pipe_cfg0);
+						}
+						__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
 						__nrfRadio_SetRxCallback(rx_handler);
 						__nrfRadio_SetTxCallback(tx_handler);
 						__nrfRadio_PowerUp();
