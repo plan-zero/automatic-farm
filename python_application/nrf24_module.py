@@ -73,20 +73,20 @@ try:
     #switch back to rx
     res = nrf24_cmds["set_rx_addr"](rx_address,0.001)
     res = nrf24_cmds["set_rx_mode"](3)
-    if not tx_address + rx_address + "000OK" in res:
+    if not tx_address + rx_address + "000OK1" in res:
         raise Exception("The slave refused the connection")
     #go back in tx mode
     res = nrf24_cmds["set_tx_addr"](tx_address, 0.1)
     res = nrf24_cmds["set_tx_mode"](0.1)
     #start the pairing
     res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "0002R", 1)
-    res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0002P", 0.5)
-    if not "OK" + rx_address in res:
+    res = nrf24_cmds["send_data"]("P" + rx_address + tx_address + "0002P" + salve_new_tx, 0.5)
+    if not rx_address + "000OK2" in res:
         raise Exception("Slave refused the pairing!")
     res = nrf24_cmds["set_tx_addr"](salve_new_tx,1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.1)
     res = nrf24_cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 1)
-    if not "OK" + rx_address in res:
+    if not rx_address + "000OK3" in res:
         raise Exception("Connection test failed!")
     res = nrf24_cmds["set_rx_addr"](rx_address,0.01)
     res = nrf24_cmds["set_rx_mode"](0.1)

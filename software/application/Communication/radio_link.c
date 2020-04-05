@@ -28,7 +28,7 @@
 #include "e2p.h"
 #include "uart.h"
 #include "system-timer.h"
-#include <avr/io.h>
+#include "Communication.h"
 
 #define STATE_COUNT_3S      300
 #define STATE_COUNT_2S      200
@@ -58,9 +58,9 @@ typedef union{
     struct{
         uint8_t rx_address[5];
         uint8_t tx_address[5];
-        uint8_t cmd_data[3];
+        uint8_t cmd_data[7];
     };
-    uint8_t data[12];
+    uint8_t data[17];
 }radio_link_cmd_t;
 
 #define MAX_CMD 3
@@ -75,7 +75,39 @@ uint8_t tx_address_idx = 0;
 uint8_t *tx_address_latency[3];
 
 
-radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE0};
+radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE1};
+
+#define MAX_CHILD 2
+radio_link_t child[MAX_CHILD] = 
+{
+    {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE2},
+    {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE3}
+};
+uint8_t child_count = 0;
+
+inline _add_child(uint8_t *tx_address, uint8_t *rx_address)
+{
+    if(child_count < MAX_CHILD)
+    {
+        memcpy(child[child_count].radio_tx_pipe_address, tx_address, RADIO_MAX_ADDRESS);
+        memcpy(child[child_count].radio_rx_pipe_address, rx_address, RADIO_MAX_ADDRESS);
+    }
+    __nrfRadio_PowerDown();
+    pipe_config child_pipe = 
+	{
+		child[child_count].pipe,
+		child[child_count].radio_rx_pipe_address,
+		RADIO_MAX_ADDRESS,
+		RADIO_PIPE_RX_ENABLED,
+		RADIO_PIPE_AA_ENABLED,
+		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
+	};
+    __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
+    __nrfRadio_PipeConfig(child_pipe);
+    __nrfRadio_PowerUp();
+    __nrfRadio_ListeningMode();
+    child[child_count].radio_link_status = link_establising;
+}
 
 void radio_link_init()
 {
@@ -120,7 +152,7 @@ uint8_t radio_link_execute(message_t msg)
         uart_printString("Received execute cmd...",1);
         memcpy(_cmds[cmd_idx].tx_address, msg.tx_address, RADIO_MAX_ADDRESS);
         memcpy(_cmds[cmd_idx].rx_address, msg.rx_address, RADIO_MAX_ADDRESS);
-        memcpy(_cmds[cmd_idx].cmd_data, msg.data, 3);
+        memcpy(_cmds[cmd_idx].cmd_data, msg.data, 7);
         cmd_idx++;
         return 1;
     }
@@ -366,7 +398,7 @@ void radio_link_task()
                     {
                         uart_printString("configure link...", 1);
                         radio_link_configure(_cmds[idx].tx_address,
-                                            _cmds[idx].rx_address, 
+                                            &_cmds[idx].cmd_data[2], 
                                             RADIO_MAX_ADDRESS);
                     }
                 }
@@ -425,9 +457,46 @@ void radio_link_task()
                 uart_printString("Child pairing request",1);
                 message_t msg = {0};
                 msg.type = 'P';
-                memcpy(msg.rx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
                 memcpy(msg.tx_address, _cmds[idx].rx_address, RADIO_MAX_ADDRESS);
                 msg.data[0] = '1';
+                communication_outbox_add(msg, 15);
+            }
+            else if(memcmp(_cmds[idx].cmd_data,"OK1", 3) == 0)
+            {
+                uart_printString("Child accepted this master",1);
+                message_t msg = {0};
+                msg.type = 'P';
+                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.tx_address, _cmds[idx].rx_address, RADIO_MAX_ADDRESS);
+                msg.data[0] = '2';
+                msg.data[1] = 'R';
+                communication_outbox_add(msg, 16);
+                //TODO: this address will be generated
+                uint8_t new_child_addr[] = {'A','A','A','1','0'};
+                memcpy(&msg.data[2], new_child_addr, RADIO_MAX_ADDRESS);
+                msg.data[1] = 'P';
+                communication_outbox_add(msg, 21);
+                _add_child(new_child_addr, _cmds[idx].tx_address);
+            }
+            else if(memcmp(_cmds[idx].cmd_data,"OK2", 3) == 0)
+            {
+                uart_printString("Check connection with child",1);
+                message_t msg = {0};
+                msg.type = 'P';
+                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.tx_address, _cmds[idx].rx_address, RADIO_MAX_ADDRESS);
+                msg.data[0] = '3';
+                msg.data[1] = 'C';
+                communication_outbox_add(msg, 16);
+                msg.data[1] = 'D';
+                communication_outbox_add(msg, 16);
+            }
+            else if(memcmp(_cmds[idx].cmd_data,"OK3", 3) == 0)
+            {
+                uart_printString("Child pair OK",1);
+                child[child_count].radio_link_status = link_established;
+                child_count++;
             }
         }
         if(state_count % STATE_COUNT_1S == 0)
