@@ -74,17 +74,7 @@ typedef struct{
     uint8_t id;
     msg_status_t status;
 }message_packet_t;
-/*
-typedef struct{
-    uint8_t type; // first byte is the message type
-    uint8_t tx_address[RADIO_MAX_ADDRESS];
-    uint8_t rx_address[RADIO_MAX_ADDRESS];
-    uint16_t timestamp;
-    uint8_t TTL;
-    uint8_t data[MESSAGE_MAX_LENGTH];
-    uint16_t ID;
-}message_t;
-*/
+
 #define MSG_STRUCT_SIZE 30//(uint8_t)(sizeof(message_t) / sizeof(uint8_t))
 
 #endif //_MESSAGES_H

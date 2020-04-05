@@ -28,7 +28,8 @@
 #define e2p_update_downloadflag(value) eeprom_update_block ((void*)value, (void*)DOWNLOAD_FLAG_ADDRESS, DOWNLOAD_FLAG_LENGTH)
 #define e2p_read_downloadflag(value) eeprom_read_block ((void*)&value,(void*)DOWNLOAD_FLAG_ADDRESS,DOWNLOAD_FLAG_LENGTH)
 
-#define e2p_read_txaddress(value) ((void*)&value,(void*)PROGRAMMER_ADDR_ADDRESS,PROGRAMMER_ADDR_LENGTH)
+#define e2p_read_txaddress(value) eeprom_read_block((void*)&value,(void*)PROGRAMMER_ADDR_ADDRESS,PROGRAMMER_ADDR_LENGTH)
+#define e2p_update_txaddress(value) eeprom_update_block((void*)value,(void*)PROGRAMMER_ADDR_ADDRESS,PROGRAMMER_ADDR_LENGTH)
 
 #define e2p_read_rxaddress(value) eeprom_read_block ((void*)&value,(void*)RADIO_RX_ADDRESS,RADIO_RX_LENGTH)
 

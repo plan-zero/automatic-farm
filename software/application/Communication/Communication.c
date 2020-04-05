@@ -45,6 +45,10 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
     {
         memcpy(&msg_in_buffer[msg_in_count].msg.raw, data, payload_length);
         msg_in_buffer[msg_in_count].id = GLOBAL_MSG_ID++; //assign an ID to recgonize it later
+        if(payload_length > 14) //this is the header of msg
+            msg_in_buffer[msg_in_count].data_length = payload_length - 14;
+        else
+            msg_in_buffer[msg_in_count].data_length = 0; //can't determine the msg length
         msg_in_count++;
     }
 }
@@ -78,17 +82,19 @@ void communication_send_messages()
         __nrfRadio_TransmitMode();
         for(uint8_t idx = 0; idx < msg_out_count; idx++)
         {
+            uart_printString("Send msg from outbox...",1);
             __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
             radio_tx_status status = __nrfRadio_Transmit(msg_out_buffer[idx].msg.tx_address, RADIO_WAIT_TX);
             if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
             {
-                //we'll delete this message because it wasn't sent
+                //we'll delete this message because it was sent
                 memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
                 msg_out_buffer[idx].status = msg_status_empty;
                 successfully_sent++;
             }
             else
             {
+                uart_printString("MSG:NACK",1);
                 msg_out_buffer[idx].status = msg_status_not_sent;
                 //TODO: add an error handler for this case
             }
@@ -112,7 +118,7 @@ void communication_execute_messages()
             break;
         case START_BYTE_BOOTKEY:
             {
-                //ota_check_key(data, payload_length);
+                ota_prepare(msg_in_buffer[idx].msg, msg_in_buffer[idx].data_length);
             }
             break;
         case START_BYTE_PAIRING:

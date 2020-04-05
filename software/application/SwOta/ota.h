@@ -16,7 +16,8 @@
 // along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "stdint.h"
+#include "messages.h"
 
 #define OTA_UPDATE_RESET    0x55
 
-void ota_check_key(uint8_t *data, uint8_t len);
+void ota_prepare(message_t msg, uint8_t datalen);

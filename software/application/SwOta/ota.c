@@ -24,6 +24,8 @@
 #include "uart.h"
 #include "util/delay.h"
 #include "interrupt_hw.h"
+#include "Communication.h"
+#include "network_common.h"
 
 typedef enum{
     ota_valid = 0,
@@ -43,31 +45,51 @@ void ota_get_key()
     e2p_read_boot_key(boot_key);
 }
 
-void ota_check_key(uint8_t *data, uint8_t msglen)
-{
-    uint8_t data_len = 0;
-    if(msglen)
-        data_len = msglen - 1;
 
-    if(PROGRAMMER_KEY_LENGTH == data_len)
+
+inline void _ota_check_key(message_t msg, uint8_t datalen)
+{
+    if(0 == memcmp(&boot_key, &msg.data, datalen))
     {
-        if(0 == memcmp(&boot_key, &data[1], data_len))
+        //the application has to enter in programming mode
+        //TODO: add the validation mechanism for OTA
+        if(ota_valid == ota_validate())
         {
-            //the application has to enter in programming mode
-            //TODO: add the validation mechanism for OTA
-            if(ota_valid == ota_validate())
-            {
-                wdg_disable(); //make sure that there is enough time to write the E2P block
-                INT_GLOBAL_DIS();
-                uint8_t data[FLASH_CKS_LENGTH + DOWNLOAD_FLAG_LENGTH] = {0};
-                data[0] = e2p_download_enable;
-                e2p_update_downloadflag(data);
-                e2p_update_flashchecksum(data);
-                wdg_init(wdgto_15MS);
-                wdg_explicit_reset(OTA_UPDATE_RESET);
-            }
+            wdg_disable(); //make sure that there is enough time to write the E2P block
+            INT_GLOBAL_DIS();
+            uint8_t data[FLASH_CKS_LENGTH + DOWNLOAD_FLAG_LENGTH] = {0};
+            data[0] = e2p_download_enable;
+            e2p_update_txaddress(msg.tx_address);
+            e2p_update_downloadflag(data);
+            e2p_update_flashchecksum(data);
+            wdg_init(wdgto_15MS);
+            wdg_explicit_reset(OTA_UPDATE_RESET);
         }
     }
-    
 }
 
+void ota_prepare(message_t msg, uint8_t datalen)
+{
+    uart_printString("ota prepare...",1);
+    if(datalen == 1 && msg.data[0] == 'R')
+    {
+        //swap address
+        //uint8_t tmp[5] = {0};
+        //memcpy(&tmp, &msg.rx_address, 5);
+        //memcpy(&msg.rx_address, &msg.tx_address, 5);
+        //memcpy(&msg.tx_address, &tmp, 5);
+        msg.data[0] = 'O';
+        msg.data[1] = 'T';
+        msg.data[2] = 'A';
+        msg.data[3] = 'O';
+        msg.data[4] = 'K';
+        memcpy(&msg.data[5], &network_rx_default_address, 5);
+        _delay_ms(150);
+        communication_outbox_add(msg, 19);
+        uart_printString("ota send rx def...",1);
+    }
+    else if (PROGRAMMER_KEY_LENGTH == datalen)
+    {
+        _ota_check_key(msg, datalen);
+    }
+}

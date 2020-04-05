@@ -161,14 +161,17 @@ uint8_t radio_link_discovery()
     uint8_t broadcast_msg[6] = {0};
     broadcast_msg[0] = 'B';
     memcpy(&broadcast_msg[1], &network_rx_default_address[0], 5);
+    __nrfRadio_TransmitMode();
     __nrfRadio_LoadMessages(broadcast_msg, 6);
     uint8_t status = __nrfRadio_Transmit(network_broadcast_address, RADIO_WAIT_TX);
-    if(status == RADIO_TX_OK){
+    
+    if(status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL){
         //the mesage was received, enter in listening and wait instructions on pipe0
         uart_printString("Master ACK received!",1);
         __nrfRadio_ListeningMode();
         return 1;
     }
+    __nrfRadio_ListeningMode();
     return 0;
 }
 
