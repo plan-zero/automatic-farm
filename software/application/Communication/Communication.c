@@ -78,7 +78,7 @@ void communication_send_messages()
 
     if(msg_out_count)
     {
-        uint8_t successfully_sent = 0;
+        uint8_t not_sent_count = 0;
         __nrfRadio_TransmitMode();
         for(uint8_t idx = 0; idx < msg_out_count; idx++)
         {
@@ -90,15 +90,19 @@ void communication_send_messages()
                 //we'll delete this message because it was sent
                 memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
                 msg_out_buffer[idx].status = msg_status_empty;
-                successfully_sent++;
             }
             else
             {
+                not_sent_count++;
                 uart_printString("MSG:NACK",1);
                 msg_out_buffer[idx].status = msg_status_not_sent;
                 //TODO: add an error handler for this case
             }
             
+        }
+        if(not_sent_count)
+        {
+            //rearange messages
         }
         msg_out_count = 0;
         __nrfRadio_ListeningMode();

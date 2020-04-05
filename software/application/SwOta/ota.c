@@ -85,7 +85,7 @@ void ota_prepare(message_t msg, uint8_t datalen)
         msg.data[4] = 'K';
         memcpy(&msg.data[5], &network_rx_default_address, 5);
         _delay_ms(150);
-        communication_outbox_add(msg, 19);
+        communication_outbox_add(msg, 24);
         uart_printString("ota send rx def...",1);
     }
     else if (PROGRAMMER_KEY_LENGTH == datalen)
