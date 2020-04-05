@@ -74,7 +74,6 @@ uint8_t selected_tx[RADIO_MAX_ADDRESS];
 uint8_t tx_address_idx = 0;
 uint8_t *tx_address_latency[3];
 
-const uint8_t ok_answer[2] = {'O','K'};
 
 radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE0};
 
@@ -158,11 +157,12 @@ uint8_t radio_link_discovery()
 {
     //we start to send a broadcast message to see if there is any node available for linking
     
-    uint8_t broadcast_msg[6] = {0};
+    uint8_t broadcast_msg[15] = {0};
     broadcast_msg[0] = 'B';
+    broadcast_msg[14] = '4';
     memcpy(&broadcast_msg[1], &network_rx_default_address[0], 5);
     __nrfRadio_TransmitMode();
-    __nrfRadio_LoadMessages(broadcast_msg, 6);
+    __nrfRadio_LoadMessages(broadcast_msg, 15);
     uint8_t status = __nrfRadio_Transmit(network_broadcast_address, RADIO_WAIT_TX);
     
     if(status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL){
@@ -310,13 +310,13 @@ void radio_link_task()
             //send the request to the master
             message_t msg = {0};
             msg.type = 'P';
-            //the rx goes to tx, cross connected
-            memcpy(&msg.tx_address, &network_rx_default_address, RADIO_MAX_ADDRESS);
-            memcpy(&msg.rx_address, &selected_tx, RADIO_MAX_ADDRESS); //same here
-            memcpy(&msg.data, &ok_answer, RADIO_MAX_ADDRESS);
-            msg.TTL = 0x30; //ASCII 0
-            msg.timestamp = 0x3030; //it is 00
-            __nrfRadio_LoadMessages(msg.raw, 16);
+            memcpy(msg.tx_address, &network_rx_default_address, 5);
+            memcpy(msg.rx_address, &selected_tx, 5);
+            msg.TTL = 0x30;
+            msg.timestamp = 0x3030;
+            uint8_t _data[] = {'O','K','1'};
+            memcpy(msg.data, _data, sizeof(_data));
+            __nrfRadio_LoadMessages(msg.raw, 17);
             radio_tx_status res = __nrfRadio_Transmit(selected_tx, RADIO_WAIT_TX);
             if(RADIO_TX_OK == res)
             {
@@ -351,9 +351,15 @@ void radio_link_task()
                     if(_cmds[idx].cmd_data[1] == 'R')
                     {
                         uart_printString("request pair...", 1);
-                        uint8_t config_ack_msg[7] = {'O','K'};
-                        memcpy(&config_ack_msg[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
-                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 7);
+                        message_t msg = {0};
+                        msg.type = 'P';
+                        memcpy(msg.tx_address, _cmds[idx].rx_address, 5);
+                        memcpy(msg.rx_address, _cmds[idx].tx_address, 5);
+                        msg.TTL = 0x30;
+                        msg.timestamp = 0x3030;
+                        uint8_t _data[] = {'O','K','2'};
+                        memcpy(msg.data, _data, sizeof(_data));
+                        __nrfRadio_LoadAckPayload(RADIO_PIPE0, msg.raw, 17);
                     }
                     //Configure with the following configuration
                     else if(_cmds[idx].cmd_data[1] == 'P')
@@ -382,9 +388,15 @@ void radio_link_task()
                     if(_cmds[idx].cmd_data[1] == 'C')
                     {
                         uart_printString("check connection...", 1);
-                        uint8_t check_con_msg[7] = {'O','K'};
-                        memcpy(&check_con_msg[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
-                        __nrfRadio_LoadAckPayload(root.pipe, check_con_msg, 7);
+                        message_t msg = {0};
+                        msg.type = 'P';
+                        memcpy(msg.tx_address, _cmds[idx].rx_address, 5);
+                        memcpy(msg.rx_address, _cmds[idx].tx_address, 5);
+                        msg.TTL = 0x30;
+                        msg.timestamp = 0x3030;
+                        uint8_t _data[] = {'O','K','3'};
+                        memcpy(msg.data, _data, sizeof(_data));
+                        __nrfRadio_LoadAckPayload(root.pipe, msg.raw, 17);
                     }
                     else if(_cmds[idx].cmd_data[1] == 'D')
                     {
@@ -406,6 +418,18 @@ void radio_link_task()
         break;
     case link_paired:
         //send an ACK msg to parent to make sure that the connection is still working
+        for(uint8_t idx = 0; idx < cmd_idx; idx++)
+        {
+            if(_cmds[idx].cmd_data[0] == '4')
+            {
+                uart_printString("Child pairing request",1);
+                message_t msg = {0};
+                msg.type = 'P';
+                memcpy(msg.rx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.tx_address, _cmds[idx].rx_address, RADIO_MAX_ADDRESS);
+                msg.data[0] = '1';
+            }
+        }
         if(state_count % STATE_COUNT_1S == 0)
         {
             state_count = 0;
