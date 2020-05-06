@@ -202,8 +202,8 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
-	OSCCAL = 160;
-	uart_init(UART_115200BAUD, UART_8MHZ, UART_PARITY_NONE);
+
+	uart_init(UART_115200BAUD, UART_9216MHZ, UART_PARITY_NONE);
 	system_timer_init();
 	INT_GLOBAL_EN();
 	system_timer_start();
@@ -225,6 +225,7 @@ int main(void)
     {
 		wdg_kick();
 		__nrfRadio_Main();
+		
 		uart_data_len = uart_rx_flush(uart_data, &uart_rx_err);
 		if(UART_RX_ERR != uart_data_len)
 			process_uart_data(uart_data, uart_data_len);

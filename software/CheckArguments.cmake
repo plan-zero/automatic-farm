@@ -17,7 +17,7 @@
 
 #when a new hardware is added, please update these strings as well
 set(SUPPORTED_MCU "atmega16 atmega328p")
-set(SUPPORTED_FREQ "1000000UL 2000000UL 4000000UL 8000000UL 16000000UL")
+set(SUPPORTED_FREQ "1000000UL 2000000UL 4000000UL 8000000UL 16000000UL 9216000UL")
 
 #check input arguments that are passed down to the submodules
 #check AVR_MCU

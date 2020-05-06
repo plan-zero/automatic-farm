@@ -54,7 +54,8 @@
 #define _UART_4MHZ 2
 #define _UART_8MHZ 3
 #define _UART_16MHZ 4
-#define _UART_COUNT_MHZ 5
+#define _UART_9216MHZ 5
+#define _UART_COUNT_MHZ 6
 
 #define _UART_9600BAUD  0
 #define _UART_19200BAUD 1
@@ -84,7 +85,8 @@ const int16_t uart_values[_UART_COUNT_MHZ][_UART_COUNT_BAUD] =
 	{12,  6,     1,     0,      -1 }, //2MHZ
 	{25,  12,    3,     1,       0 }, //4MHZ
 	{51,  25,    8,     3,       1 }, //8MHZ
-	{103, 51,   16,     8,       3 }  //16MHZ
+	{103, 51,   16,     8,       3 }, //16MHZ
+	{59,  29,    9,     4,       1 }  //9.216MHZ
 };
 #endif
 
