@@ -114,7 +114,7 @@ inline void MAIN_setup()
     oneMsTask = scheduler_getPointerTo1msTask();
     scheduler_add_task(sch_type_task_10ms, radio_link_task);
     scheduler_add_task(sch_type_task_10ms, communication_execute_messages);
-    scheduler_add_task(sch_type_task_10ms, communication_send_messages);
+    scheduler_add_task(sch_type_task_100ms, communication_send_messages);
 #ifdef ENABLE_TASK_TEST
     //scheduler_add_task(sch_type_task_1s, radio_link_task);
 #endif
@@ -154,6 +154,10 @@ inline void MAIN_setup()
     ota_get_key();
     //read network parameters
     network_read_parameters();
+    uint8_t addr_tmp[6] = {0};
+    addr_tmp[5] = '\0';
+    memcpy(addr_tmp, network_rx_default_address, 5);
+    uart_printString(addr_tmp, 1);
     //start the scheduler
     timer_start(0,0);
     //init and start the system timer used for measurments

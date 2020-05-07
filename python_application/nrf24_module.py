@@ -51,7 +51,7 @@ try:
     broadcast_address = "AAAAA"
     rx_address = "11223"
     tx_address = ""
-    salve_new_tx = "AAA01"
+    salve_new_tx = "10AAA" #"AAA01"
 
     res = nrf24_cmds["set_broadcast_addr"](broadcast_address, 0.1)
     #wait at least 2 seconds for incoming msg
