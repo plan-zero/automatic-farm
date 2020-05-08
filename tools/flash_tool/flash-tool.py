@@ -57,7 +57,7 @@ CMD_SEND_16B_ASCII = "E33e"
 
 RX_ADDRESS = "11223"
 
-SLEEP_TIME_SERIAL_DEFAULT = 0.04
+SLEEP_TIME_SERIAL_DEFAULT = 0.0000001
 SLEEP_TIME_SERIAL_NRF_INIT = 0.1
 SLEEP_TIME_SERIAL_CRC = 0.5
 SLEEP_TIME_SERIAL_BOOTLOADER = 1
@@ -549,7 +549,7 @@ _commands = {
 	"-K" : ["+",		lambda x: len(str(x)) == 10, 					"-K: The key must be 10 char long(alpha-numeric ASCII)"],
 	"-P" : ["",		lambda x: ("COM" == x[:3] and x[3:].isdigit()) or (x[:-4] == "/dev/tty"),		
 																		"-P: The supported port is COMx where x must be an unsigned int or /dev/ttyXXX"],
-	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 250000, 	"-B: The baud rate should be in 0-250000 range" ],
+	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 2500000, 	"-B: The baud rate should be in 0-250000 range" ],
 	"-H" : ["", 	lambda x: x != "" and os.path.isfile(x), 			"-H: File not found"],
 	"-T" : ["",		lambda x: x != "" and len(x) <= 5,					"-T: The length of TX/RX address must be less or equal to 5"],
 	"-h" : ["-",	lambda x: True,										help_string],

@@ -203,7 +203,7 @@ int main(void)
 {
 	//initilize uart
 
-	uart_init(UART_115200BAUD, UART_9216MHZ, UART_PARITY_NONE);
+	uart_init(UART_576000BAUD, UART_9216MHZ, UART_PARITY_NONE);
 	system_timer_init();
 	INT_GLOBAL_EN();
 	system_timer_start();
@@ -337,10 +337,10 @@ int main(void)
 						radio_config cfg = 
 						{ 
 							RADIO_ADDRESS_5BYTES,
-							RADIO_RETRANSMIT_WAIT_3000US,
+							RADIO_RT,
 							RADIO_RETRANSMIT_15,
 							CHANNEL_112,
-							RADIO_250KBIT,
+							RADIO_RATE,
 							RADIO_CRC2_ENABLED,
 							RADIO_COUNT_WAVE_DISABLED,
 							RADIO_HIGHEST_0DBM,
@@ -379,10 +379,10 @@ int main(void)
 						radio_config cfg =
 						{
 							RADIO_ADDRESS_5BYTES,
-							RADIO_RETRANSMIT_WAIT_3000US,
+							RADIO_RT,
 							RADIO_RETRANSMIT_15,
 							CHANNEL_112,
-							RADIO_250KBIT,
+							RADIO_RATE,
 							RADIO_CRC2_ENABLED,
 							RADIO_COUNT_WAVE_DISABLED,
 							RADIO_HIGHEST_0DBM,

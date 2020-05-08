@@ -7,7 +7,7 @@ ser = serial.Serial ()
 
 ser_status = 0
 ser.port = "/dev/ttyUSB0"
-ser.baudrate = 115200
+ser.baudrate = 576000
 ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 ser.parity = serial.PARITY_NONE #set parity check: no parity
 ser.stopbits = serial.STOPBITS_ONE_POINT_FIVE #number of stop bits

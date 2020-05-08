@@ -42,7 +42,9 @@
 #define UART_57600BAUD 2
 #define UART_115200BAUD 3
 #define UART_250000BAUD 4
-#define UART_COUNT_BAUD 5
+#define UART_576000BAUD 5
+#define UART_921600BAUD 6
+#define UART_COUNT_BAUD 7
 
 typedef enum {
 	UART_INVALID_ARG,

@@ -526,6 +526,7 @@ void radio_link_task()
                 radio_tx_status res = __nrfRadio_Transmit(child[child_count].radio_tx_pipe_address, RADIO_WAIT_TX);
                 _delay_ms(150);
                 msg.data[1] = 'D';
+                __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
                 __nrfRadio_LoadMessages(msg.raw, 16);
                 res = __nrfRadio_Transmit(child[child_count].radio_tx_pipe_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
