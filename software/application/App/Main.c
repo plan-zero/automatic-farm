@@ -145,7 +145,7 @@ inline void MAIN_setup()
 		RADIO_APPLICATION
 	};
 	__nrfRadio_Init(cfg);
-	
+	__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
 
 	__nrfRadio_SetRxCallback(rx_handler);
 
