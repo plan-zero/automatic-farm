@@ -476,29 +476,40 @@ void radio_link_task()
                 uart_printString("Child pairing request",1);
                 message_t msg = {0};
                 msg.type = 'P';
-                memcpy(msg.rx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
-                memcpy(msg.tx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
                 msg.data[0] = '1';
-                communication_outbox_add(msg, 15);
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg.raw, 15);
+                radio_tx_status res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
+                    uart_printString("msg sent",1);
+                }
             }
             else if(memcmp(_cmds[idx].cmd_data,"OK1", 3) == 0)
             {
                 uart_printString("Child accepted this master",1);
                 message_t msg = {0};
                 msg.type = 'P';
-                memcpy(msg.rx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
-                memcpy(msg.tx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
                 msg.data[0] = '2';
                 msg.data[1] = 'R';
-                communication_outbox_add(msg, 16);
-                communication_send_messages();
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg.raw, 16);
+                radio_tx_status res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
                 _delay_ms(150);
                 //TODO: this address will be generated
                 uint8_t new_child_addr[] = {'A','A','A','1','0'};
                 memcpy(&msg.data[2], new_child_addr, RADIO_MAX_ADDRESS);
                 msg.data[1] = 'P';
-                communication_outbox_add(msg, 21);
-                communication_send_messages();
+                __nrfRadio_LoadMessages(msg.raw, 21);
+                res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
+                    uart_printString("msg sent",1);
+                }
                 _add_child(new_child_addr, _cmds[idx].tx_address);
             }
             else if(memcmp(_cmds[idx].cmd_data,"OK2", 3) == 0)
@@ -506,17 +517,21 @@ void radio_link_task()
                 uart_printString("Check connection with child",1);
                 message_t msg = {0};
                 msg.type = 'P';
-                memcpy(msg.rx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
-                memcpy(msg.tx_address, child[child_count].radio_tx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, child[child_count].radio_tx_pipe_address, RADIO_MAX_ADDRESS);
                 msg.data[0] = '3';
                 msg.data[1] = 'C';
-                communication_outbox_add(msg, 16);
-                communication_send_messages();
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg.raw, 16);
+                radio_tx_status res = __nrfRadio_Transmit(child[child_count].radio_tx_pipe_address, RADIO_WAIT_TX);
                 _delay_ms(150);
                 msg.data[1] = 'D';
-                communication_outbox_add(msg, 16);
-                communication_send_messages();
-                 _delay_ms(100);
+                __nrfRadio_LoadMessages(msg.raw, 16);
+                res = __nrfRadio_Transmit(child[child_count].radio_tx_pipe_address, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
+                    uart_printString("msg sent",1);
+                }
             }
             else if(memcmp(_cmds[idx].cmd_data,"OK3", 3) == 0)
             {
