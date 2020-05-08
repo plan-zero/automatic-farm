@@ -15,9 +15,24 @@
 // You should have received a copy of the GNU General Public License
 // along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef _NETWORK_COMMON_H
+#define _NETWORK_COMMON_H
+
 #include "stdint.h"
-#include "messages.h"
+#include "nrf24Radio.h"
+#define NETWORK_VERSION "1.0.0"
 
-#define OTA_UPDATE_RESET    0x55
+typedef enum{
+    MSG_IDX_TYPE = 0,
+}network_msg_idx_t;
 
-void ota_prepare(message_t msg, uint8_t datalen);
+typedef enum{
+    network_broadcast_msg = 'B',
+}network_msg_t;
+
+extern const uint8_t network_broadcast_address[RADIO_MAX_ADDRESS];
+extern uint8_t network_rx_default_address[RADIO_MAX_ADDRESS];
+
+void network_read_parameters();
+
+#endif

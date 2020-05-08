@@ -23,7 +23,7 @@
 #include "stdint.h"
 
 #define UART_BUSY_STATUS            0
-#define UART_2X_ENABLE              0
+#define UART_2X_ENABLE              1
 
 #define UART_HW_SET_LBAUD(x)        UBRRL = x
 #define UART_HW_SET_HBAUD(x)        UBRRH = x
@@ -54,14 +54,17 @@
 #define _UART_4MHZ 2
 #define _UART_8MHZ 3
 #define _UART_16MHZ 4
-#define _UART_COUNT_MHZ 5
+#define _UART_9216MHZ 5
+#define _UART_COUNT_MHZ 6
 
 #define _UART_9600BAUD  0
 #define _UART_19200BAUD 1
 #define _UART_57600BAUD 2
 #define _UART_115200BAUD 3
 #define _UART_250000BAUD 4
-#define _UART_COUNT_BAUD 5
+#define _UART_576000BAUD 5
+#define _UART_921600BAUD 6
+#define _UART_COUNT_BAUD 7
 
 #define UART_ERROR_STATE()      ((UCSRA & 0x1C) >> 2)
 #define UART_ERROR_CLEAR()      UCSRA &= ~0x1C
@@ -69,22 +72,24 @@
 #if (UART_2X_ENABLE == 1)
 const int16_t uart_values[_UART_COUNT_MHZ][_UART_COUNT_BAUD] = 
 {
-// 9600	  19200  57600  115200  250000 (U2X = 0)
-	{12,  6,     1,     0,      -1 },
-	{25,  12,    3,     1,      0},
-	{51,  25,    8,     3,      1 },
-	{103, 51,    16,    8,      3 },
-	{207, 103,   34,    16,     7 }
+// 9600	  19200  57600  115200  250000	576000 921600 (U2X = 0)
+	{12,  6,     1,     0,      -1,     -1,    -1},
+	{25,  12,    3,     1,      0,      -1,    -1},
+	{51,  25,    8,     3,      1,      -1,    -1},
+	{103, 51,    16,    8,      3,      -1,    -1},
+	{207, 103,   34,    16,     7,      -1,    -1},
+	{119, 59,    19,    9,      4,       1,     0}  //9.216MHZ
 };
 #elif (UART_2X_ENABLE == 0)
 const int16_t uart_values[_UART_COUNT_MHZ][_UART_COUNT_BAUD] = 
 {
-// 9600	  19200  57600  115200  250000 (U2X = 0)
-	{6,   2,     0,     -1,     -1 }, //1MHZ
-	{12,  6,     1,     0,      -1 }, //2MHZ
-	{25,  12,    3,     1,       0 }, //4MHZ
-	{51,  25,    8,     3,       1 }, //8MHZ
-	{103, 51,   16,     8,       3 }  //16MHZ
+// 9600	  19200  57600  115200  250000	576000 (U2X = 0)
+	{12,  6,     1,     0,      -1,     -1,    -1}, //1MHZ
+	{25,  12,    3,     1,      0,      -1,    -1}, //2MHZ
+	{51,  25,    8,     3,      1,      -1,    -1}, //4MHZ
+	{103, 51,    16,    8,      3,      -1,    -1}, //8MHZ
+	{207, 103,   34,    16,     7,      -1,    -1}, //16MHZ
+	{59,  29,    9,     4,       1      -1,    -1}  //9.216MHZ
 };
 #endif
 

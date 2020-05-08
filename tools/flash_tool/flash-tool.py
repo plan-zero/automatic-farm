@@ -43,7 +43,9 @@ CMD_PREFIX = "<CMD>"
 CMD_ABORT = "D01o"
 CMD_CRLF = "\r"
 CMD_TX_ADDR_DEFAULT = "A05"
-CMD_INIT_NRF = "C00"
+CMD_RX_ADDR_DEFAULT = "B05"
+CMD_INIT_NRF_TX = "C00"
+CMD_INIT_NRF_RX = "C01L"
 CMD_START_WRITE = "D01w"
 CMD_16BIT_OF_PAGE = "D17e"
 CMD_R = "D01r"
@@ -53,7 +55,9 @@ CMD_STOP_FLASH_CONFIRM = "D01u"
 CMD_SEND_CHECKSUM = "E05y"
 CMD_SEND_16B_ASCII = "E33e"
 
-SLEEP_TIME_SERIAL_DEFAULT = 0.04
+RX_ADDRESS = "11223"
+
+SLEEP_TIME_SERIAL_DEFAULT = 0.0000001
 SLEEP_TIME_SERIAL_NRF_INIT = 0.1
 SLEEP_TIME_SERIAL_CRC = 0.5
 SLEEP_TIME_SERIAL_BOOTLOADER = 1
@@ -96,8 +100,8 @@ def connect_to_com_port(comPort, baud):
 	ser.baudrate = baud
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
 	ser.parity = serial.PARITY_NONE #set parity check: no parity
-	ser.stopbits = serial.STOPBITS_TWO #number of stop bits
-	ser.timeout = None          #block read
+	ser.stopbits = serial.STOPBITS_ONE #number of stop bits
+	ser.timeout = 2          #block read
 	ser.xonxoff = False     #disable software flow control
 	ser.rtscts = False     #disable hardware (RTS/CTS) flow control
 	ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
@@ -171,11 +175,11 @@ def read_flash_data(hexFilePath):
 	output.append(line_data)
 	counterLine += 1
 	
-	if (all_bytes/2) < APP_MAX_SIZE:
-		print_message("Preparing " + str(all_bytes) + " B to write", INFO)
-	else:
-		print_message("The hex file is to big: " + str(all_bytes) + ", the maximum size is 10kB", ERROR)
-		return []
+	#if (all_bytes/2) < APP_MAX_SIZE:
+	print_message("Preparing " + str(all_bytes) + " B to write", INFO)
+	#else:
+	#	print_message("The hex file is to big: " + str(all_bytes) + ", the maximum size is 10kB", ERROR)
+	#	return []
 	#print_message("output len is: " + str(len(output)), DEBUG)
 	dummyLinesToAdd = len(output) % 8
 
@@ -189,6 +193,12 @@ def read_flash_data(hexFilePath):
 		print_message(line, DEBUG)
 	return output
 
+def wait_command(sleeptime):
+	response = ser.read()
+	time.sleep(sleeptime)  #give the serial port sometime to receive the data
+	response += ser.read(ser.in_waiting)
+	response = response.decode('cp437', errors='ignore')
+	return response
 
 def send_command(command, sleeptime):
 	if ser.isOpen():
@@ -196,7 +206,7 @@ def send_command(command, sleeptime):
 		try:
 			#write data
 			ser.write(str.encode(command))
-			ser.write('\r'.encode())
+			ser.write('\r'.encode('cp437'))
 			print_message(f"write data: {command}", DEBUG)
 
 			noOfRetries = 5
@@ -207,7 +217,7 @@ def send_command(command, sleeptime):
 				response = ser.read()
 				time.sleep(sleeptime)  #give the serial port sometime to receive the data
 				response += ser.read(ser.in_waiting)
-				response = response.decode("utf-8")
+				response = response.decode('cp437', errors='ignore')
 				if response != "":
 					print_message(str(response), DEBUG)
 					return response
@@ -223,14 +233,37 @@ def send_command(command, sleeptime):
 	
 	return "NRC"
 
-def send_bootloader_key(key):
-	print_message("Put target in programming mode", INFO)
-	command = CMD_PREFIX + "D11K" + key
+def send_bootloader_key(key, tx):
+	print_message("Put target in programming mode:", INFO)
+	print_message("==> Request default address", INFO)
+	command = CMD_PREFIX + "D15K" + RX_ADDRESS + tx + "000" + "R"
+	resp = send_command(command, 0.04)
+	#set RX address
+	if send_RX_Address(RX_ADDRESS) == 1:
+		print("can't set rx mode")
+		return 1
+	#go in rx mode
+	print_message("wait rx...", DEBUG)
+	if send_Init_NRF("RX") == 1:
+		return 1
+	#wait 2 seconds to get the answer
+	res = wait_command(2)
+	print_message("received:" + res, DEBUG)
+	if "OTAOK" not in res:
+		return 1
+	idx = res.find("OTAOK")
+	if idx == -1:
+		return 1
+	_rx_def = res[idx+5:idx+10].replace(">","")
+	print_message("default rx: " + _rx_def, DEBUG)
+	if send_Init_NRF("TX") == 1:
+		return 1
+	command = CMD_PREFIX + "D24K" + RX_ADDRESS + tx + "000" + key
 	resp = send_command(command, SLEEP_TIME_SERIAL_BOOTLOADER)
+	#wait to enter in bootloader
+	send_TX_Address(_rx_def)
 	
-	if "<EXECUTE_CMD:44>" in resp and "<SEND_TX:ACK>" in resp:
-		return 0
-	return 1
+	return 0
 		
 		
 def send_TX_Address(Tx_addr):
@@ -241,15 +274,30 @@ def send_TX_Address(Tx_addr):
 		return 0
 
 	return 1
-
-
-
-def send_Init_NRF():
-	command = CMD_PREFIX + CMD_INIT_NRF 
-	resp = send_command(command, SLEEP_TIME_SERIAL_NRF_INIT)	
+def send_RX_Address(Rx_addr):
+	command = CMD_PREFIX + CMD_RX_ADDR_DEFAULT + Rx_addr
+	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
 	
-	if "<EXECUTE_CMD:43>" in resp and "<NRF_CONFIG:STARTING>" in resp and "<NRF_CONFIG:DONE>" in resp:
+	if "<SET_RX:" in resp and "<EXECUTE_CMD:42>" in resp:
 		return 0
+
+	return 1
+
+
+
+def send_Init_NRF(mode):
+	if mode == "TX":
+		command = CMD_PREFIX + CMD_INIT_NRF_TX
+		resp = send_command(command, SLEEP_TIME_SERIAL_NRF_INIT)	
+		
+		if "<EXECUTE_CMD:43>" in resp and "<NRF_CONFIG:STARTING>" in resp and "<NRF_CONFIG:DONE>" in resp:
+			return 0
+	elif mode == "RX":
+		command = CMD_PREFIX + CMD_INIT_NRF_RX
+		resp = send_command(command, SLEEP_TIME_SERIAL_NRF_INIT)	
+		
+		if "<EXECUTE_CMD:43>" in resp and "<NRF_CONFIG:STARTING>" in resp and "<NRF_CONFIG:DONE_RX>" in resp:
+			return 0
 
 	return 1
 
@@ -386,7 +434,7 @@ def flash_data(tx, hex_file, crc, key):
 				state = 99
 
 		if (state == 2):		# init NRF
-			retValue = send_Init_NRF()
+			retValue = send_Init_NRF("TX")
 			if (retValue == 0):
 				state = 0
 			else:
@@ -394,7 +442,7 @@ def flash_data(tx, hex_file, crc, key):
 				state = 99
 		if (state == 0): #sent bootloader key
 			if key != "+" and tries == 5:
-				retValue = send_bootloader_key(key)
+				retValue = send_bootloader_key(key, tx)
 			else:
 				retValue = 0
 			if (retValue == 0):
@@ -501,7 +549,7 @@ _commands = {
 	"-K" : ["+",		lambda x: len(str(x)) == 10, 					"-K: The key must be 10 char long(alpha-numeric ASCII)"],
 	"-P" : ["",		lambda x: ("COM" == x[:3] and x[3:].isdigit()) or (x[:-4] == "/dev/tty"),		
 																		"-P: The supported port is COMx where x must be an unsigned int or /dev/ttyXXX"],
-	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 250000, 	"-B: The baud rate should be in 0-250000 range" ],
+	"-B" : ["",     lambda x: int(x,10) > 0 and int(x,10) <= 2500000, 	"-B: The baud rate should be in 0-250000 range" ],
 	"-H" : ["", 	lambda x: x != "" and os.path.isfile(x), 			"-H: File not found"],
 	"-T" : ["",		lambda x: x != "" and len(x) <= 5,					"-T: The length of TX/RX address must be less or equal to 5"],
 	"-h" : ["-",	lambda x: True,										help_string],

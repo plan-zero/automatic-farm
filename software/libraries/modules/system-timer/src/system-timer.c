@@ -36,6 +36,14 @@ timer_instance _timer_2 = 2;
     #define TIMER_OVF_US (uint32_t)16384
     #define TIMER_UNIT_US   (uint32_t)64
     timer_prescaler _prescaler = timer_prescaler_1024;
+#elif defined(F_CPU) && (F_CPU == 9216000UL)
+    #define TIMER_OVF_ERR       (uint32_t)89
+    #define TIMER_SEC_PER_MS_ERR (uint32_t)16
+    #define TIMER_OVF_US_CAL    (uint32_t)32678
+    #define TIMER_OVF_US        (uint32_t)(TIMER_OVF_US_CAL + TIMER_OVF_ERR)
+    #define TIMER_OVF_ERROR (uint32_t)19320
+    #define TIMER_UNIT_US   (uint32_t)128
+    timer_prescaler _prescaler = timer_prescaler_1024;
 #elif defined(F_CPU) && (F_CPU == 8000000UL)
     #define TIMER_OVF_ERR       (uint32_t)89
     #define TIMER_SEC_PER_MS_ERR (uint32_t)16
@@ -60,7 +68,6 @@ timer_instance _timer_2 = 2;
 
 void system_timer_init()
 {
-    OSCCAL = 175;
     timer_interrupt ti;
     ti.overflow_en = 1;
     timer_type inst_tim_t = timer_get_type(0);

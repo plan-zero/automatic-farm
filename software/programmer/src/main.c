@@ -30,8 +30,11 @@
 #include "uart.h"
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
+#include "interrupt_hw.h"
 
 #include <util/delay.h>
+#include "system-timer.h"
+#include "wdg.h"
 
 uint8_t uart_data[UART_RX_MAX];
 
@@ -59,8 +62,12 @@ uint8_t cmd_available = 0;
 #define CMD_CONFIGURE_RADIO			'C'
 #define CMD_SEND_TX					'D'
 #define CMD_SEND_ASCII_HEX			'E'
+#define CMD_SEND_PING				'P'
 
-#define PROG_VERSION "1.0.1"
+#define CMD_TOGGLE_CONSOLE			'O'
+uint8_t uart_console = 0;
+
+#define PROG_VERSION "2.1.0"
 
 #define INVALID_HEX 255
 #define _ASCII_HEX_TO_INT(x) (x >= '0' && x <= '9') ? x - '0' : INVALID_HEX
@@ -95,7 +102,8 @@ void process_uart_data(uint8_t * data, uint8_t len)
 	//static uint8_t leng_num = 0;
 	for(uint8_t idx = 0; idx < len; idx ++)
 	{
-		uart_sendByte(data[idx]);
+		if(uart_console)
+			uart_sendByte(data[idx]);
 		switch(uart_state)
 		{
 			case UART_S0:
@@ -194,7 +202,12 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
-	uart_init(UART_250000BAUD, UART_8MHZ, UART_PARITY_NONE);
+
+	uart_init(UART_576000BAUD, UART_9216MHZ, UART_PARITY_NONE);
+	system_timer_init();
+	INT_GLOBAL_EN();
+	system_timer_start();
+	
 	uart_printString("<NRF24L01_programmer:",0);
 	uart_printString(PROG_VERSION, 0);
 	uart_printString(">",1);
@@ -205,10 +218,14 @@ int main(void)
 	uint8_t rx_addr[MAX_ADDR] = {0};
 	//uint8_t init = 0;
 	uint8_t uart_rx_err = 0;
+
+	wdg_init(wdgto_500MS);
 	
     while (1) 
     {
+		wdg_kick();
 		__nrfRadio_Main();
+		
 		uart_data_len = uart_rx_flush(uart_data, &uart_rx_err);
 		if(UART_RX_ERR != uart_data_len)
 			process_uart_data(uart_data, uart_data_len);
@@ -217,14 +234,61 @@ int main(void)
 			uart_printString("<UART_RX_ERROR:", 0);
 			uart_printRegister(uart_rx_err);
 			uart_printString(">",1);
+			wdg_explicit_reset(0x1);
 			_delay_ms(1000);
 		}
-		
 		if(cmd_available)
 		{
 			uart_printString("<EXECUTE_CMD:",0);
 			switch(command_type) 
 			{
+				case CMD_TOGGLE_CONSOLE:
+					uart_console ^= 1;
+					if (uart_console)
+						uart_printString("CONSOLE_ON>",1);
+					else
+						uart_printString("CONSOLE_OFF>",1);
+					break;
+				case CMD_SEND_PING:
+					uart_printRegister(command_type);
+					uart_printString(">",1);
+					if(command_len < MAX_CMD_LEN)
+					{
+						uart_printString("<SEND_PING:",0);
+						uint8_t payload[33] = {0};
+						for(uint8_t idx = 0; idx < command_len; idx++)
+						{
+							payload[idx] = cmd[idx];
+						}
+						payload[command_len] = '\0';
+						uart_printString((char*)payload,0);
+						uart_printString(">",1);
+						__nrfRadio_LoadMessages(payload, command_len);
+						//calculate the round travel time here
+						system_timer_timestamp _start =  system_timer_get_timestamp();
+						uint8_t status = __nrfRadio_Transmit(tx_addr, RADIO_WAIT_TX);
+						system_timer_timestamp _end =  system_timer_get_timestamp();
+						if( status == RADIO_TX_OK || status == RADIO_TX_OK_ACK_PYL)
+						{
+							char str[11] = {0};
+							str[10] = '\0';
+							uint32_t us_trave_time = system_timer_getus(_start, _end);
+							sprintf(str, "%lu",us_trave_time);
+							uart_printString("<SEND_PING:ACK>",1);
+							uart_printString("<PING:",0);
+							uart_printString(str, 0);
+							uart_printString(">",1);
+						}
+						else
+						{
+							uart_printString("<SEND_PING:NACK>",1);
+						}
+					}
+					else
+					{
+						uart_printString("<SEND_PING:LENGTH_ERR>", 1);
+					}
+					break;
 				case CMD_SET_TX_ADDR:
 					uart_printRegister(command_type);
 					uart_printString(">",1);
@@ -273,10 +337,10 @@ int main(void)
 						radio_config cfg = 
 						{ 
 							RADIO_ADDRESS_5BYTES,
-							RADIO_RETRANSMIT_WAIT_3000US,
+							RADIO_RT,
 							RADIO_RETRANSMIT_15,
 							CHANNEL_112,
-							RADIO_250KBIT,
+							RADIO_RATE,
 							RADIO_CRC2_ENABLED,
 							RADIO_COUNT_WAVE_DISABLED,
 							RADIO_HIGHEST_0DBM,
@@ -295,9 +359,14 @@ int main(void)
 							RADIO_PIPE_AA_ENABLED,
 							RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 						};
-
 						__nrfRadio_PipeConfig(pipe_cfg0);
-							
+						pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
+						for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
+						{
+							pipe_cfg0.pipe = p;
+							__nrfRadio_PipeConfig(pipe_cfg0);
+						}
+						__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
 						__nrfRadio_SetRxCallback(rx_handler);
 						__nrfRadio_SetTxCallback(tx_handler);
 						__nrfRadio_PowerUp();
@@ -310,10 +379,10 @@ int main(void)
 						radio_config cfg =
 						{
 							RADIO_ADDRESS_5BYTES,
-							RADIO_RETRANSMIT_WAIT_3000US,
+							RADIO_RT,
 							RADIO_RETRANSMIT_15,
 							CHANNEL_112,
-							RADIO_250KBIT,
+							RADIO_RATE,
 							RADIO_CRC2_ENABLED,
 							RADIO_COUNT_WAVE_DISABLED,
 							RADIO_HIGHEST_0DBM,
@@ -323,7 +392,6 @@ int main(void)
 							RADIO_APPLICATION
 						};
 						__nrfRadio_Init(cfg);
-
 						pipe_config pipe_cfg0 =
 						{
 							RADIO_PIPE0,
@@ -333,9 +401,14 @@ int main(void)
 							RADIO_PIPE_AA_ENABLED,
 							RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 						};
-
 						__nrfRadio_PipeConfig(pipe_cfg0);
-						
+						pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
+						for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
+						{
+							pipe_cfg0.pipe = p;
+							__nrfRadio_PipeConfig(pipe_cfg0);
+						}
+						__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
 						__nrfRadio_SetRxCallback(rx_handler);
 						__nrfRadio_SetTxCallback(tx_handler);
 						__nrfRadio_PowerUp();

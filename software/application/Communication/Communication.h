@@ -15,5 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
 #include "stdint.h"
+#include "messages.h"
+
+typedef enum{
+    communication_inbox_full,
+    communication_inbox_empty,
+    communication_inbox_ok,
+    communication_outbox_full,
+    communication_outbox_empty,
+    communication_outbox_ok,
+}communication_status_t;
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length);
+void communication_execute_messages();
+communication_status_t communication_outbox_add(message_t msg, uint8_t len);
+void communication_send_messages();

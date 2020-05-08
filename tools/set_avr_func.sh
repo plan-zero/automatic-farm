@@ -84,9 +84,9 @@ if [ "$1" == "WSL" ]; then
             echo 'com_port=$(cat /mnt/c/avrdude/out.txt)' >> ~/.bashrc
             echo 'tty_port=/dev/ttyS${com_port:3:1}' >> ~/.bashrc
             echo 'if [ -z "$3" ]; then' >> ~/.bashrc
-            echo "    python3 $flash_tool_path -T \$2 -H \$1 -P \$tty_port -B 250000 " >> ~/.bashrc
+            echo "    python3 $flash_tool_path -T \$2 -H \$1 -P \$tty_port -B 1152000 " >> ~/.bashrc
             echo 'else' >> ~/.bashrc
-            echo "    python3 $flash_tool_path -T \$2 -H \$1 -K \$3 -P /dev/\$usb_dev -B 250000 " >> ~/.bashrc
+            echo "    python3 $flash_tool_path -T \$2 -H \$1 -K \$3 -P /dev/\$usb_dev -B 1152000 " >> ~/.bashrc
             echo 'fi' >> ~/.bashrc
             echo '}' >> ~/.bashrc
         else
@@ -135,9 +135,9 @@ else
                 echo 'avr_ota_push() {' >> ~/.bashrc
                 echo "usb_dev=\$(dmesg | grep \"FTDI USB Serial Device converter now attached\" | grep -Eo 'ttyUSB[0-9]+')" >> ~/.bashrc
                 echo 'if [ -z "$3" ]; then' >> ~/.bashrc
-                echo "    python3 $flash_tool_path -T \$2 -H \$1 -P /dev/\$usb_dev -B 250000 " >> ~/.bashrc
+                echo "    python3 $flash_tool_path -T \$2 -H \$1 -P /dev/\$usb_dev -B 576000 " >> ~/.bashrc
                 echo 'else' >> ~/.bashrc
-                echo "    python3 $flash_tool_path -T \$2 -H \$1 -K \$3 -P /dev/\$usb_dev -B 250000 " >> ~/.bashrc
+                echo "    python3 $flash_tool_path -T \$2 -H \$1 -K \$3 -P /dev/\$usb_dev -B 576000 " >> ~/.bashrc
                 echo 'fi' >> ~/.bashrc
                 echo '}' >> ~/.bashrc
             else

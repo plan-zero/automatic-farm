@@ -14,10 +14,11 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with automatic-farm.  If not, see <http://www.gnu.org/licenses/>.
-
 #include "stdint.h"
 #include "messages.h"
 
-#define OTA_UPDATE_RESET    0x55
-
-void ota_prepare(message_t msg, uint8_t datalen);
+uint8_t radio_link_discovery();
+void radio_link_init();
+void radio_link_task();
+uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _address_length);
+uint8_t radio_link_execute(message_t msg);

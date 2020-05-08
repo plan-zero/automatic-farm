@@ -25,9 +25,58 @@ set(TARGET_NAME programmer)
 set(NRF24HEX nrf24.hex)
 set(TARGET_EXT_NAME _ext.hex)
 
+if(RADIO_RATE)
+    if(${RADIO_RATE} MATCHES "250KBS")
+        add_definitions(-DRADIO_RATE=2)
+    elseif(${RADIO_RATE} MATCHES "1MBS")
+        add_definitions(-DRADIO_RATE=1)
+    elseif(${RADIO_RATE} MATCHES "2MBS")
+        add_definitions(-DRADIO_RATE=0)
+    endif()
+endif()
+
+if(RADIO_RT)
+    if(${RADIO_RT} MATCHES "250US")
+        add_definitions(-DRADIO_RT=0)
+    elseif(${RADIO_RT} MATCHES "500US")
+        add_definitions(-DRADIO_RT=1)
+    elseif(${RADIO_RT} MATCHES "750US")
+        add_definitions(-DRADIO_RT=2)
+    elseif(${RADIO_RT} MATCHES "1000US")
+        add_definitions(-DRADIO_RT=3)
+    elseif(${RADIO_RT} MATCHES "1250US")
+        add_definitions(-DRADIO_RT=4)
+    elseif(${RADIO_RT} MATCHES "1500US")
+        add_definitions(-DRADIO_RT=5)
+    elseif(${RADIO_RT} MATCHES "1750S")
+        add_definitions(-DRADIO_RT=6)
+    elseif(${RADIO_RT} MATCHES "2000US")
+        add_definitions(-DRADIO_RT=7)
+    elseif(${RADIO_RT} MATCHES "2250US")
+        add_definitions(-DRADIO_RT=8)
+    elseif(${RADIO_RT} MATCHES "2500US")
+        add_definitions(-DRADIO_RT=9)
+    elseif(${RADIO_RT} MATCHES "2750US")
+        add_definitions(-DRADIO_RT=10)
+    elseif(${RADIO_RT} MATCHES "3000US")
+        add_definitions(-DRADIO_RT=11)
+    elseif(${RADIO_RT} MATCHES "3250US")
+        add_definitions(-DRADIO_RT=12)
+    elseif(${RADIO_RT} MATCHES "3500US")
+        add_definitions(-DRADIO_RT=13)
+    elseif(${RADIO_RT} MATCHES "3750US")
+        add_definitions(-DRADIO_RT=14)
+    elseif(${RADIO_RT} MATCHES "4000US")
+        add_definitions(-DRADIO_RT=15)
+    endif()
+endif()
+
 set(HEADER_INC
     ./../libraries/modules/nrf24/inc
+    ./../libraries/modules/system-timer/inc
     ./../libraries/drivers/uart/inc
+    ./../libraries/drivers/wdg/inc
+    ./../libraries/hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
 
@@ -37,7 +86,7 @@ set (SOURCE_FILES
 avr_add_executable(${TARGET_NAME} ${SOURCE_FILES})
 
 #link target with libraries
-target_link_libraries(${TARGET_NAME}.elf nrf24_api uart)
+target_link_libraries(${TARGET_NAME}.elf nrf24_api uart system-timer wdg)
 
 #set postbuild command to concatenate programmer with nrf24
 add_custom_command(TARGET programmer POST_BUILD

@@ -102,7 +102,7 @@ uint8_t uart_rx_flush(uint8_t *buffer, uint8_t *rx_error)
 uart_err uart_init(uint8_t baud, uint8_t cpu_freq, uint8_t uart_parity) // 1Mhz baud, 8 data, 1 stop, none parity
 {
 	//check if the input arguments are valid
-	if( (baud > UART_250000BAUD) | (cpu_freq > UART_16MHZ) )
+	if( (baud >= UART_COUNT_BAUD) | (cpu_freq >= UART_COUNT_MHZ) )
 		return UART_INVALID_ARG;
 
 	//set the internal UART state

@@ -34,14 +34,17 @@
 #define UART_4MHZ 2
 #define UART_8MHZ 3
 #define UART_16MHZ 4
-#define UART_COUNT_MHZ 5
+#define UART_9216MHZ 5
+#define UART_COUNT_MHZ 6
 
 #define UART_9600BAUD  0
 #define UART_19200BAUD 1
 #define UART_57600BAUD 2
 #define UART_115200BAUD 3
 #define UART_250000BAUD 4
-#define UART_COUNT_BAUD 5
+#define UART_576000BAUD 5
+#define UART_921600BAUD 6
+#define UART_COUNT_BAUD 7
 
 typedef enum {
 	UART_INVALID_ARG,

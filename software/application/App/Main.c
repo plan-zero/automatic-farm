@@ -38,6 +38,9 @@
 #include "e2p.h"
 #include "nrf24Radio.h"
 #include "nrf24Radio_API.h"
+#include "radio_link.h"
+#include "network_common.h"
+#include "system-timer.h"
 
 #ifdef ENABLE_TASK_TEST
 #include <avr/io.h>
@@ -107,11 +110,13 @@ inline void MAIN_setup()
     };
     timer_init(0,tc);
     timer_register_callback(0, (timer_callback) notify1ms, 1);
-    timer_start(0,0);
+    
     oneMsTask = scheduler_getPointerTo1msTask();
-
+    scheduler_add_task(sch_type_task_10ms, radio_link_task);
+    scheduler_add_task(sch_type_task_10ms, communication_execute_messages);
+    scheduler_add_task(sch_type_task_100ms, communication_send_messages);
 #ifdef ENABLE_TASK_TEST
-    scheduler_add_task(sch_type_task_1ms, test_task_1s);
+    //scheduler_add_task(sch_type_task_1s, radio_link_task);
 #endif
     //WDG initialization
     uint8_t tmp = wdg_sw_reset_reason();
@@ -125,14 +130,12 @@ inline void MAIN_setup()
     
 
     //Radio communication initialization
-    uint8_t rx_address[RADIO_RX_LENGTH] = {0};
-    e2p_read_rxaddress(rx_address);
 	radio_config cfg = {
 		RADIO_ADDRESS_5BYTES,
-		RADIO_RETRANSMIT_WAIT_3000US,
+		RADIO_RT,
 		RADIO_RETRANSMIT_15,
 		CHANNEL_112,
-		RADIO_250KBIT,
+		RADIO_RATE,
 		RADIO_CRC2_ENABLED,
 		RADIO_COUNT_WAVE_DISABLED,
 		RADIO_HIGHEST_0DBM,
@@ -142,23 +145,24 @@ inline void MAIN_setup()
 		RADIO_APPLICATION
 	};
 	__nrfRadio_Init(cfg);
-	
-	pipe_config pipe_cfg0 =
-	{
-		RADIO_PIPE0,
-		rx_address,
-		5,
-		RADIO_PIPE_RX_ENABLED,
-		RADIO_PIPE_AA_ENABLED,
-		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
-	};
-	__nrfRadio_PipeConfig(pipe_cfg0);
+	__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
+
 	__nrfRadio_SetRxCallback(rx_handler);
-	__nrfRadio_PowerUp();
-	__nrfRadio_ListeningMode();
+
 
     //read BOOT key
     ota_get_key();
+    //read network parameters
+    network_read_parameters();
+    uint8_t addr_tmp[6] = {0};
+    addr_tmp[5] = '\0';
+    memcpy(addr_tmp, network_rx_default_address, 5);
+    uart_printString(addr_tmp, 1);
+    //start the scheduler
+    timer_start(0,0);
+    //init and start the system timer used for measurments
+    system_timer_init();
+    system_timer_start();
 }
 
 // We use timer on channel 0
@@ -180,7 +184,7 @@ int  main()
     MAIN_setup();
     INT_GLOBAL_EN();
 
-    wdg_init(wdgto_120MS);
+    wdg_init(wdgto_1S);
     while(1)
     {
 
@@ -194,7 +198,7 @@ int  main()
         if(trigger_wdg_reset)
         {
             //do wdg reset
-            wdg_explicit_reset(0x01);
+            //wdg_explicit_reset(0x01);
         }
         __nrfRadio_Main();
     }

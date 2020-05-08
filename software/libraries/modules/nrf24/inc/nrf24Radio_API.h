@@ -46,7 +46,7 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_ChangePower)(radio_conte
 extern radio_error_code (* const __flash *fptr_nrfRadio_SetTxCallback)(radio_context *, void (*)(radio_tx_status));
 extern radio_error_code (* const __flash *fptr_nrfRadio_SetRxCallback)(radio_context *, void (*)(uint8_t, uint8_t *, uint8_t));
 extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_context *, radio_pipe, uint8_t*, uint8_t);
-
+extern radio_error_code (* const __flash *fptr_nrfRadio_FlushBuffer)(radio_context *, radio_buffer_t buffer);
 //**************************
 // The main routine of Radio library which is used for asynchronous operations
 // Method:	__nrfRadio_Main
@@ -151,5 +151,12 @@ extern radio_error_code (* const __flash *fptr_nrfRadio_LoadAckPayload)(radio_co
 // ackpayload_length: uint8_t, the size of ACK payload
 //**************************
 #define __nrfRadio_LoadAckPayload(ackpipe,ackpayload,ackpayload_length) (*fptr_nrfRadio_LoadAckPayload)(&_radio_instance, ackpipe, ackpayload, ackpayload_length)
+//**************************
+// Used to flush the current RX/TX buffer - check the mode of transmision before you do this
+// Method:		__nrfRadio_FlushBuffer
+// Returns:		radio_error_code
+// buffer_type:	radio_buffer_t: RADIO_RX_BUFFER, RADIO_TX_BUFFER, RADIO_BOTH_BUFFER (tx+rx buffers)
+//**************************
+#define __nrfRadio_FlushBuffer(buffer_type) (*fptr_nrfRadio_FlushBuffer)(&_radio_instance, buffer_type)
 
 #endif /* RADIO_FPTR_H_ */
