@@ -322,6 +322,7 @@ void radio_link_task()
                 
                 if(tx_address_latency[idx])
                 {
+                    uint8_t master_ack = 1;
                     for(uint8_t itr = 0; itr < 4; itr++)
                     {
                         uart_printString("Ping test",1);
@@ -337,21 +338,24 @@ void radio_link_task()
                         else
                         {
                             uart_printString("NACK",1);
-                            //TODO: raise an error since we don't get the ack
+                            master_ack = 0;
                         }
                     }
-                    mean_latency = mean_latency / 4;
-                    //DBG INFO
-                    uint8_t tmp[12] = {0};
-                    sprintf(tmp, "%u",mean_latency);
-                    tmp[11] = '\0';
-                    uart_printString(tmp, 1);
-                    /////////////////////////
-                    if(mean_latency < min_latency)
+                    if(master_ack)
                     {
-                        uart_printString("save new master..",1);
-                        min_latency = mean_latency;
-                        memcpy(selected_tx, tx_address_latency[idx], RADIO_MAX_ADDRESS);
+                        mean_latency = mean_latency / 4;
+                        //DBG INFO
+                        uint8_t tmp[12] = {0};
+                        sprintf(tmp, "%u",mean_latency);
+                        tmp[11] = '\0';
+                        uart_printString(tmp, 1);
+                        /////////////////////////
+                        if(mean_latency < min_latency)
+                        {
+                            uart_printString("save new master..",1);
+                            min_latency = mean_latency;
+                            memcpy(selected_tx, tx_address_latency[idx], RADIO_MAX_ADDRESS);
+                        }
                     }
                 }
                 //free memory that was allocated for tx latency calculation
@@ -367,6 +371,7 @@ void radio_link_task()
             msg.timestamp = 0x3030;
             uint8_t _data[] = {'O','K','1'};
             memcpy(msg.data, _data, sizeof(_data));
+            __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
             __nrfRadio_LoadMessages(msg.raw, 17);
             radio_tx_status res = __nrfRadio_Transmit(selected_tx, RADIO_WAIT_TX);
             if(RADIO_TX_OK == res)

@@ -20,7 +20,25 @@ import serial
 import sys,os
 import time
 
-ser = serial.Serial ("/dev/ttyS0", 250000, timeout = 5, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS)
+ser = serial.Serial ()
+ser_status = 0
+ser.port = "/dev/ttyUSB0"
+ser.baudrate = 576000
+ser.bytesize = serial.EIGHTBITS #number of bits per bytes
+ser.parity = serial.PARITY_NONE #set parity check: no parity
+ser.stopbits = serial.STOPBITS_ONE_POINT_FIVE #number of stop bits
+ser.timeout = 1          #block read
+ser.xonxoff = False     #disable software flow control
+ser.rtscts = False     #disable hardware (RTS/CTS) flow control
+ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
+ser.writeTimeout = 2     #timeout for write
+
+ser.open()
+time.sleep(0.5)
+if(ser.isOpen() == False):
+    raise Exception("Can't open the port!")
+ser.flush()
+
 ack_ok = 0
 
 serialCallbacks = []
@@ -56,14 +74,30 @@ def readSerialData():
 		time.sleep(0.03)
 		data_left = ser.inWaiting()
 		received_data += ser.read(data_left)
-		#print(received_data)
-
+		#print("here" + str(received_data))
+		received_data = received_data.decode('cp437', errors='ignore')
 		for f in serialCallbacks:
-			f(received_data)
+			if received_data != "":
+				f(received_data)
 	except:
 		e = sys.exc_info()
 		print(e)
 		return -1
+
+def writeCommand(cmd, timeout):
+    
+    ser.write((cmd).encode('cp437').strip())
+    ser.write("\r".encode('cp437'))
+
+    response = ser.read()
+    time.sleep(timeout)  #give the serial port sometime to receive the data
+    response += ser.read(ser.in_waiting)
+    #print(response)
+    response = response.decode('cp437', errors='ignore')
+    print("RES:" + response)
+    return response
+def closeConnection():
+	ser.close()
 
 def main():
 	print("Testing serial module")
