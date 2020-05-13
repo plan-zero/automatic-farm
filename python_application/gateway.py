@@ -20,6 +20,9 @@ import nrf24_module as NRF24
 import re
 import serial_module as Serial
 from enum import Enum
+from datetime import date
+from datetime import datetime
+import pytz
 
 class GatewayExceptionInit(Exception):
     pass
@@ -33,6 +36,9 @@ class ChildState(Enum):
     PAIRED = 3,
     ERROR = 4
 
+class addressState(Enum):
+    UNASSIGNED = 1,
+    ASSIGNED = 2
 
 radio_cfg = {
     "pipe0" : "AAAAA",
@@ -45,22 +51,38 @@ radio_cfg = {
 
 # no : pipe, rx_address, tx_address
 radio_child_cfg = {
-    "leaf_0" : [ChildState.UNASSIGNED, "pipe1", radio_cfg["pipe1"], ""],
-    "leaf_1" : [ChildState.UNASSIGNED, "pipe2", radio_cfg["pipe2"], ""],
-    "leaf_2" : [ChildState.UNASSIGNED, "pipe3", radio_cfg["pipe3"], ""],
-    "leaf_3" : [ChildState.UNASSIGNED, "pipe4", radio_cfg["pipe4"], ""],
-    "leaf_4" : [ChildState.UNASSIGNED, "pipe5", radio_cfg["pipe5"], ""]
+    "leaf_1" : [ChildState.UNASSIGNED, "pipe1", radio_cfg["pipe1"], "", 0],
+    "leaf_2" : [ChildState.UNASSIGNED, "pipe2", radio_cfg["pipe2"], "", 0],
+    "leaf_3" : [ChildState.UNASSIGNED, "pipe3", radio_cfg["pipe3"], "", 0],
+    "leaf_4" : [ChildState.UNASSIGNED, "pipe4", radio_cfg["pipe4"], "", 0],
+    "leaf_5" : [ChildState.UNASSIGNED, "pipe5", radio_cfg["pipe5"], "", 0]
 }
 
 pairing_request_count = 0
 pairing_request_data = {}
 
-base_count = 0
-base_addr = ["","01AAA", "02AAA", "02AAA", "02AAA"]
+base_addr = "AAA"
+start_addr = '1'
+dhcp_address = {}
+def generate_address():
+    global dhcp_address,base_addr,start_addr
+    while start_addr <= '~':
+        dhcp_address["0" + start_addr + base_addr] = addressState.UNASSIGNED
+        start_addr = chr(ord(start_addr) + 1)
+    #print(dhcp_address)
 def get_new_address():
-    global base_count,base_addr
-    base_count += 1
-    return base_addr[base_count]
+    global base_addr
+    address_assigned = 0
+    for address, state in dhcp_address.items():
+        if state == addressState.UNASSIGNED:
+            address_assigned = 1
+            new_addr = address
+            dhcp_address[address] = addressState.ASSIGNED
+            break
+    if address_assigned == 0:
+        new_addr = "INVALID"
+        print("All addresses are assigned!")
+    return new_addr
 
 def broadcast_pairing_msg_check(data):
     global pairing_request_data, pairing_request_count
@@ -72,12 +94,28 @@ def broadcast_pairing_msg_check(data):
             tx_address = re.sub(r">",'',addr[0])
             print("Extact tx:" + tx_address)
             if not tx_address in pairing_request_data.values():
+                print("Add request:" + tx_address)
                 pairing_request_data[pairing_request_count] = tx_address
                 pairing_request_count += 1
 
+def ack_msg_check(data):
+    if "<RX_DATA:A>" in data and "<RX_PIPE:" in data:
+        res = re.findall(r"<RX_PIPE:[0-9]+>", data)
+        for entry in res:
+            pipe_no = re.sub(r"<RX_PIPE:0", '', entry)
+            pipe_no = re.sub(r">",'',pipe_no)
+            print("pipe ack:" + pipe_no)
+            #print(radio_child_cfg["leaf_" + str(pipe_no)][0])
+            if radio_child_cfg["leaf_" + str(pipe_no)][0] == ChildState.PAIRED:
+                #save the utc
+                radio_child_cfg["leaf_" + str(pipe_no)][4] = int(datetime.now(tz=pytz.utc).timestamp())
+            else:
+                print("Warning: TODO add error handler here")
+
 def serial_rec_cb(data):
-    print("data:" + str(data))
+    #print("data:" + str(data))
     broadcast_pairing_msg_check(data)
+    ack_msg_check(data)
 
 def init():
     global pairing_request_count
@@ -104,6 +142,8 @@ def init():
         #register serial callback
         Serial.registerSerialCallback(serial_rec_cb)
         pairing_request_count = 0
+        #generate all dhcp addresses
+        generate_address()
         return 0
     except Exception as e:
         print(str(e))
@@ -157,6 +197,9 @@ def manage_pairing():
                 print("Add child to the following slot: " + leaf)
                 empty_slot = 1
                 child_address = get_new_address()
+                if child_address == "INVALID":
+                    print("Can't configure child")
+                    return
                 value[0] = ChildState.PAIRING
                 print("data " + pairing_request_data[pairing_request_count])
                 if pairing_procedure(value[2], pairing_request_data[pairing_request_count], child_address) == 1:
@@ -164,13 +207,26 @@ def manage_pairing():
                     value[3] = child_address
                 else:
                     value[0] = ChildState.UNASSIGNED
-                    pairing_request_data[pairing_request_count] = ""
+                pairing_request_data[pairing_request_count] = ""
                 break
         if empty_slot == 0:
             print("No more slots available")
         
-        
-
+def manage_connections():
+    global radio_child_cfg
+    for leaf, value in radio_child_cfg.items():
+        if value[0] == ChildState.PAIRED and value[4] != 0:
+            last_online = int(datetime.now(tz=pytz.utc).timestamp()) - value[4]
+            if last_online > 15: #if the leaf doesn't respond within 15 seconds
+                value[0] = ChildState.ERROR
+                print("Leaf:" + str(leaf) + " connection lost for 15 seconds")
+        elif value[0] == ChildState.ERROR:
+            last_online = int(datetime.now(tz=pytz.utc).timestamp()) - value[4]
+            if last_online > 30: #if the leaf dosn't recover within 30 seconds
+                print("Leaf:" + str(leaf) + " connection lost for 30 seconds, connection reset")
+                value[0] = ChildState.UNASSIGNED
+                value[3] = ""
+                value[4] = 0
 
 def main():
     print("Gateway v1.0.0")
@@ -181,6 +237,7 @@ def main():
     while(init_done):
         Serial.readSerialData()
         manage_pairing()
+        manage_connections()
         time.sleep(0.5)
 
 
