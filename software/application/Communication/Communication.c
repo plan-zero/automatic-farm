@@ -60,16 +60,29 @@ void tx_handler(radio_tx_status status)
 
 }*/
 
-communication_status_t communication_outbox_add(message_t msg, uint8_t len)
+void communication_init()
 {
-    if(msg_out_count < COMMUNICATION_MAX_OUT_BUFFER)
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_OUT_BUFFER; idx++)
     {
-        memcpy(&msg_out_buffer[msg_out_count].msg, &msg, sizeof(message_t));
-        msg_out_buffer[msg_out_count].id = GLOBAL_MSG_ID++;
-        msg_out_buffer[msg_out_count].status = msg_status_pending;
-        msg_out_buffer[msg_out_count].data_length = len;
-        msg_out_count++;
-        return communication_outbox_ok;
+        msg_out_buffer[idx].status = msg_status_empty;
+    }
+}
+
+communication_status_t communication_outbox_add(message_t msg, uint8_t len, uint8_t delay)
+{
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_OUT_BUFFER; idx++)
+    {
+        if(msg_out_buffer[idx].status == msg_status_empty)
+        {
+            memcpy(&msg_out_buffer[idx].msg, &msg, sizeof(message_t));
+            msg_out_buffer[idx].id = GLOBAL_MSG_ID++;
+            msg_out_buffer[idx].status = msg_status_pending;
+            msg_out_buffer[idx].data_length = len;
+            msg_out_buffer[idx].delay = delay;
+            msg_out_buffer[idx].retry = 3; //by default
+            return communication_outbox_ok;
+        }
+
     }
     return communication_outbox_full;
 }
@@ -77,40 +90,75 @@ communication_status_t communication_outbox_add(message_t msg, uint8_t len)
 void communication_send_messages()
 {
 
-    if(msg_out_count)
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_OUT_BUFFER; idx++)
     {
-        uint8_t not_sent_count = 0;
-        __nrfRadio_TransmitMode();
-        for(uint8_t idx = 0; idx < msg_out_count; idx++)
+        if(msg_out_buffer[idx].status == msg_status_pending)
         {
-            uint8_t addr_tmp[5] = {0};
-            memcpy(addr_tmp, msg_out_buffer[idx].msg.tx_address, RADIO_MAX_ADDRESS);
-            memcpy(msg_out_buffer[idx].msg.tx_address, msg_out_buffer[idx].msg.rx_address, RADIO_MAX_ADDRESS);
-            memcpy(msg_out_buffer[idx].msg.rx_address, addr_tmp, RADIO_MAX_ADDRESS);
-            uart_printString("Send msg from outbox...",1);
-            __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
-            radio_tx_status status = __nrfRadio_Transmit(addr_tmp, RADIO_WAIT_TX);
-            if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
+            if( msg_out_buffer[idx].delay == 0 )
             {
-                //we'll delete this message because it was sent
-                memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
-                msg_out_buffer[idx].status = msg_status_empty;
+                uint8_t addr_tmp[5] = {0};
+
+                memcpy(addr_tmp, msg_out_buffer[idx].msg.tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg_out_buffer[idx].msg.tx_address, msg_out_buffer[idx].msg.rx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg_out_buffer[idx].msg.rx_address, addr_tmp, RADIO_MAX_ADDRESS);
+
+                uart_printString("Send msg from outbox...",1);
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
+                radio_tx_status status = __nrfRadio_Transmit(addr_tmp, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
+                {
+                    //we'll delete this message because it was sent
+                    memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
+                    msg_out_buffer[idx].status = msg_status_empty;
+                }
+                else
+                {
+                    uart_printString("MSG:NACK",1);
+                    msg_out_buffer[idx].status = msg_status_not_sent;
+                    //TODO: add an error handler for this case
+                }
             }
             else
             {
-                not_sent_count++;
-                uart_printString("MSG:NACK",1);
-                msg_out_buffer[idx].status = msg_status_not_sent;
-                //TODO: add an error handler for this case
+                msg_out_buffer[idx].delay--;
             }
-            
         }
-        if(not_sent_count)
+        else if(msg_out_buffer[idx].status == msg_status_not_sent)
         {
-            //rearange messages
+            if(msg_out_buffer[idx].retry)
+            {
+                uint8_t addr_tmp[5] = {0};
+
+                memcpy(addr_tmp, msg_out_buffer[idx].msg.tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg_out_buffer[idx].msg.tx_address, msg_out_buffer[idx].msg.rx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg_out_buffer[idx].msg.rx_address, addr_tmp, RADIO_MAX_ADDRESS);
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
+                radio_tx_status status = __nrfRadio_Transmit(addr_tmp, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
+                {
+                    //we'll delete this message because it was sent
+                    memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
+                    msg_out_buffer[idx].status = msg_status_empty;
+                }
+                else
+                {
+                    msg_out_buffer[idx].retry--;
+                    uart_printString("MSG:NACK",1);
+                }
+            }
+
+            if(msg_out_buffer[idx].retry == 0)
+            {
+                    //we'll delete this message because it can't be sent
+                    memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
+                    msg_out_buffer[idx].status = msg_status_empty;
+            }
         }
-        msg_out_count = 0;
-        __nrfRadio_ListeningMode();
+        
     }
 }
 

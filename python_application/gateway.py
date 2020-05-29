@@ -113,7 +113,7 @@ def ack_msg_check(data):
                 print("Warning: TODO add error handler here")
 
 def serial_rec_cb(data):
-    #print("data:" + str(data))
+    print("data:" + str(data))
     broadcast_pairing_msg_check(data)
     ack_msg_check(data)
 
@@ -151,13 +151,17 @@ def init():
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
         return -1
-
+onetime=0
 def pairing_procedure(rx_address, tx_address, slave_tx_address):
     try:
+        global onetime
+        if onetime == 1:
+            return
+        onetime = 1
         salve_new_tx = slave_tx_address
         res = NRF24.cmds["set_tx_addr"](tx_address, 0)
         res = NRF24.cmds["set_tx_mode"](0)
-        res = NRF24.cmds["send_data"]("P" + rx_address + tx_address + "0001", 0.1)
+        res = NRF24.cmds["send_data"]("P" + rx_address + tx_address + "0001", 0.0001)
         #switch back to rx
         res = NRF24.cmds["set_rx_mode"](0)
         res = NRF24.cmds["read_data"](3)
@@ -168,12 +172,12 @@ def pairing_procedure(rx_address, tx_address, slave_tx_address):
         res = NRF24.cmds["set_tx_mode"](0.1)
         #start the pairing
         res = NRF24.cmds["send_data"]("P" + rx_address + tx_address + "0002R", 1)
-        res = NRF24.cmds["send_data"]("P" + rx_address + tx_address + "0002P" + salve_new_tx, 0.5)
+        res = NRF24.cmds["send_data"]("P" + rx_address + tx_address + "0002P" + salve_new_tx, 0.1)
         if not rx_address + "000OK2" in res:
             raise Exception("Slave refused the pairing!")
-        res = NRF24.cmds["set_tx_addr"](salve_new_tx,1)
+        res = NRF24.cmds["set_tx_addr"](salve_new_tx,0.1)
         res = NRF24.cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.1)
-        res = NRF24.cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 1)
+        res = NRF24.cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 0.1)
         if not rx_address + "000OK3" in res:
             raise Exception("Connection test failed!")
         res = NRF24.cmds["set_rx_mode"](0.1)
@@ -196,15 +200,16 @@ def manage_pairing():
             if value[0] == ChildState.UNASSIGNED:
                 print("Add child to the following slot: " + leaf)
                 empty_slot = 1
-                child_address = get_new_address()
-                if child_address == "INVALID":
-                    print("Can't configure child")
-                    return
+                #child_address = get_new_address()
+                #if child_address == "INVALID":
+                #    print("Can't configure child")
+                #    return
                 value[0] = ChildState.PAIRING
                 print("data " + pairing_request_data[pairing_request_count])
-                if pairing_procedure(value[2], pairing_request_data[pairing_request_count], child_address) == 1:
+                #configure with the same address
+                if pairing_procedure(value[2], pairing_request_data[pairing_request_count], pairing_request_data[pairing_request_count]) == 1:
                     value[0] = ChildState.PAIRED
-                    value[3] = child_address
+                    value[3] = pairing_request_data[pairing_request_count]
                 else:
                     value[0] = ChildState.UNASSIGNED
                 pairing_request_data[pairing_request_count] = ""
@@ -217,13 +222,13 @@ def manage_connections():
     for leaf, value in radio_child_cfg.items():
         if value[0] == ChildState.PAIRED and value[4] != 0:
             last_online = int(datetime.now(tz=pytz.utc).timestamp()) - value[4]
-            if last_online > 15: #if the leaf doesn't respond within 15 seconds
+            if last_online > 30: #if the leaf doesn't respond within 15 seconds
                 value[0] = ChildState.ERROR
-                print("Leaf:" + str(leaf) + " connection lost for 15 seconds")
+                print("Leaf:" + str(leaf) + " connection lost for 30 seconds")
         elif value[0] == ChildState.ERROR:
             last_online = int(datetime.now(tz=pytz.utc).timestamp()) - value[4]
-            if last_online > 30: #if the leaf dosn't recover within 30 seconds
-                print("Leaf:" + str(leaf) + " connection lost for 30 seconds, connection reset")
+            if last_online > 45: #if the leaf dosn't recover within 30 seconds
+                print("Leaf:" + str(leaf) + " connection lost for 45 seconds, connection reset")
                 value[0] = ChildState.UNASSIGNED
                 value[3] = ""
                 value[4] = 0
@@ -238,7 +243,7 @@ def main():
         Serial.readSerialData()
         manage_pairing()
         manage_connections()
-        time.sleep(0.5)
+        #time.sleep(0.00)
 
 
 if __name__ == "__main__":

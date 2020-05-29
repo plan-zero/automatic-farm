@@ -72,6 +72,8 @@ typedef struct{
     message_t msg;
     uint8_t data_length;
     uint8_t id;
+    uint8_t delay;
+    uint8_t retry;
     msg_status_t status;
 }message_packet_t;
 

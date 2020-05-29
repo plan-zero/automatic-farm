@@ -29,12 +29,14 @@
 #include "uart.h"
 #include "system-timer.h"
 #include "Communication.h"
+#include "Scheduler.h"
 
 #define STATE_COUNT_3S      300
 #define STATE_COUNT_2S      200
 #define STATE_COUNT_1S      100
 #define STATE_COUNT_500MS   50
 #define STATE_COUNT_100MS   10
+
 
 typedef enum{
     link_none,
@@ -84,6 +86,12 @@ radio_link_t child[MAX_CHILD] =
     {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE3}
 };
 uint8_t child_count = 0;
+
+
+voidFunctionTypeVoid pairing()
+{
+    //do the pairing request
+}
 
 inline _add_child(uint8_t *tx_address, uint8_t *rx_address)
 {
@@ -187,8 +195,8 @@ uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _
 		RADIO_PIPE_AA_ENABLED,
 		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 	};
-    __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
     __nrfRadio_PipeConfig(rx_root);
+    __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
     __nrfRadio_PowerUp();
     __nrfRadio_ListeningMode();
     root.radio_link_status = link_establising;
@@ -403,6 +411,7 @@ void radio_link_task()
                 //check if this master has the lowest ping rate
                 if(0 == memcmp(_cmds[idx].tx_address, selected_tx, RADIO_MAX_ADDRESS))
                 {
+                    uart_printString("from selected master",1);
                     //request pair
                     if(_cmds[idx].cmd_data[1] == 'R')
                     {
@@ -504,18 +513,18 @@ void radio_link_task()
                 __nrfRadio_TransmitMode();
                 __nrfRadio_LoadMessages(msg.raw, 16);
                 radio_tx_status res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
-                _delay_ms(150);
-                //TODO: this address will be generated
-                uint8_t new_child_addr[] = {'A','A','A','1','0'};
-                memcpy(&msg.data[2], new_child_addr, RADIO_MAX_ADDRESS);
-                msg.data[1] = 'P';
-                __nrfRadio_LoadMessages(msg.raw, 21);
-                res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
                 if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
                     uart_printString("msg sent",1);
                 }
-                _add_child(new_child_addr, _cmds[idx].tx_address);
+                msg.data[1] = 'P';
+                memcpy(&msg.data[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                //send the pairing msg
+                communication_outbox_add(msg, 21, 15);
+                uint8_t rx_child_addr[RADIO_MAX_ADDRESS] = {0};
+                memcpy(rx_child_addr, network_rx_default_address, RADIO_MAX_ADDRESS);
+                rx_child_addr[0] = '0' + (child_count + 1);
+                _add_child(_cmds[idx].tx_address, rx_child_addr);
             }
             else if(memcmp(_cmds[idx].cmd_data,"OK2", 3) == 0)
             {
@@ -529,15 +538,12 @@ void radio_link_task()
                 __nrfRadio_TransmitMode();
                 __nrfRadio_LoadMessages(msg.raw, 16);
                 radio_tx_status res = __nrfRadio_Transmit(child[child_count].radio_tx_pipe_address, RADIO_WAIT_TX);
-                _delay_ms(150);
-                msg.data[1] = 'D';
-                __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
-                __nrfRadio_LoadMessages(msg.raw, 16);
-                res = __nrfRadio_Transmit(child[child_count].radio_tx_pipe_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
                 if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
                     uart_printString("msg sent",1);
                 }
+                msg.data[1] = 'D';
+                communication_outbox_add(msg, 16, 15);
             }
             else if(memcmp(_cmds[idx].cmd_data,"OK3", 3) == 0)
             {
@@ -548,7 +554,7 @@ void radio_link_task()
             memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
         }
         cmd_idx = 0;
-        if(state_count % STATE_COUNT_1S == 0)
+        if(state_count % 1000 == 0)
         {
             state_count = 0;
             __nrfRadio_TransmitMode();

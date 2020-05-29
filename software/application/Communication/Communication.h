@@ -28,5 +28,6 @@ typedef enum{
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length);
 void communication_execute_messages();
-communication_status_t communication_outbox_add(message_t msg, uint8_t len);
+communication_status_t communication_outbox_add(message_t msg, uint8_t len, uint8_t delay);
 void communication_send_messages();
+void communication_init();
