@@ -75,7 +75,7 @@ uint8_t selected_tx[RADIO_MAX_ADDRESS];
 #define MAX_MASTER_COUNT 3
 uint8_t tx_address_idx = 0;
 uint8_t *tx_address_latency[3];
-
+uint8_t join_network = 0;
 
 radio_link_t root = {link_none, {0,0,0,0,0}, {0,0,0,0,0}, RADIO_PIPE1};
 
@@ -91,6 +91,11 @@ uint8_t child_count = 0;
 voidFunctionTypeVoid pairing()
 {
     //do the pairing request
+}
+
+uint8_t * radio_link_get_root_tx()
+{
+    return &root.radio_tx_pipe_address[0];
 }
 
 inline _add_child(uint8_t *tx_address, uint8_t *rx_address)
@@ -119,6 +124,7 @@ inline _add_child(uint8_t *tx_address, uint8_t *rx_address)
 
 void radio_link_init()
 {
+    join_network = 0;
     __nrfRadio_PowerDown();
 
     //enable broadcast pipe
@@ -331,7 +337,7 @@ void radio_link_task()
                 if(tx_address_latency[idx])
                 {
                     uint8_t master_ack = 1;
-                    for(uint8_t itr = 0; itr < 4; itr++)
+                    for(uint8_t itr = 0; itr < 2; itr++)
                     {
                         uart_printString("Ping test",1);
                         __nrfRadio_LoadMessages(ping, 1);
@@ -551,11 +557,26 @@ void radio_link_task()
                 child[child_count].radio_link_status = link_established;
                 child_count++;
             }
+            else if(memcmp(_cmds[idx].cmd_data,"OKJOIN", 3) == 0)
+            {
+                join_network = 1;
+            }
             memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
         }
         cmd_idx = 0;
         if(state_count % 1000 == 0)
         {
+            if(0 == join_network)
+            {
+                //send a join network msg
+                message_t msg = {0};
+                msg.type = 'J';
+                memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, root.radio_tx_pipe_address, RADIO_MAX_ADDRESS);
+                //copy this rx address
+                memcpy(&msg.data[0], root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                communication_outbox_add(msg, 19, 0);
+            }
             state_count = 0;
             __nrfRadio_TransmitMode();
             uint8_t ack_msg[1] = {'A'};

@@ -49,6 +49,7 @@ P5 AA:AA:AA:01:05
 #define START_BYTE_PING         (uint8_t)('U')
 #define START_BYTE_BOOTKEY      (uint8_t)('K')
 #define START_BYTE_ACK          (uint8_t)('A')
+#define START_BYTE_JOINNET      (uint8_t)('J')
 
 typedef enum{
     msg_status_pending,

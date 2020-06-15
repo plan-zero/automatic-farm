@@ -191,6 +191,13 @@ void communication_execute_messages()
                 }
             }
             break;
+        case START_BYTE_JOINNET:
+            {
+                uart_printString("Send this msg to the root",1);
+                memcpy(msg_in_buffer[idx].msg.rx_address,radio_link_get_root_tx(), RADIO_MAX_ADDRESS);
+                communication_outbox_add(msg_in_buffer[idx].msg, 19, 0);
+            }
+            break;
         case START_BYTE_DATA:
             {
 
