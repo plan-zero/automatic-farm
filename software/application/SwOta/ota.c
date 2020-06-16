@@ -27,6 +27,8 @@
 #include "Communication.h"
 #include "network_common.h"
 #include "nrf24Radio_API.h"
+#include "messages.h"
+#include "string.h"
 
 typedef enum{
     ota_valid = 0,
@@ -76,18 +78,11 @@ void ota_prepare(message_t msg, uint8_t datalen)
     uart_printString("ota prepare...",1);
     if(datalen == 1 && msg.data[0] == 'R')
     {
-        //swap address
-        //uint8_t tmp[5] = {0};
-        //memcpy(&tmp, &msg.rx_address, 5);
-        //memcpy(&msg.rx_address, &msg.tx_address, 5);
-        //memcpy(&msg.tx_address, &tmp, 5);
-        msg.data[0] = 'O';
-        msg.data[1] = 'T';
-        msg.data[2] = 'A';
-        msg.data[3] = 'O';
-        msg.data[4] = 'K';
-        memcpy(&msg.data[5], &network_rx_default_address, 5);
-        communication_outbox_add(msg, 24, 15);
+        uint8_t data[10] = {'O', 'T', 'A', 'O', 'K','0','0','0','0','0'};
+        message_t ota_response = {0};
+        memcpy(&data[5], &network_rx_default_address, RADIO_MAX_ADDRESS);
+        message_create(START_BYTE_BOOTKEY ,&ota_response ,msg.tx_address, &data, sizeof(data));
+        communication_outbox_add(ota_response, 24, 15);
         uart_printString("ota send rx def...",1);
     }
     else if (PROGRAMMER_KEY_LENGTH == datalen)

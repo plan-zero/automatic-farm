@@ -41,7 +41,7 @@ P4 AA:AA:AA:01:04
 P5 AA:AA:AA:01:05
 */
 
-#define MESSAGE_MAX_LENGTH 16
+#define MESSAGE_MAX_LENGTH 18
 
 #define START_BYTE_BROADCAST    (uint8_t)('B')
 #define START_BYTE_PAIRING      (uint8_t)('P')
@@ -53,6 +53,8 @@ P5 AA:AA:AA:01:05
 
 typedef enum{
     msg_status_pending,
+    msg_status_processing,
+    msg_status_executing,
     msg_status_empty,
     msg_status_not_sent,
 }msg_status_t;
@@ -78,6 +80,10 @@ typedef struct{
     msg_status_t status;
 }message_packet_t;
 
-#define MSG_STRUCT_SIZE 30//(uint8_t)(sizeof(message_t) / sizeof(uint8_t))
+extern uint8_t GLOBAL_MSG_ID;
+
+void messages_pack(message_packet_t *msg_pachet, uint8_t *data, uint8_t data_len);
+void messages_unpack(message_packet_t *msg_pachet, uint8_t *data);
+void message_create(uint8_t type, message_t *msg, uint8_t *tx, uint8_t *data, uint8_t data_len);
 
 #endif //_MESSAGES_H

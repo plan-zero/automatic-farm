@@ -98,7 +98,7 @@ uint8_t * radio_link_get_root_tx()
     return &root.radio_tx_pipe_address[0];
 }
 
-inline _add_child(uint8_t *tx_address, uint8_t *rx_address)
+inline void _add_child(uint8_t *tx_address, uint8_t *rx_address)
 {
     if(child_count < MAX_CHILD)
     {
