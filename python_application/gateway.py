@@ -196,7 +196,7 @@ def pairing_procedure(rx_address, tx_address, slave_tx_address):
         if not rx_address + "000OK2" in res:
             raise Exception("Slave refused the pairing!")
         res = NRF24.cmds["set_tx_addr"](salve_new_tx,0.1)
-        res = NRF24.cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.1)
+        res = NRF24.cmds["send_data"]("P" + rx_address + salve_new_tx + "0003C", 0.5)
         res = NRF24.cmds["send_data"]("P" + rx_address + salve_new_tx + "0003D", 0.1)
         if not rx_address + "000OK3" in res:
             raise Exception("Connection test failed!")

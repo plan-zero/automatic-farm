@@ -55,6 +55,8 @@ typedef enum{
     msg_status_pending,
     msg_status_processing,
     msg_status_executing,
+    msg_status_executed,
+    msg_status_forwarding,
     msg_status_empty,
     msg_status_not_sent,
 }msg_status_t;
@@ -62,8 +64,8 @@ typedef enum{
 typedef union{
     struct{
         uint8_t type; // first byte is the message type
-        uint8_t tx_address[RADIO_MAX_ADDRESS]; //the rx address of sending node is actually tx for this
-        uint8_t rx_address[RADIO_MAX_ADDRESS]; //same, the tx address of sending node is actually rx for this
+        uint8_t rx_address[RADIO_MAX_ADDRESS]; //the rx address of sending node is actually tx for this
+        uint8_t tx_address[RADIO_MAX_ADDRESS]; //same, the tx address of sending node is actually rx for this
         uint16_t timestamp;
         uint8_t TTL;
         uint8_t data[MESSAGE_MAX_LENGTH];
@@ -83,7 +85,7 @@ typedef struct{
 extern uint8_t GLOBAL_MSG_ID;
 
 void messages_pack(message_packet_t *msg_pachet, uint8_t *data, uint8_t data_len);
-void messages_unpack(message_packet_t *msg_pachet, uint8_t *data);
 void message_create(uint8_t type, message_t *msg, uint8_t *tx, uint8_t *data, uint8_t data_len);
+uint8_t messages_is_this_rx(uint8_t *data, uint8_t data_len);
 
 #endif //_MESSAGES_H

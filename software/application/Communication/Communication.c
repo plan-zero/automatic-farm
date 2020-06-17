@@ -37,14 +37,29 @@ message_packet_t msg_out_buffer[COMMUNICATION_MAX_OUT_BUFFER];
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
 {
     //assemble the message in a known format
-    uart_printString("msg",1);
+    
     for(uint8_t idx = 0; idx < COMMUNICATION_MAX_IN_BUFFER; idx++)
     {
         //find an empty slot
         if(msg_in_buffer[idx].status == msg_status_empty)
         {
-            messages_pack(&msg_in_buffer[idx], data, payload_length);
-            msg_in_buffer[idx].status = msg_status_processing;
+            if(messages_is_this_rx(data, payload_length))
+            {
+                uart_printString("message received, processing",1);
+                messages_pack(&msg_in_buffer[idx], data, payload_length);
+                msg_in_buffer[idx].status = msg_status_processing;
+            }
+            else if(payload_length >= 14)
+            {
+                //copy the message to buffer
+                uart_printString("message received, fw",1);
+                memcpy(&msg_in_buffer[idx].msg.raw, data, payload_length);
+                msg_in_buffer[idx].status = msg_status_forwarding;
+            }
+            else
+            {
+                uart_printString("message received, ignore",1);
+            }
             break;
         }
     }
@@ -97,11 +112,9 @@ void communication_send_messages()
             if( msg_out_buffer[idx].delay == 0 )
             {
 
-                uint8_t data_raw[32] = {0};
-                messages_unpack(&msg_out_buffer[idx], &data_raw);
                 uart_printString("Send msg from outbox...",1);
                 __nrfRadio_TransmitMode();
-                __nrfRadio_LoadMessages(data_raw, msg_out_buffer[idx].data_length);
+                __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
                 radio_tx_status status = __nrfRadio_Transmit(msg_out_buffer[idx].msg.tx_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
                 if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
@@ -126,10 +139,8 @@ void communication_send_messages()
         {
             if(msg_out_buffer[idx].retry)
             {
-                uint8_t data_raw[32] = {0};
-                messages_unpack(&msg_out_buffer[idx], &data_raw);
                 __nrfRadio_TransmitMode();
-                __nrfRadio_LoadMessages(data_raw, msg_out_buffer[idx].data_length);
+                __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
                 radio_tx_status status = __nrfRadio_Transmit(msg_out_buffer[idx].msg.tx_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
                 if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
@@ -162,54 +173,58 @@ void communication_execute_messages()
     {
         //if the message is processing
         if(msg_in_buffer[idx].status == msg_status_processing)
-        switch (msg_in_buffer[idx].msg.type)
+            switch (msg_in_buffer[idx].msg.type)
+            {
+            case START_BYTE_BROADCAST:
+                {
+                    uart_printString("Broadcast message received...",1);
+                    if(radio_link_execute(&msg_in_buffer[idx]))
+                    {
+                        msg_in_buffer[idx].status == msg_status_executing;
+                    }
+                }
+                break;
+            case START_BYTE_BOOTKEY:
+                {
+                    ota_prepare(msg_in_buffer[idx].msg, msg_in_buffer[idx].data_length);
+                    memset(&msg_in_buffer[idx],0,sizeof(message_packet_t));
+                    msg_in_buffer[idx].status == msg_status_empty;
+                }
+                break;
+            case START_BYTE_PAIRING:
+                {
+                    uart_printString("Pairing message received...",1);
+                    if(radio_link_execute(&msg_in_buffer[idx]))
+                    {
+                        msg_in_buffer[idx].status == msg_status_executing;
+                    }
+                }
+                break;
+            case START_BYTE_JOINNET:
+                {
+                    uart_printString("Send this msg to the root",1);
+                    message_t msg = {0};
+                    message_create(START_BYTE_JOINNET, &msg, radio_link_get_root_tx(), msg.data, sizeof(msg.data));
+                    communication_outbox_add(msg, 19, 0);
+                }
+                break;
+            case START_BYTE_DATA:
+                {
+
+                }
+                break;
+            case START_BYTE_PING:
+                {
+
+                }
+                break;
+            default:
+                break;
+            }
+            //
+        else if(msg_in_buffer[idx].status == msg_status_forwarding)
         {
-        case START_BYTE_BROADCAST:
-            {
-                uart_printString("Broadcast message received...",1);
-                if(radio_link_execute(&msg_in_buffer[idx]))
-                {
-                    msg_in_buffer[idx].status == msg_status_executing;
-                }
-            }
-            break;
-        case START_BYTE_BOOTKEY:
-            {
-                ota_prepare(msg_in_buffer[idx].msg, msg_in_buffer[idx].data_length);
-                memset(&msg_in_buffer[idx],0,sizeof(message_packet_t));
-                msg_in_buffer[idx].status == msg_status_empty;
-            }
-            break;
-        case START_BYTE_PAIRING:
-            {
-                uart_printString("Pairing message received...",1);
-                if(radio_link_execute(&msg_in_buffer[idx]))
-                {
-                    msg_in_buffer[idx].status == msg_status_executing;
-                }
-            }
-            break;
-        case START_BYTE_JOINNET:
-            {
-                uart_printString("Send this msg to the root",1);
-                message_t msg = {0};
-                message_create(START_BYTE_JOINNET, &msg, radio_link_get_root_tx(), msg.data, sizeof(msg.data));
-                communication_outbox_add(msg, 19, 0);
-            }
-            break;
-        case START_BYTE_DATA:
-            {
-
-            }
-            break;
-        case START_BYTE_PING:
-            {
-
-            }
-            break;
-        default:
-            break;
+            //fw the message here
         }
-        //
     }
 }

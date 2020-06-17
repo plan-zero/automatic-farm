@@ -28,22 +28,25 @@ uint8_t GLOBAL_MSG_ID = 0;
 
 void messages_pack(message_packet_t *msg_pachet, uint8_t *data, uint8_t data_len)
 {
-    if(data_len <= (sizeof(message_t)))
+    if( (data_len <= sizeof(message_t)) && (data_len >= 14))
     {
-        memcpy(&msg_pachet->msg.raw, data, data_len);   
+        memcpy(&msg_pachet->msg.raw, data, data_len); 
+        //considering that the message is for this device, rearange the rx and tx
+        memcpy(&msg_pachet->msg.rx_address, &data[6], RADIO_MAX_ADDRESS);
+        memcpy(&msg_pachet->msg.tx_address, &data[1], RADIO_MAX_ADDRESS);
         msg_pachet->id = GLOBAL_MSG_ID++; //assign an ID to recgonize it later
-        if(data_len > 14) //this is the header of msg
-            msg_pachet->data_length = data_len - 14;
-        else
-            msg_pachet->data_length = data_len = 0; //can't determine the msg length
+        msg_pachet->data_length = data_len - 14;
     }
 }
-#include "uart.h"
-void messages_unpack(message_packet_t *msg_pachet, uint8_t *data)
+
+uint8_t messages_is_this_rx(uint8_t *data, uint8_t data_len)
 {
-    memcpy(&data[0], &msg_pachet->msg.raw, 32);
-    memcpy(&data[1], &msg_pachet->msg.rx_address, RADIO_MAX_ADDRESS);
-    memcpy(&data[6], &msg_pachet->msg.tx_address, RADIO_MAX_ADDRESS);
+    if(data_len >= 14)
+        if(0 == memcmp(&data[6], network_rx_default_address, RADIO_MAX_ADDRESS))
+        {
+            return 1;
+        }
+    return 0;
 }
 
 void message_create(uint8_t type, message_t *msg, uint8_t *tx, uint8_t *data, uint8_t data_len)

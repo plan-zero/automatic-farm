@@ -369,13 +369,8 @@ void radio_link_task()
 
             //send the request to the master
             message_t msg = {0};
-            msg.type = 'P';
-            memcpy(msg.tx_address, &network_rx_default_address, 5);
-            memcpy(msg.rx_address, &selected_tx, 5);
-            msg.TTL = 0x30;
-            msg.timestamp = 0x3030;
             uint8_t _data[] = {'O','K','1'};
-            memcpy(msg.data, _data, sizeof(_data));
+            message_create(START_BYTE_PAIRING,&msg,selected_tx,_data,3);
             __nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
             __nrfRadio_LoadMessages(msg.raw, 17);
             radio_tx_status res = __nrfRadio_Transmit(selected_tx, RADIO_WAIT_TX);
@@ -414,13 +409,8 @@ void radio_link_task()
                     {
                         uart_printString("request pair...", 1);
                         message_t msg = {0};
-                        msg.type = 'P';
-                        memcpy(msg.tx_address, _cmds[idx]->msg.rx_address, 5);
-                        memcpy(msg.rx_address, _cmds[idx]->msg.tx_address, 5);
-                        msg.TTL = 0x30;
-                        msg.timestamp = 0x3030;
                         uint8_t _data[] = {'O','K','2'};
-                        memcpy(msg.data, _data, sizeof(_data));
+                        message_create(START_BYTE_PAIRING,&msg,_cmds[idx]->msg.tx_address,_data,3);
                         __nrfRadio_LoadAckPayload(RADIO_PIPE0, msg.raw, 17);
                     }
                     //Configure with the following configuration
@@ -451,13 +441,8 @@ void radio_link_task()
                     {
                         uart_printString("check connection...", 1);
                         message_t msg = {0};
-                        msg.type = 'P';
-                        memcpy(msg.tx_address, _cmds[idx]->msg.rx_address, 5);
-                        memcpy(msg.rx_address, _cmds[idx]->msg.tx_address, 5);
-                        msg.TTL = 0x30;
-                        msg.timestamp = 0x3030;
                         uint8_t _data[] = {'O','K','3'};
-                        memcpy(msg.data, _data, sizeof(_data));
+                        message_create(START_BYTE_PAIRING,&msg,_cmds[idx]->msg.tx_address,_data,3);
                         __nrfRadio_LoadAckPayload(root.pipe, msg.raw, 17);
                     }
                     else if(_cmds[idx]->msg.data[1] == 'D')
