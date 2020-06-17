@@ -21,5 +21,5 @@ uint8_t radio_link_discovery();
 void radio_link_init();
 void radio_link_task();
 uint8_t radio_link_configure(uint8_t *address_tx, uint8_t *address_rx, uint8_t _address_length);
-uint8_t radio_link_execute(message_t msg);
+uint8_t radio_link_execute(message_packet_t *msg);
 uint8_t * radio_link_get_root_tx();

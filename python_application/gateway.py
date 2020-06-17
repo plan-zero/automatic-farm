@@ -112,10 +112,30 @@ def ack_msg_check(data):
             else:
                 print("Warning: TODO add error handler here")
 
+def join_network_msg_check(data):
+    if "<RX_DATA:J" in data and "<RX_PIPE:" in data:
+        #take the sender's address
+        res = re.search('<RX_DATA:J(.+?)>', data)
+        if res:
+            tx_address = res.group(1)[:5]
+        else:
+            return
+        res = re.search('<RX_PIPE:0(.+?)>', data)
+        if res:
+            pipe_no = res.group(1)
+        else:
+            return
+        print("Join requested by " + tx_address + " on pipe " + pipe_no)
+        res = NRF24.cmds["set_tx_addr"](tx_address, 0)
+        res = NRF24.cmds["set_tx_mode"](0)
+        res = NRF24.cmds["send_data"]("P" + str(radio_child_cfg["leaf_" + str(pipe_no)][2]) + tx_address + "000OKJOIN", 0.0001)
+        res = NRF24.cmds["set_rx_mode"](0)
 def serial_rec_cb(data):
     print("data:" + str(data))
     broadcast_pairing_msg_check(data)
     ack_msg_check(data)
+    join_network_msg_check(data)
+
 
 def init():
     global pairing_request_count

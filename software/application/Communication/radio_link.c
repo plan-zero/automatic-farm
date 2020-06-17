@@ -56,17 +56,9 @@ typedef struct{
     uint8_t failed_ack;
 }radio_link_t;
 
-typedef union{
-    struct{
-        uint8_t rx_address[5];
-        uint8_t tx_address[5];
-        uint8_t cmd_data[7];
-    };
-    uint8_t data[17];
-}radio_link_cmd_t;
 
 #define MAX_CMD 3
-radio_link_cmd_t _cmds[MAX_CMD];
+message_packet_t *_cmds[MAX_CMD];
 uint8_t cmd_idx = 0;
 
 uint16_t min_latency = 0xFFFF;
@@ -159,14 +151,12 @@ void radio_link_init()
     __nrfRadio_TransmitMode();
 }
 
-uint8_t radio_link_execute(message_t msg)
+uint8_t radio_link_execute(message_packet_t *msg)
 {
     if(cmd_idx < MAX_CMD)
     {
         uart_printString("Received execute cmd...",1);
-        memcpy(_cmds[cmd_idx].tx_address, msg.tx_address, RADIO_MAX_ADDRESS);
-        memcpy(_cmds[cmd_idx].rx_address, msg.rx_address, RADIO_MAX_ADDRESS);
-        memcpy(_cmds[cmd_idx].cmd_data, msg.data, 7);
+        _cmds[cmd_idx] = msg;
         cmd_idx++;
         return 1;
     }
@@ -281,23 +271,24 @@ void radio_link_task()
             for(uint8_t idx = 0; idx < cmd_idx; idx++)
             {
                 //check just the master answers
-                if(_cmds[idx].cmd_data[0] == '1' && tx_address_idx < MAX_MASTER_COUNT)
+                if(_cmds[idx]->msg.data[0] == '1' && tx_address_idx < MAX_MASTER_COUNT)
                 {
                     uart_printString("Master request ...",1);
                     //save master address
                     tx_address_latency[tx_address_idx] = malloc(sizeof(uint8_t)* RADIO_MAX_ADDRESS);
                     uint8_t addr[6] = {0};
                     addr[5] = '\0';
-                    memcpy(addr, _cmds[idx].tx_address, 5);
+                    memcpy(addr, _cmds[idx]->msg.tx_address, 5);
                     uart_printString(addr,1);
                     if(tx_address_latency[tx_address_idx])
                     {
-                        memcpy(tx_address_latency[tx_address_idx], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                        memcpy(tx_address_latency[tx_address_idx], _cmds[idx]->msg.tx_address, RADIO_MAX_ADDRESS);
                         tx_address_idx++;
                     }
                 }
                 //clean cmd message
-                memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
+                memset(_cmds[idx], 0, sizeof(message_packet_t));
+                _cmds[idx]->status = msg_status_empty;
             }
             cmd_idx = 0;
             //after 3 seconds
@@ -409,23 +400,23 @@ void radio_link_task()
         for(uint8_t idx = 0; idx < cmd_idx; idx++)
         {
             uart_printString("execute cmd...",1);
-            switch (_cmds[idx].cmd_data[0])
+            switch (_cmds[idx]->msg.data[0])
             {
             case '2':
             {
                 uart_printString("radio_link execute cmd 2",1);
                 //check if this master has the lowest ping rate
-                if(0 == memcmp(_cmds[idx].tx_address, selected_tx, RADIO_MAX_ADDRESS))
+                if(0 == memcmp(_cmds[idx]->msg.tx_address, selected_tx, RADIO_MAX_ADDRESS))
                 {
                     uart_printString("from selected master",1);
                     //request pair
-                    if(_cmds[idx].cmd_data[1] == 'R')
+                    if(_cmds[idx]->msg.data[1] == 'R')
                     {
                         uart_printString("request pair...", 1);
                         message_t msg = {0};
                         msg.type = 'P';
-                        memcpy(msg.tx_address, _cmds[idx].rx_address, 5);
-                        memcpy(msg.rx_address, _cmds[idx].tx_address, 5);
+                        memcpy(msg.tx_address, _cmds[idx]->msg.rx_address, 5);
+                        memcpy(msg.rx_address, _cmds[idx]->msg.tx_address, 5);
                         msg.TTL = 0x30;
                         msg.timestamp = 0x3030;
                         uint8_t _data[] = {'O','K','2'};
@@ -433,11 +424,11 @@ void radio_link_task()
                         __nrfRadio_LoadAckPayload(RADIO_PIPE0, msg.raw, 17);
                     }
                     //Configure with the following configuration
-                    else if(_cmds[idx].cmd_data[1] == 'P')
+                    else if(_cmds[idx]->msg.data[1] == 'P')
                     {
                         uart_printString("configure link...", 1);
-                        radio_link_configure(_cmds[idx].tx_address,
-                                            &_cmds[idx].cmd_data[2], 
+                        radio_link_configure(_cmds[idx]->msg.tx_address,
+                                            &_cmds[idx]->msg.data[2], 
                                             RADIO_MAX_ADDRESS);
                     }
                 }
@@ -445,7 +436,7 @@ void radio_link_task()
                 {
                     //refuse the pairing, there is another master that is more suitable
                     uint8_t config_ack_msg[8] = {'N','O','K'};
-                    memcpy(&config_ack_msg[3], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                    memcpy(&config_ack_msg[3], _cmds[idx]->msg.tx_address, RADIO_MAX_ADDRESS);
                     __nrfRadio_LoadAckPayload(RADIO_PIPE0, config_ack_msg, 8);
                 }
                 break;
@@ -454,22 +445,22 @@ void radio_link_task()
             //check the connection and if this is stable, then the pairing is complete
             case '3':
             {
-                if(0 == memcmp(_cmds[idx].tx_address, selected_tx, RADIO_MAX_ADDRESS))
+                if(0 == memcmp(_cmds[idx]->msg.tx_address, selected_tx, RADIO_MAX_ADDRESS))
                 {
-                    if(_cmds[idx].cmd_data[1] == 'C')
+                    if(_cmds[idx]->msg.data[1] == 'C')
                     {
                         uart_printString("check connection...", 1);
                         message_t msg = {0};
                         msg.type = 'P';
-                        memcpy(msg.tx_address, _cmds[idx].rx_address, 5);
-                        memcpy(msg.rx_address, _cmds[idx].tx_address, 5);
+                        memcpy(msg.tx_address, _cmds[idx]->msg.rx_address, 5);
+                        memcpy(msg.rx_address, _cmds[idx]->msg.tx_address, 5);
                         msg.TTL = 0x30;
                         msg.timestamp = 0x3030;
                         uint8_t _data[] = {'O','K','3'};
                         memcpy(msg.data, _data, sizeof(_data));
                         __nrfRadio_LoadAckPayload(root.pipe, msg.raw, 17);
                     }
-                    else if(_cmds[idx].cmd_data[1] == 'D')
+                    else if(_cmds[idx]->msg.data[1] == 'D')
                     {
                         memset(tx_address_latency, 0, RADIO_MAX_ADDRESS);
                         min_latency = 0xFFFF;
@@ -483,7 +474,8 @@ void radio_link_task()
             default:
                 break;
             }
-            memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
+            memset(_cmds[idx], 0, sizeof(message_packet_t));
+            _cmds[idx]->status = msg_status_empty;
         }
         cmd_idx = 0;
         break;
@@ -491,48 +483,48 @@ void radio_link_task()
         //send an ACK msg to parent to make sure that the connection is still working
         for(uint8_t idx = 0; idx < cmd_idx; idx++)
         {
-            if(_cmds[idx].cmd_data[0] == '4')
+            if(_cmds[idx]->msg.data[0] == '4')
             {
                 uart_printString("Child pairing request",1);
                 message_t msg = {0};
                 msg.type = 'P';
                 memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
-                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, _cmds[idx]->msg.tx_address, RADIO_MAX_ADDRESS);
                 msg.data[0] = '1';
                 __nrfRadio_TransmitMode();
                 __nrfRadio_LoadMessages(msg.raw, 15);
-                radio_tx_status res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
+                radio_tx_status res = __nrfRadio_Transmit(_cmds[idx]->msg.tx_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
                 if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
                     uart_printString("msg sent",1);
                 }
             }
-            else if(memcmp(_cmds[idx].cmd_data,"OK1", 3) == 0)
+            else if(memcmp(_cmds[idx]->msg.data,"OK1", 3) == 0)
             {
                 uart_printString("Child accepted this master",1);
                 message_t msg = {0};
                 msg.type = 'P';
                 memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
-                memcpy(msg.rx_address, _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(msg.rx_address, _cmds[idx]->msg.tx_address, RADIO_MAX_ADDRESS);
                 msg.data[0] = '2';
                 msg.data[1] = 'R';
                 __nrfRadio_TransmitMode();
                 __nrfRadio_LoadMessages(msg.raw, 16);
-                radio_tx_status res = __nrfRadio_Transmit(_cmds[idx].tx_address, RADIO_WAIT_TX);
+                radio_tx_status res = __nrfRadio_Transmit(_cmds[idx]->msg.tx_address, RADIO_WAIT_TX);
                 __nrfRadio_ListeningMode();
                 if(RADIO_TX_OK == res || RADIO_TX_OK_ACK_PYL == res){
                     uart_printString("msg sent",1);
                 }
                 msg.data[1] = 'P';
-                memcpy(&msg.data[2], _cmds[idx].tx_address, RADIO_MAX_ADDRESS);
+                memcpy(&msg.data[2], _cmds[idx]->msg.tx_address, RADIO_MAX_ADDRESS);
                 //send the pairing msg
                 communication_outbox_add(msg, 21, 15);
                 uint8_t rx_child_addr[RADIO_MAX_ADDRESS] = {0};
                 memcpy(rx_child_addr, network_rx_default_address, RADIO_MAX_ADDRESS);
                 rx_child_addr[0] = '0' + (child_count + 1);
-                _add_child(_cmds[idx].tx_address, rx_child_addr);
+                _add_child(_cmds[idx]->msg.tx_address, rx_child_addr);
             }
-            else if(memcmp(_cmds[idx].cmd_data,"OK2", 3) == 0)
+            else if(memcmp(_cmds[idx]->msg.data,"OK2", 3) == 0)
             {
                 uart_printString("Check connection with child",1);
                 message_t msg = {0};
@@ -551,17 +543,18 @@ void radio_link_task()
                 msg.data[1] = 'D';
                 communication_outbox_add(msg, 16, 15);
             }
-            else if(memcmp(_cmds[idx].cmd_data,"OK3", 3) == 0)
+            else if(memcmp(_cmds[idx]->msg.data,"OK3", 3) == 0)
             {
                 uart_printString("Child pair OK",1);
                 child[child_count].radio_link_status = link_established;
                 child_count++;
             }
-            else if(memcmp(_cmds[idx].cmd_data,"OKJOIN", 3) == 0)
+            else if(memcmp(_cmds[idx]->msg.data,"OKJOIN", 3) == 0)
             {
                 join_network = 1;
             }
-            memset(&_cmds[idx], 0, sizeof(radio_link_cmd_t));
+            memset(_cmds[idx], 0, sizeof(message_packet_t));
+            _cmds[idx]->status = msg_status_empty;
         }
         cmd_idx = 0;
         if(state_count % 1000 == 0)
@@ -570,11 +563,7 @@ void radio_link_task()
             {
                 //send a join network msg
                 message_t msg = {0};
-                msg.type = 'J';
-                memcpy(msg.tx_address, root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
-                memcpy(msg.rx_address, root.radio_tx_pipe_address, RADIO_MAX_ADDRESS);
-                //copy this rx address
-                memcpy(&msg.data[0], root.radio_rx_pipe_address, RADIO_MAX_ADDRESS);
+                message_create(START_BYTE_JOINNET,&msg, root.radio_tx_pipe_address,root.radio_rx_pipe_address,RADIO_MAX_ADDRESS);
                 communication_outbox_add(msg, 19, 0);
             }
             state_count = 0;

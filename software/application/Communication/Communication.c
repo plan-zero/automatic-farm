@@ -45,6 +45,7 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
         {
             messages_pack(&msg_in_buffer[idx], data, payload_length);
             msg_in_buffer[idx].status = msg_status_processing;
+            break;
         }
     }
 }
@@ -166,31 +167,34 @@ void communication_execute_messages()
         case START_BYTE_BROADCAST:
             {
                 uart_printString("Broadcast message received...",1);
-                if(radio_link_execute(msg_in_buffer[idx].msg))
+                if(radio_link_execute(&msg_in_buffer[idx]))
                 {
-                    //TODO add a warning because this message will be lost
+                    msg_in_buffer[idx].status == msg_status_executing;
                 }
             }
             break;
         case START_BYTE_BOOTKEY:
             {
                 ota_prepare(msg_in_buffer[idx].msg, msg_in_buffer[idx].data_length);
+                memset(&msg_in_buffer[idx],0,sizeof(message_packet_t));
+                msg_in_buffer[idx].status == msg_status_empty;
             }
             break;
         case START_BYTE_PAIRING:
             {
                 uart_printString("Pairing message received...",1);
-                if(radio_link_execute(msg_in_buffer[idx].msg))
+                if(radio_link_execute(&msg_in_buffer[idx]))
                 {
-                    //TODO add a warning because this message will be lost
+                    msg_in_buffer[idx].status == msg_status_executing;
                 }
             }
             break;
         case START_BYTE_JOINNET:
             {
                 uart_printString("Send this msg to the root",1);
-                memcpy(msg_in_buffer[idx].msg.rx_address,radio_link_get_root_tx(), RADIO_MAX_ADDRESS);
-                communication_outbox_add(msg_in_buffer[idx].msg, 19, 0);
+                message_t msg = {0};
+                message_create(START_BYTE_JOINNET, &msg, radio_link_get_root_tx(), msg.data, sizeof(msg.data));
+                communication_outbox_add(msg, 19, 0);
             }
             break;
         case START_BYTE_DATA:
@@ -206,6 +210,6 @@ void communication_execute_messages()
         default:
             break;
         }
-        memset(&msg_in_buffer[idx],0,sizeof(message_packet_t));
+        //
     }
 }
