@@ -61,6 +61,9 @@ add_subdirectory(application)
 #compile the testbench env
 add_subdirectory(testing/timer_testbench)
 add_subdirectory(testing/system_timer_testbench)
+
+#compile the application
+add_subdirectory(testing/oneWireDev_testbench)
                          
 
 

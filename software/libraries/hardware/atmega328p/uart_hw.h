@@ -54,7 +54,9 @@
 #define _UART_4MHZ 2
 #define _UART_8MHZ 3
 #define _UART_16MHZ 4
-#define _UART_COUNT_MHZ 5
+#define _UART_9216MHZ 5
+#define _UART_110592MHZ 6
+#define _UART_COUNT_MHZ 7
 
 #define _UART_9600BAUD  0
 #define _UART_19200BAUD 1
@@ -70,11 +72,13 @@
 const int16_t uart_values[_UART_COUNT_MHZ][_UART_COUNT_BAUD] = 
 {
 // 9600	  19200  57600  115200  250000 (U2X = 0)
-	{12,  6,     1,     0,      -1 },
-	{25,  12,    3,     1,      0},
-	{51,  25,    8,     3,      1 },
-	{103, 51,    16,    8,      3 },
-	{207, 103,   34,    16,     7 }
+	{12,  6,     1,     0,      -1 }, //1MHZ
+	{25,  12,    3,     1,      0},  //2MHZ
+	{51,  25,    8,     3,      1 }, //4MHZ
+	{103, 51,    16,    8,      3 }, //8MHZ
+	{207, 103,   34,    16,     7 }, //16MHZ
+	{119, 59,    19,    9,      4 }, //9.216MHZ
+	{143, 71,    23,    11,     4 }, //11,059,200MHZ
 };
 #elif (UART_2X_ENABLE == 0)
 const int16_t uart_values[_UART_COUNT_MHZ][_UART_COUNT_BAUD] = 
@@ -84,7 +88,9 @@ const int16_t uart_values[_UART_COUNT_MHZ][_UART_COUNT_BAUD] =
 	{12,  6,     1,     0,      -1 }, //2MHZ
 	{25,  12,    3,     1,       0 }, //4MHZ
 	{51,  25,    8,     3,       1 }, //8MHZ
-	{103, 51,   16,     8,       3 }  //16MHZ
+	{103, 51,   16,     8,       3 }, //16MHZ
+	{59,  29,    9,     4,       1 }, //9.216MHZ
+	{71,  35,   11,     5,       2 }, //11.059.200MHZ
 };
 #endif
 

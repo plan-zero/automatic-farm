@@ -35,7 +35,8 @@
 #define UART_8MHZ 3
 #define UART_16MHZ 4
 #define UART_9216MHZ 5
-#define UART_COUNT_MHZ 6
+#define UART_110592MHZ 6
+#define UART_COUNT_MHZ 7
 
 #define UART_9600BAUD  0
 #define UART_19200BAUD 1
