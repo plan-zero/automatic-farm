@@ -19,19 +19,18 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/../../../cmake_config/generic-avr-gcc.cmake")
 
 # Name your project
-project(ONEWIRE_TEST)
+project(DS18B20)
 
 set(HEADER_INC
-    ./../../libraries/drivers/uart/inc
-    ./../../libraries/modules/ds18b20/inc
-    ./../../libraries/hardware/${AVR_MCU}
+    ./inc
+    ./../../hardware/${AVR_MCU}
 )
 include_directories(${HEADER_INC})
 
 set(SOURCE_FILES
-    ./main.c
+    ./src/ds18b20.c
 )
-avr_add_executable(onewire_test ${SOURCE_FILES})
-target_link_libraries(onewire_test.elf uart ds18b20)
+avr_add_library(ds18b20 ${SOURCE_FILES})
+
 
 
