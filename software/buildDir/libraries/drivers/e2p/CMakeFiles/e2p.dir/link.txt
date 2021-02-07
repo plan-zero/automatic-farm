@@ -1,2 +1,0 @@
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar qc libe2p.a  CMakeFiles/e2p.dir/src/e2p.c.obj
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib libe2p.a

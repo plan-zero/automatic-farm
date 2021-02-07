@@ -1,1 +1,0 @@
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc -O3 -DNDEBUG  -mmcu=atmega328p -Wl,-Map=onewire_test.map,--cref -Wl,--relax,--gc-sections CMakeFiles/onewire_test.elf.dir/main.c.obj  -o onewire_test.elf ../../libraries/drivers/uart/libuart.a 

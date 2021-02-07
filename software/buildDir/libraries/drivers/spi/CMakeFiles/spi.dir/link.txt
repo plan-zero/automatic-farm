@@ -1,2 +1,0 @@
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar qc libspi.a  CMakeFiles/spi.dir/src/spi.c.obj
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib libspi.a

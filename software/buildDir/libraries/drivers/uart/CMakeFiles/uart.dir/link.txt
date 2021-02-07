@@ -1,2 +1,0 @@
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar qc libuart.a  CMakeFiles/uart.dir/src/uart.c.obj
-/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib libuart.a
