@@ -102,7 +102,7 @@ inline void MAIN_setup()
         timer_normal_operationm,
         timer_prescaler_64,
         0, //initial counter value
-        123, //initial output cmp value
+        85, //initial output cmp value
         0, //initial input cmp value
         inst_tim_t, //timer type
         timer_ch_a,//target timer channel
