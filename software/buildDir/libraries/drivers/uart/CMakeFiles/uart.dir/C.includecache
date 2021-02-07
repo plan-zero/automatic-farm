@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../libraries/drivers/uart/./../../hardware/atmega328p/interrupt_hw.h
+avr/io.h
+-
+avr/interrupt.h
+-
+
+../libraries/drivers/uart/./../../hardware/atmega328p/uart_hw.h
+avr/io.h
+-
+stdint.h
+../libraries/drivers/uart/./../../hardware/atmega328p/stdint.h
+
+../libraries/drivers/uart/./inc/uart.h
+stdint.h
+../libraries/drivers/uart/./inc/stdint.h
+
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/uart/src/uart.c
+uart.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/uart/src/uart.h
+uart_hw.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/uart/src/uart_hw.h
+interrupt_hw.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/uart/src/interrupt_hw.h
+stdlib.h
+-
+

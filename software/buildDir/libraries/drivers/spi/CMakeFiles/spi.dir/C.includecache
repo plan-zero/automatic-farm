@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../libraries/drivers/spi/./../../hardware/atmega328p/flash_layout.h
+
+../libraries/drivers/spi/./../../hardware/atmega328p/spi_hw.h
+avr/io.h
+-
+
+../libraries/drivers/spi/./inc/spi.h
+stdio.h
+-
+stdlib.h
+-
+flash_layout.h
+../libraries/drivers/spi/./inc/flash_layout.h
+
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/spi/src/spi.c
+spi.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/spi/src/spi.h
+spi_hw.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/spi/src/spi_hw.h
+

@@ -1,0 +1,1 @@
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-gcc -O3 -DNDEBUG  -mmcu=atmega328p -Wl,-Map=timer_test.map,--cref -Wl,--relax,--gc-sections CMakeFiles/timer_test.elf.dir/timer_test.c.obj  -o timer_test.elf ../../libraries/drivers/uart/libuart.a ../../libraries/drivers/timer/libtimer.a 

@@ -1,0 +1,2 @@
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar qc libnrf24.a  CMakeFiles/nrf24.dir/src/nrf24Radio.c.obj CMakeFiles/nrf24.dir/src/nrf24Radio_shared.c.obj
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib libnrf24.a

@@ -1,0 +1,2 @@
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar qc libwdg.a  CMakeFiles/wdg.dir/src/wdg.c.obj
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib libwdg.a

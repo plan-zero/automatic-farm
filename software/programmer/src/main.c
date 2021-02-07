@@ -203,7 +203,7 @@ int main(void)
 {
 	//initilize uart
 
-	uart_init(UART_576000BAUD, UART_9216MHZ, UART_PARITY_NONE);
+	uart_init(UART_576000BAUD, UART_110592MHZ, UART_PARITY_NONE);
 	system_timer_init();
 	INT_GLOBAL_EN();
 	system_timer_start();

@@ -1,0 +1,2 @@
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ar qc libsystem-timer.a  CMakeFiles/system-timer.dir/src/system-timer.c.obj
+/home/ame/git_projects/automatic-farm/tools/avr8-gnu-toolchain-linux_x86_64/bin/avr-ranlib libsystem-timer.a

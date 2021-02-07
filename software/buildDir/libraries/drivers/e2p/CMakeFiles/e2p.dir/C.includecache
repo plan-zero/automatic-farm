@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../libraries/drivers/e2p/./../../hardware/atmega328p/e2p_layout.h
+
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/e2p/src/e2p.c
+e2p_layout.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/e2p/src/e2p_layout.h
+stdint.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/e2p/src/stdint.h
+string.h
+/home/ame/cleanProject/automatic-farm/software/libraries/drivers/e2p/src/string.h
+

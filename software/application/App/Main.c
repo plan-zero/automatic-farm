@@ -91,7 +91,7 @@ voidFunctionTypeVoid oneMsTask = NULL;
 inline void MAIN_setup()
 {
     //uart initialization
-    uart_init(UART_9600BAUD, UART_8MHZ, UART_PARITY_NONE);
+    uart_init(UART_9600BAUD, UART_110592MHZ, UART_PARITY_NONE);
     uart_printString("Application", 1);
     //Timer initialization
     timer_interrupt ti;
