@@ -95,6 +95,24 @@ if [ "$1" == "WSL" ]; then
 
     fi
 
+elif [ "$1" == "RPI" ]; then
+    #generate a new key
+    if [ -f "~/.ssh/rpi.pub" ]; then
+        echo "Public key is already installed, if this still not work, please remove manually the ~/.ssh/rpi.pub key and try again!"
+    else
+        echo "Installing public key"
+        ssh-keygen -t rsa -N "" -f ~/.ssh/rpi
+        ssh-copy-id -i ~/.ssh/rpi.pub pi@192.168.3.1
+        ssh pi@192.168.3.1 'mkdir /home/pi/avrdudebin'
+
+        echo "Install avr_flash on remote machine!"
+        ##generate code
+        echo 'avr_flash_rpi() {' >> ~/.bashrc
+        echo '    ssh pi@192.168.3.1 "rm /home/pi/avrdudebin/*"'
+        echo '    scp $2 pi@192.168.3.1:/home/pi/avrdudebin/'
+        echo '    ssh pi@192.168.3.1 "sudo avrdude -c linuxgpio -p $1 -P usb -U flash:w:$2"' >> ~/.bashrc
+        echo '}' >> ~/.bashrc
+    fi
 
 else
     if [[ $out == *"avrdude is"* ]]; then

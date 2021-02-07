@@ -5,7 +5,7 @@
 #include <util/delay.h>
 #include "stdint.h"
 #include "stdio.h"
-
+#include "atmega-adc.h"
 
 
 int main()
@@ -16,12 +16,19 @@ int main()
 
     char string[20];
     uint32_t data = 0;
+    uint32_t adc = 0;
+    double tmp = 0;
 
     while(1)
     {
         //sendData(75);
+        adc = adc_read(ADC_PRESCALER_32, ADC_VREF_AVCC, 0);
+        tmp = (adc * 3.3) / 1023.0 * 100.00;
+        adc = (int)tmp;
         data = ds18b20_gettemp();
         sprintf(string,"TMP:%u", (int)data);
+        uart_printString(string,1);
+        sprintf(string, "ADC:%d",adc);
         uart_printString(string,1);
         PORTD ^= 0x08;
         _delay_ms(1000);

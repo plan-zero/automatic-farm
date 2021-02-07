@@ -37,6 +37,7 @@ endif()
 add_subdirectory(libraries/hardware/${AVR_MCU})
 
 #compile the drivers
+add_subdirectory(libraries/drivers/adc)
 add_subdirectory(libraries/drivers/spi)
 add_subdirectory(libraries/drivers/uart)
 add_subdirectory(libraries/drivers/e2p)
