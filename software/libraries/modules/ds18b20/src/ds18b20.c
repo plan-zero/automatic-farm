@@ -104,10 +104,10 @@ uint8_t ds18b20_readbyte(void){
 /*
  * get temperature
  */
-uint32_t ds18b20_gettemp() {
+int32_t ds18b20_gettemp() {
 	uint8_t temperature_l;
 	uint8_t temperature_h;
-	uint32_t retd = 0;
+	int32_t retd = 0;
 
 	#if DS18B20_STOPINTERRUPTONREAD == 1
 	cli();
@@ -132,9 +132,8 @@ uint32_t ds18b20_gettemp() {
 	#endif
 
 	//convert the 12 bit value obtained
-	double tmp;
-	tmp = ( ( temperature_h << 8 ) + temperature_l ) * 0.0625;
-	retd = (int)(tmp * 100.0);
+	int16_t tmp = (int16_t)( (temperature_h << 8) | temperature_l);
+	retd = (int32_t)tmp * 100 / 16;
 
 	return retd;
 }

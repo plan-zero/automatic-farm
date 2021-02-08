@@ -41,6 +41,6 @@ References:
 #define DS18B20_STOPINTERRUPTONREAD 1
 
 //functions
-extern uint32_t ds18b20_gettemp();
+extern int32_t ds18b20_gettemp();
 
 #endif

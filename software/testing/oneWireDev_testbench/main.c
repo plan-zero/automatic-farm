@@ -15,7 +15,7 @@ int main()
     uart_printString("One wire testing", 1);
 
     char string[20];
-    uint32_t data = 0;
+    int32_t data = 0;
     uint32_t adc = 0;
     double tmp = 0;
 
@@ -26,7 +26,7 @@ int main()
         tmp = (adc * 3.3) / 1023.0 * 100.00;
         adc = (int)tmp;
         data = ds18b20_gettemp();
-        sprintf(string,"TMP:%u", (int)data);
+        sprintf(string,"TMP:%ld", data);
         uart_printString(string,1);
         sprintf(string, "ADC:%d",adc);
         uart_printString(string,1);
