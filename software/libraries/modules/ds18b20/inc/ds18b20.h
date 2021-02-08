@@ -42,5 +42,10 @@ References:
 
 //functions
 extern int32_t ds18b20_gettemp();
+extern uint8_t ds18b20_start_conv(uint8_t force_flag);
+extern uint8_t ds18b20_is_ready();
+
+#define STATUS_DS18B20_BUSY   1
+#define STATUS_DS18B20_OK     0
 
 #endif
