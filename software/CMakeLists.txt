@@ -49,6 +49,7 @@ add_subdirectory(libraries/drivers/wdg)
 add_subdirectory(libraries/modules/nrf24)
 add_subdirectory(libraries/modules/system-timer)
 add_subdirectory(libraries/modules/ds18b20)
+add_subdirectory(libraries/modules/LowPower)
 
 #compile the firmware
 add_subdirectory(firmware)
