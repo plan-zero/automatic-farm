@@ -110,11 +110,13 @@ inline void MAIN_setup()
     };
     timer_init(0,tc);
     timer_register_callback(0, (timer_callback) notify1ms, 1);
-    
+    communication_init();
+
+
     oneMsTask = scheduler_getPointerTo1msTask();
     scheduler_add_task(sch_type_task_10ms, radio_link_task);
     scheduler_add_task(sch_type_task_10ms, communication_execute_messages);
-    scheduler_add_task(sch_type_task_100ms, communication_send_messages);
+    scheduler_add_task(sch_type_task_10ms, communication_send_messages);
 #ifdef ENABLE_TASK_TEST
     //scheduler_add_task(sch_type_task_1s, radio_link_task);
 #endif

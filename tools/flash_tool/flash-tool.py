@@ -43,7 +43,8 @@ CMD_PREFIX = "<CMD>"
 CMD_ABORT = "D01o"
 CMD_CRLF = "\r"
 CMD_TX_ADDR_DEFAULT = "A05"
-CMD_RX_ADDR_DEFAULT = "B05"
+CMD_RESET = "R00"
+CMD_RX_ADDR_DEFAULT = "B06"
 CMD_INIT_NRF_TX = "C00"
 CMD_INIT_NRF_RX = "C01L"
 CMD_START_WRITE = "D01w"
@@ -90,12 +91,7 @@ def print_message(msg, dbg_level):
 def connect_to_com_port(comPort, baud):
 	
 	#initialization and open the port
-
-	#possible timeout values:
-	#    1. None: wait forever, block call
-	#    2. 0: non-blocking mode, return immediately
-	#    3. x, x is bigger than 0, float allowed, timeout block call
-	ser_status = 0
+	#ser_status = 0
 	ser.port = comPort
 	ser.baudrate = baud
 	ser.bytesize = serial.EIGHTBITS #number of bits per bytes
@@ -239,7 +235,7 @@ def send_bootloader_key(key, tx):
 	command = CMD_PREFIX + "D15K" + RX_ADDRESS + tx + "000" + "R"
 	resp = send_command(command, 0.04)
 	#set RX address
-	if send_RX_Address(RX_ADDRESS) == 1:
+	if send_RX_Address(RX_ADDRESS, 0) == 1:
 		print("can't set rx mode")
 		return 1
 	#go in rx mode
@@ -265,7 +261,14 @@ def send_bootloader_key(key, tx):
 	
 	return 0
 		
-		
+def send_reset():
+	command = CMD_PREFIX + CMD_RESET
+	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
+	
+	if "<EXECUTE_CMD:52>" in resp:
+		return 0
+	return 1	
+	
 def send_TX_Address(Tx_addr):
 	command = CMD_PREFIX + CMD_TX_ADDR_DEFAULT + Tx_addr
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
@@ -274,8 +277,8 @@ def send_TX_Address(Tx_addr):
 		return 0
 
 	return 1
-def send_RX_Address(Rx_addr):
-	command = CMD_PREFIX + CMD_RX_ADDR_DEFAULT + Rx_addr
+def send_RX_Address(Rx_addr, pipe):
+	command = CMD_PREFIX + CMD_RX_ADDR_DEFAULT + str(pipe) + Rx_addr
 	resp = send_command(command, SLEEP_TIME_SERIAL_DEFAULT)	
 	
 	if "<SET_RX:" in resp and "<EXECUTE_CMD:42>" in resp:
@@ -423,68 +426,71 @@ def flash_data(tx, hex_file, crc, key):
 	out = read_flash_data(hex_file)
 	state = 1
 	tries = 5
+	if send_reset() == 1:
+		print_message("Reset procedure failed", ERROR)
+	else:
+		wait_command(1)
+		while (state != 99 and state != 98 and tries != 0):
+			if (state == 1):		# set TX address
+				retValue = send_TX_Address(tx)
+				if (retValue == 0):
+					state = 2
+				else:
+					print_message("Failed to set TX address", ERROR)
+					state = 99
 
-	while (state != 99 and state != 98 and tries != 0):
-		if (state == 1):		# set TX address
-			retValue = send_TX_Address(tx)
-			if (retValue == 0):
-				state = 2
-			else:
-				print_message("Failed to set TX address", ERROR)
-				state = 99
+			if (state == 2):		# init NRF
+				retValue = send_Init_NRF("TX")
+				if (retValue == 0):
+					state = 0
+				else:
+					print_message("Failed to init NRF", ERROR)
+					state = 99
+			if (state == 0): #sent bootloader key
+				if key != "+" and tries == 5:
+					retValue = send_bootloader_key(key, tx)
+				else:
+					retValue = 0
+				if (retValue == 0):
+					state = 3
+				else:
+					print_message("Target not responding", ERROR)
+					state = 99
+			if (state == 3):		# start write command
+				retValue = send_Start_Write()
+				if (retValue == 0):
+					state = 4
+				else:
+					print_message("Target can't enter in programming mode", ERROR)
+					state = 99
 
-		if (state == 2):		# init NRF
-			retValue = send_Init_NRF("TX")
-			if (retValue == 0):
-				state = 0
-			else:
-				print_message("Failed to init NRF", ERROR)
-				state = 99
-		if (state == 0): #sent bootloader key
-			if key != "+" and tries == 5:
-				retValue = send_bootloader_key(key, tx)
-			else:
-				retValue = 0
-			if (retValue == 0):
-				state = 3
-			else:
-				print_message("Target not responding", ERROR)
-				state = 99
-		if (state == 3):		# start write command
-			retValue = send_Start_Write()
-			if (retValue == 0):
-				state = 4
-			else:
-				print_message("Target can't enter in programming mode", ERROR)
-				state = 99
+			if (state == 4):		# write hex file
+				retValue = send_HEX_Data(crc, out)
+				if (retValue == 0):
+					state = 5
+				else:
+					print_message("Failed to write data", ERROR)
+					state = 99
 
-		if (state == 4):		# write hex file
-			retValue = send_HEX_Data(crc, out)
-			if (retValue == 0):
-				state = 5
-			else:
-				print_message("Failed to write data", ERROR)
-				state = 99
-
-		if (state == 5):		# stop flash
-			retValue = send_Stop_Flash_Confirm()
-			if (retValue == 0):
-				state = 98
-			else:
-				print_message("Fail to program target, aborting", ERROR)
-				state = 99
-				abort = 1
-		if state == 99:
-			tries -= 1
-			retValue = send_abort_command()
-			if retValue == 0:
-				print_message("Abort command sent", INFO)
-				time.sleep(1) #wait until the micro is restarting
-				print_message("Restart flashing, try no: " + str( (5 - tries) ), INFO)
-				state = 1
-			else:
-				print_message("Can't restart procedure, stop flash", ERROR)
-				tries = 0
+			if (state == 5):		# stop flash
+				retValue = send_Stop_Flash_Confirm()
+				if (retValue == 0):
+					state = 98
+				else:
+					print_message("Fail to program target, aborting", ERROR)
+					state = 99
+					abort = 1
+			if state == 99:
+				tries -= 1
+				retValue = send_abort_command()
+				if retValue == 0:
+					print_message("Abort command sent", INFO)
+					time.sleep(1) #wait until the micro is restarting
+					print_message("Restart flashing, try no: " + str( (5 - tries) ), INFO)
+					state = 1
+				else:
+					print_message("Can't restart procedure, stop flash", ERROR)
+					tries = 0
 			
 	return state
 
@@ -494,7 +500,7 @@ def main(argv):
 	if argv["-V"][0] == "*":
 		VERBOSE_MODE = 1
 	port = argv["-P"][0]
-	baud = argv["-B"][0]
+	baud = int(argv["-B"][0])
 	tx_addr = argv["-T"][0]
 	hex_file = argv["-H"][0]
 	key = argv["-K"][0]

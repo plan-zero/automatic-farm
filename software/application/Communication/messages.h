@@ -41,7 +41,7 @@ P4 AA:AA:AA:01:04
 P5 AA:AA:AA:01:05
 */
 
-#define MESSAGE_MAX_LENGTH 16
+#define MESSAGE_MAX_LENGTH 18
 
 #define START_BYTE_BROADCAST    (uint8_t)('B')
 #define START_BYTE_PAIRING      (uint8_t)('P')
@@ -49,9 +49,14 @@ P5 AA:AA:AA:01:05
 #define START_BYTE_PING         (uint8_t)('U')
 #define START_BYTE_BOOTKEY      (uint8_t)('K')
 #define START_BYTE_ACK          (uint8_t)('A')
+#define START_BYTE_JOINNET      (uint8_t)('J')
 
 typedef enum{
     msg_status_pending,
+    msg_status_processing,
+    msg_status_executing,
+    msg_status_executed,
+    msg_status_forwarding,
     msg_status_empty,
     msg_status_not_sent,
 }msg_status_t;
@@ -59,8 +64,8 @@ typedef enum{
 typedef union{
     struct{
         uint8_t type; // first byte is the message type
-        uint8_t tx_address[RADIO_MAX_ADDRESS]; //the rx address of sending node is actually tx for this
-        uint8_t rx_address[RADIO_MAX_ADDRESS]; //same, the tx address of sending node is actually rx for this
+        uint8_t rx_address[RADIO_MAX_ADDRESS]; //the rx address of sending node is actually tx for this
+        uint8_t tx_address[RADIO_MAX_ADDRESS]; //same, the tx address of sending node is actually rx for this
         uint16_t timestamp;
         uint8_t TTL;
         uint8_t data[MESSAGE_MAX_LENGTH];
@@ -72,9 +77,15 @@ typedef struct{
     message_t msg;
     uint8_t data_length;
     uint8_t id;
+    uint8_t delay;
+    uint8_t retry;
     msg_status_t status;
 }message_packet_t;
 
-#define MSG_STRUCT_SIZE 30//(uint8_t)(sizeof(message_t) / sizeof(uint8_t))
+extern uint8_t GLOBAL_MSG_ID;
+
+void messages_pack(message_packet_t *msg_pachet, uint8_t *data, uint8_t data_len);
+void message_create(uint8_t type, message_t *msg, uint8_t *tx, uint8_t *data, uint8_t data_len);
+uint8_t messages_is_this_rx(uint8_t *data, uint8_t data_len);
 
 #endif //_MESSAGES_H

@@ -28,29 +28,40 @@
 
 #define COMMUNICATION_MAX_IN_BUFFER 5
 message_packet_t msg_in_buffer[COMMUNICATION_MAX_IN_BUFFER];
-uint8_t msg_in_count = 0;
 
 #define COMMUNICATION_TX_FIFO_SIZE 3
 #define COMMUNICATION_MAX_OUT_BUFFER 5
 message_packet_t msg_out_buffer[COMMUNICATION_MAX_OUT_BUFFER];
-uint8_t msg_out_count = 0;
 
-uint8_t GLOBAL_MSG_ID = 0;
-uint8_t pending_msg = 0;
 
 void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length)
 {
     //assemble the message in a known format
-    uart_printString("msg",1);
-    if(payload_length <= (sizeof(message_t)) && msg_in_count < COMMUNICATION_MAX_IN_BUFFER)
+    
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_IN_BUFFER; idx++)
     {
-        memcpy(&msg_in_buffer[msg_in_count].msg.raw, data, payload_length);
-        msg_in_buffer[msg_in_count].id = GLOBAL_MSG_ID++; //assign an ID to recgonize it later
-        if(payload_length > 14) //this is the header of msg
-            msg_in_buffer[msg_in_count].data_length = payload_length - 14;
-        else
-            msg_in_buffer[msg_in_count].data_length = 0; //can't determine the msg length
-        msg_in_count++;
+        //find an empty slot
+        if(msg_in_buffer[idx].status == msg_status_empty)
+        {
+            if(messages_is_this_rx(data, payload_length))
+            {
+                uart_printString("message received, processing",1);
+                messages_pack(&msg_in_buffer[idx], data, payload_length);
+                msg_in_buffer[idx].status = msg_status_processing;
+            }
+            else if(payload_length >= 14)
+            {
+                //copy the message to buffer
+                uart_printString("message received, fw",1);
+                memcpy(&msg_in_buffer[idx].msg.raw, data, payload_length);
+                msg_in_buffer[idx].status = msg_status_forwarding;
+            }
+            else
+            {
+                uart_printString("message received, ignore",1);
+            }
+            break;
+        }
     }
 }
 
@@ -60,16 +71,33 @@ void tx_handler(radio_tx_status status)
 
 }*/
 
-communication_status_t communication_outbox_add(message_t msg, uint8_t len)
+void communication_init()
 {
-    if(msg_out_count < COMMUNICATION_MAX_OUT_BUFFER)
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_OUT_BUFFER; idx++)
     {
-        memcpy(&msg_out_buffer[msg_out_count].msg, &msg, sizeof(message_t));
-        msg_out_buffer[msg_out_count].id = GLOBAL_MSG_ID++;
-        msg_out_buffer[msg_out_count].status = msg_status_pending;
-        msg_out_buffer[msg_out_count].data_length = len;
-        msg_out_count++;
-        return communication_outbox_ok;
+        msg_out_buffer[idx].status = msg_status_empty;
+    }
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_IN_BUFFER; idx++)
+    {
+        msg_in_buffer[idx].status = msg_status_empty;
+    }
+}
+
+communication_status_t communication_outbox_add(message_t msg, uint8_t len, uint8_t delay)
+{
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_OUT_BUFFER; idx++)
+    {
+        if(msg_out_buffer[idx].status == msg_status_empty)
+        {
+            memcpy(&msg_out_buffer[idx].msg.raw, &msg.raw, sizeof(message_t));
+            msg_out_buffer[idx].id = GLOBAL_MSG_ID++;
+            msg_out_buffer[idx].status = msg_status_pending;
+            msg_out_buffer[idx].data_length = len;
+            msg_out_buffer[idx].delay = delay;
+            msg_out_buffer[idx].retry = 3; //by default
+            return communication_outbox_ok;
+        }
+
     }
     return communication_outbox_full;
 }
@@ -77,87 +105,126 @@ communication_status_t communication_outbox_add(message_t msg, uint8_t len)
 void communication_send_messages()
 {
 
-    if(msg_out_count)
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_OUT_BUFFER; idx++)
     {
-        uint8_t not_sent_count = 0;
-        __nrfRadio_TransmitMode();
-        for(uint8_t idx = 0; idx < msg_out_count; idx++)
+        if(msg_out_buffer[idx].status == msg_status_pending)
         {
-            uint8_t addr_tmp[5] = {0};
-            memcpy(addr_tmp, msg_out_buffer[idx].msg.tx_address, RADIO_MAX_ADDRESS);
-            memcpy(msg_out_buffer[idx].msg.tx_address, msg_out_buffer[idx].msg.rx_address, RADIO_MAX_ADDRESS);
-            memcpy(msg_out_buffer[idx].msg.rx_address, addr_tmp, RADIO_MAX_ADDRESS);
-            uart_printString("Send msg from outbox...",1);
-            __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
-            radio_tx_status status = __nrfRadio_Transmit(addr_tmp, RADIO_WAIT_TX);
-            if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
+            if( msg_out_buffer[idx].delay == 0 )
             {
-                //we'll delete this message because it was sent
-                memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
-                msg_out_buffer[idx].status = msg_status_empty;
+
+                uart_printString("Send msg from outbox...",1);
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
+                radio_tx_status status = __nrfRadio_Transmit(msg_out_buffer[idx].msg.tx_address, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
+                {
+                    //we'll delete this message because it was sent
+                    memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
+                    msg_out_buffer[idx].status = msg_status_empty;
+                }
+                else
+                {
+                    uart_printString("MSG:NACK",1);
+                    msg_out_buffer[idx].status = msg_status_not_sent;
+                    //TODO: add an error handler for this case
+                }
             }
             else
             {
-                not_sent_count++;
-                uart_printString("MSG:NACK",1);
-                msg_out_buffer[idx].status = msg_status_not_sent;
-                //TODO: add an error handler for this case
+                msg_out_buffer[idx].delay--;
             }
-            
         }
-        if(not_sent_count)
+        else if(msg_out_buffer[idx].status == msg_status_not_sent)
         {
-            //rearange messages
+            if(msg_out_buffer[idx].retry)
+            {
+                __nrfRadio_TransmitMode();
+                __nrfRadio_LoadMessages(msg_out_buffer[idx].msg.raw, msg_out_buffer[idx].data_length);
+                radio_tx_status status = __nrfRadio_Transmit(msg_out_buffer[idx].msg.tx_address, RADIO_WAIT_TX);
+                __nrfRadio_ListeningMode();
+                if(RADIO_TX_OK == status || RADIO_TX_OK_ACK_PYL == status)
+                {
+                    //we'll delete this message because it was sent
+                    memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
+                    msg_out_buffer[idx].status = msg_status_empty;
+                }
+                else
+                {
+                    msg_out_buffer[idx].retry--;
+                    uart_printString("MSG:NACK",1);
+                }
+            }
+
+            if(msg_out_buffer[idx].retry == 0)
+            {
+                    //we'll delete this message because it can't be sent
+                    memset(&msg_out_buffer[idx], 0, sizeof(message_packet_t));
+                    msg_out_buffer[idx].status = msg_status_empty;
+            }
         }
-        msg_out_count = 0;
-        __nrfRadio_ListeningMode();
+        
     }
 }
 
 void communication_execute_messages()
 {
-    for(uint8_t idx = 0; idx < msg_in_count; idx++)
+    for(uint8_t idx = 0; idx < COMMUNICATION_MAX_IN_BUFFER; idx++)
     {
-        switch (msg_in_buffer[idx].msg.type)
+        //if the message is processing
+        if(msg_in_buffer[idx].status == msg_status_processing)
+            switch (msg_in_buffer[idx].msg.type)
+            {
+            case START_BYTE_BROADCAST:
+                {
+                    uart_printString("Broadcast message received...",1);
+                    if(radio_link_execute(&msg_in_buffer[idx]))
+                    {
+                        msg_in_buffer[idx].status == msg_status_executing;
+                    }
+                }
+                break;
+            case START_BYTE_BOOTKEY:
+                {
+                    ota_prepare(msg_in_buffer[idx].msg, msg_in_buffer[idx].data_length);
+                    memset(&msg_in_buffer[idx],0,sizeof(message_packet_t));
+                    msg_in_buffer[idx].status == msg_status_empty;
+                }
+                break;
+            case START_BYTE_PAIRING:
+                {
+                    uart_printString("Pairing message received...",1);
+                    if(radio_link_execute(&msg_in_buffer[idx]))
+                    {
+                        msg_in_buffer[idx].status == msg_status_executing;
+                    }
+                }
+                break;
+            case START_BYTE_JOINNET:
+                {
+                    uart_printString("Send this msg to the root",1);
+                    message_t msg = {0};
+                    message_create(START_BYTE_JOINNET, &msg, radio_link_get_root_tx(), msg.data, sizeof(msg.data));
+                    communication_outbox_add(msg, 19, 0);
+                }
+                break;
+            case START_BYTE_DATA:
+                {
+
+                }
+                break;
+            case START_BYTE_PING:
+                {
+
+                }
+                break;
+            default:
+                break;
+            }
+            //
+        else if(msg_in_buffer[idx].status == msg_status_forwarding)
         {
-        case START_BYTE_BROADCAST:
-            {
-                uart_printString("Broadcast message received...",1);
-                if(radio_link_execute(msg_in_buffer[idx].msg))
-                {
-                    //TODO add a warning because this message will be lost
-                }
-            }
-            break;
-        case START_BYTE_BOOTKEY:
-            {
-                ota_prepare(msg_in_buffer[idx].msg, msg_in_buffer[idx].data_length);
-            }
-            break;
-        case START_BYTE_PAIRING:
-            {
-                uart_printString("Pairing message received...",1);
-                if(radio_link_execute(msg_in_buffer[idx].msg))
-                {
-                    //TODO add a warning because this message will be lost
-                }
-            }
-            break;
-        case START_BYTE_DATA:
-            {
-
-            }
-            break;
-        case START_BYTE_PING:
-            {
-
-            }
-            break;
-        default:
-            break;
+            //fw the message here
         }
-        memset(&msg_in_buffer[idx],0,sizeof(message_packet_t));
     }
-    
-    msg_in_count = 0;
 }

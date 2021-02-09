@@ -63,6 +63,7 @@ uint8_t cmd_available = 0;
 #define CMD_SEND_TX					'D'
 #define CMD_SEND_ASCII_HEX			'E'
 #define CMD_SEND_PING				'P'
+#define CMD_RESET					'R'
 
 #define CMD_TOGGLE_CONSOLE			'O'
 uint8_t uart_console = 0;
@@ -220,7 +221,44 @@ int main(void)
 	uint8_t uart_rx_err = 0;
 
 	wdg_init(wdgto_500MS);
-	
+
+	radio_config cfg = 
+	{ 
+		RADIO_ADDRESS_5BYTES,
+		RADIO_RT,
+		RADIO_RETRANSMIT_15,
+		CHANNEL_112,
+		RADIO_RATE,
+		RADIO_CRC2_ENABLED,
+		RADIO_COUNT_WAVE_DISABLED,
+		RADIO_HIGHEST_0DBM,
+		RADIO_DYNAMIC_PAYLOAD_ENABLED,
+		RADIO_ACK_PAYLOAD_ENABLED,
+		RADIO_DYNAMIC_ACK_DISABLED,
+		RADIO_APPLICATION 
+	};
+	__nrfRadio_Init(cfg);
+	__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
+	__nrfRadio_SetRxCallback(rx_handler);
+	__nrfRadio_SetTxCallback(tx_handler);
+	pipe_config pipe_cfg0 =
+	{
+		RADIO_PIPE0,
+		rx_addr,
+		5,
+		RADIO_PIPE_RX_DISABLED,
+		RADIO_PIPE_AA_ENABLED,
+		RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
+	};
+	__nrfRadio_PipeConfig(pipe_cfg0);
+	pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
+	for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
+	{
+		pipe_cfg0.pipe = p;
+		__nrfRadio_PipeConfig(pipe_cfg0);
+	}
+	__nrfRadio_PowerUp();
+
     while (1) 
     {
 		wdg_kick();
@@ -311,107 +349,49 @@ int main(void)
 				case CMD_SET_RX_ADDR:
 					uart_printRegister(command_type);
 					uart_printString(">",1);
-					if(command_len == 5)
+					if(command_len == 6 && (cmd[0]>='0' && cmd[0]<='5'))
 					{
 						uart_printString("<SET_RX:",0);
-						char tmp[7];
-						for(uint8_t idx = 0; idx < command_len; idx ++){
-							rx_addr[idx] = cmd[idx];
-							tmp[idx] = cmd[idx];
-						}
-						tmp[5] = '>';
-						tmp[6] = '\0';
-						uart_printString(tmp,1);
-					}
-					else
-						uart_printString("<SET_RX:LENGTH_ERR>", 1);
-				break;
-				
-				case CMD_CONFIGURE_RADIO:
-					uart_printRegister(command_type);
-					uart_printString(">",1);
-					if(0 == command_len)
-					{
-						//init = 1;
-						uart_printString("<NRF_CONFIG:STARTING>", 1);
-						radio_config cfg = 
-						{ 
-							RADIO_ADDRESS_5BYTES,
-							RADIO_RT,
-							RADIO_RETRANSMIT_15,
-							CHANNEL_112,
-							RADIO_RATE,
-							RADIO_CRC2_ENABLED,
-							RADIO_COUNT_WAVE_DISABLED,
-							RADIO_HIGHEST_0DBM,
-							RADIO_DYNAMIC_PAYLOAD_ENABLED,
-							RADIO_ACK_PAYLOAD_ENABLED,
-							RADIO_DYNAMIC_ACK_DISABLED,
-							RADIO_APPLICATION 
-						};
-						__nrfRadio_Init(cfg);
-						pipe_config pipe_cfg0 =
+						radio_pipe p = cmd[0] - '0';
+						pipe_config pipecfg =
 						{
-							RADIO_PIPE0,
-							rx_addr,
+							p,
+							&cmd[1],
 							5,
 							RADIO_PIPE_RX_ENABLED,
 							RADIO_PIPE_AA_ENABLED,
 							RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
 						};
-						__nrfRadio_PipeConfig(pipe_cfg0);
-						pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
-						for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
-						{
-							pipe_cfg0.pipe = p;
-							__nrfRadio_PipeConfig(pipe_cfg0);
-						}
-						__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
-						__nrfRadio_SetRxCallback(rx_handler);
-						__nrfRadio_SetTxCallback(tx_handler);
+						__nrfRadio_PowerDown();
+						__nrfRadio_PipeConfig(pipecfg);
 						__nrfRadio_PowerUp();
+						char tmp[8];
+						memcpy(tmp, cmd, 6);
+						tmp[6] = '>';
+						tmp[7] = '\0';
+						uart_printString(tmp,1);
+					}
+					else
+						uart_printString("<SET_RX:LENGTH_ERR>", 1);
+				break;
+				case CMD_RESET:
+					//perform a reset here
+					uart_printRegister(command_type);
+					uart_printString(">",1);
+					while(1);
+					break;
+				case CMD_CONFIGURE_RADIO:
+					uart_printRegister(command_type);
+					uart_printString(">",1);
+					if(0 == command_len)
+					{
+						uart_printString("<NRF_CONFIG:STARTING>", 1);
 						__nrfRadio_TransmitMode();
 						uart_printString("<NRF_CONFIG:DONE>",1);
 					}
 					else if(cmd[0] == 'L' && command_len == 1)
 					{
 						uart_printString("<NRF_CONFIG:STARTING>", 1);
-						radio_config cfg =
-						{
-							RADIO_ADDRESS_5BYTES,
-							RADIO_RT,
-							RADIO_RETRANSMIT_15,
-							CHANNEL_112,
-							RADIO_RATE,
-							RADIO_CRC2_ENABLED,
-							RADIO_COUNT_WAVE_DISABLED,
-							RADIO_HIGHEST_0DBM,
-							RADIO_DYNAMIC_PAYLOAD_ENABLED,
-							RADIO_ACK_PAYLOAD_ENABLED,
-							RADIO_DYNAMIC_ACK_DISABLED,
-							RADIO_APPLICATION
-						};
-						__nrfRadio_Init(cfg);
-						pipe_config pipe_cfg0 =
-						{
-							RADIO_PIPE0,
-							rx_addr,
-							5,
-							RADIO_PIPE_RX_ENABLED,
-							RADIO_PIPE_AA_ENABLED,
-							RADIO_PIPE_DYNAMIC_PYALOAD_ENABLED
-						};
-						__nrfRadio_PipeConfig(pipe_cfg0);
-						pipe_cfg0.enable_rx_address = RADIO_PIPE_RX_DISABLED;
-						for(radio_pipe p = RADIO_PIPE1; p <= RADIO_PIPE5; p++)
-						{
-							pipe_cfg0.pipe = p;
-							__nrfRadio_PipeConfig(pipe_cfg0);
-						}
-						__nrfRadio_FlushBuffer(RADIO_BOTH_BUFFER);
-						__nrfRadio_SetRxCallback(rx_handler);
-						__nrfRadio_SetTxCallback(tx_handler);
-						__nrfRadio_PowerUp();
 						__nrfRadio_ListeningMode();
 						uart_printString("<NRF_CONFIG:DONE_RX>",1);
 					}
