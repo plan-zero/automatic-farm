@@ -6,7 +6,8 @@
 #include "stdint.h"
 #include "stdio.h"
 #include "atmega-adc.h"
-
+#include "lowpower.h"
+#include "wdg.h"
 
 int main()
 {
@@ -29,17 +30,19 @@ int main()
         {
             uart_printString("DS18 device busy!",1);
         }
-        if(ds18b20_is_ready())
-        {
-            data = ds18b20_gettemp();
-            sprintf(string,"TMP:%ld", data);
-            uart_printString(string,1);
-        }
-
-        //sprintf(string, "ADC:%d",adc);
-        //uart_printString(string,1);
-        //PORTD ^= 0x08;
+        while(!ds18b20_is_ready());
+        
+        data = ds18b20_gettemp();
+        sprintf(string,"TMP:%ld", data);
+        uart_printString(string,1);
         _delay_ms(100);
+        
+        //go to sleep for 8 sec
+        //
+        goToSleep(WAKEUP_4S);
+        
+
+        
 
     }
 }
