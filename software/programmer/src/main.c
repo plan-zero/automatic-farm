@@ -40,6 +40,14 @@
 #include "lowpower.h"
 #include "ds18b20.h"
 
+#define BUCK_5V_SETUP() 	DDRD |= 0x20
+#define BUCK_5V_ON() 		PORTD &= 0xDF
+#define BUCK_5V_OFF()	 	PORTD |= 0x20
+
+#define BUCK_12V_SETUP()	DDRD |= 0x40
+#define BUCK_12V_ON()		PORTD &= 0xBF
+#define BUCK_12V_OFF()		PORTD |= 0x40
+
 uint8_t uart_data[UART_RX_MAX];
 
 #define UART_S0 0
@@ -74,6 +82,23 @@ uint8_t uart_console = 0;
 uint8_t radio_enabled = 0;
 uint16_t loop = 0;
 
+uint8_t tmpstr[20];
+uint32_t battery_lvl = 0;
+int32_t temperature = 0;
+
+uint8_t sleep_enabled = 0;
+
+#define THRESHOLD_ENTER_SLEEP_VOLT		2400
+#define THRESHOLD_EXIT_SLEEP_VOLT		2500
+
+#define THRESHOLD_ENTER_SLEEP_TEMP		0
+#define THRESHOLD_EXIT_SLEEP_TEMP		500
+
+#define THRESHOLD_ENTER_SLEEP_TEMP_COUNT 	5
+#define THRESHOLD_ENTER_SLEEP_VOLT_COUNT 	5
+#define THRESHOLD_EXIT_SLEEP_TEMP_COUNT 	5
+#define THRESHOLD_EXIT_SLEEP_VOLT_COUNT 	5
+
 #define PROG_VERSION "2.1.0"
 
 #define INVALID_HEX 255
@@ -100,6 +125,101 @@ void rx_handler(uint8_t pipe, uint8_t * data, uint8_t payload_length) {
 
 void tx_handler(radio_tx_status tx_status) {
 	
+}
+
+static inline void pre_read_data_seonsor()
+{
+	if(STATUS_DS18B20_OK != ds18b20_start_conv(0))
+	{
+		uart_printString("DS18 device busy!",1);
+	}
+}
+
+static inline void read_data_sensors()
+{
+
+	loop = 0;
+	battery_lvl = adc_read(ADC_PRESCALER_32, ADC_VREF_AVCC, 0);
+	battery_lvl = (battery_lvl * 330 / 1023) * 16;
+	
+	temperature = ds18b20_gettemp();
+
+	sprintf(tmpstr,"TMP:%ld", temperature);
+	uart_printString(tmpstr, 1);
+
+	sprintf(tmpstr,"BAT:%ld", battery_lvl);
+	uart_printString(tmpstr, 1);
+}
+
+static inline void check_sleep()
+{
+	static uint8_t under_zero_count = 0;
+	static uint8_t temp_restore_count = 0;
+	static uint8_t under_voltage_count = 0;
+	static uint8_t voltage_restore_count;
+
+	static uint8_t temp_restore_sleep = 1;
+	static uint8_t voltage_restore_sleep = 1;
+
+	//if the temperature is below 0C
+	if(temperature < THRESHOLD_ENTER_SLEEP_TEMP)
+	{
+		under_zero_count++;
+	}
+	//if the temperature is below treshold (24V)
+	if(battery_lvl < THRESHOLD_ENTER_SLEEP_VOLT)
+	{
+		under_voltage_count++;
+	}
+
+
+	if(under_zero_count > THRESHOLD_ENTER_SLEEP_TEMP_COUNT)
+	{
+		temp_restore_sleep = 0;
+		under_zero_count = 0;
+		sleep_enabled = 1;
+		uart_printString("Enter sleep: below 0C", 1);
+	}
+	if(under_voltage_count > THRESHOLD_ENTER_SLEEP_VOLT_COUNT)
+	{
+		voltage_restore_sleep = 0;
+		under_voltage_count = 0;
+		sleep_enabled = 1;
+		uart_printString("Enter sleep: under voltage", 1);
+	}
+
+	if(sleep_enabled)
+	{
+		//if battery volate get back and is over 25V
+		if( (voltage_restore_sleep == 0) && battery_lvl > THRESHOLD_EXIT_SLEEP_VOLT)
+		{
+			voltage_restore_count++;
+		}
+		//temperature is over 5C
+		if( (temp_restore_count == 0) && temperature > THRESHOLD_EXIT_SLEEP_TEMP)
+		{
+			temp_restore_count++;
+		}
+
+		if(voltage_restore_count > THRESHOLD_EXIT_SLEEP_VOLT_COUNT)
+		{
+			voltage_restore_sleep = 1;
+			uart_printString("Voltage is over 24V, set flag ok", 1);
+		}
+
+		if(temp_restore_count > THRESHOLD_EXIT_SLEEP_TEMP_COUNT)
+		{
+			temp_restore_sleep = 1;
+			uart_printString("Temperature is over 5C, set flag ok", 1);
+		}
+
+		//restore the sleep
+		if( temp_restore_sleep && voltage_restore_sleep)
+		{
+			sleep_enabled = 0;
+			uart_printString("Restore sleep", 1);
+		}
+	}
 }
 
 void process_uart_data(uint8_t * data, uint8_t len) 
@@ -209,6 +329,12 @@ void process_uart_data(uint8_t * data, uint8_t len)
 int main(void)
 {
 	//initilize uart
+
+	BUCK_5V_SETUP();
+	BUCK_12V_SETUP();
+
+	BUCK_5V_ON();
+	BUCK_12V_ON();
 
 	uart_init(UART_115200BAUD, UART_110592MHZ, UART_PARITY_NONE);
 	system_timer_init();
@@ -516,16 +642,40 @@ int main(void)
 			cmd_available = 0;
 		}
 		loop++;
-		if((loop == 10000) && (!radio_enabled)) //after ten seconds of no big activity
+
+		//read battery and temperature each 60 seconds
+		if((loop == 4000))
 		{
-			loop = 0;
-			//add a delay here to finish some things like UART sending or other interrupts that are ongoing
-			uart_printString("Enter sleep..",1);
-			_delay_ms(20);
-			goToSleep(WAKEUP_8S);
-			_delay_ms(5);
-			uart_printString("Return ..",1);
+			pre_read_data_seonsor();
 		}
+
+		if((loop == 5000))
+		{
+			read_data_sensors();
+			check_sleep();
+
+			//in case the device entered in sleep
+			while(sleep_enabled)
+			{
+				BUCK_12V_OFF();
+				BUCK_5V_OFF();
+				wdg_disable();
+				//give some time to finish the uart transmision
+				_delay_ms(5);
+				goToSleep(WAKEUP_8S);
+				_delay_ms(5);
+				wdg_init(wdgto_1S);
+				pre_read_data_seonsor();
+				//wait to read temp sensor, this takes up to 750ms
+				while(!ds18b20_is_ready());
+				read_data_sensors();
+				check_sleep();
+			}
+			BUCK_12V_ON();
+			BUCK_5V_ON();
+		}
+
+
 		_delay_ms(1);
     }
 	
