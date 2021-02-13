@@ -36,6 +36,10 @@
 #include "system-timer.h"
 #include "wdg.h"
 
+#include "atmega-adc.h"
+#include "lowpower.h"
+#include "ds18b20.h"
+
 uint8_t uart_data[UART_RX_MAX];
 
 #define UART_S0 0
@@ -67,6 +71,8 @@ uint8_t cmd_available = 0;
 
 #define CMD_TOGGLE_CONSOLE			'O'
 uint8_t uart_console = 0;
+uint8_t radio_enabled = 0;
+uint16_t loop = 0;
 
 #define PROG_VERSION "2.1.0"
 
@@ -222,6 +228,7 @@ int main(void)
 
 	wdg_init(wdgto_500MS);
 
+
 	radio_config cfg = 
 	{ 
 		RADIO_ADDRESS_5BYTES,
@@ -257,13 +264,16 @@ int main(void)
 		pipe_cfg0.pipe = p;
 		__nrfRadio_PipeConfig(pipe_cfg0);
 	}
-	__nrfRadio_PowerUp();
-
+	__nrfRadio_PowerDown();
     while (1) 
     {
 		wdg_kick();
-		__nrfRadio_Main();
+
+		//Execute radio Main loop if this is enabled
+		if(radio_enabled)
+			__nrfRadio_Main();
 		
+		//Check UART data available
 		uart_data_len = uart_rx_flush(uart_data, &uart_rx_err);
 		if(UART_RX_ERR != uart_data_len)
 			process_uart_data(uart_data, uart_data_len);
@@ -275,6 +285,8 @@ int main(void)
 			wdg_explicit_reset(0x1);
 			_delay_ms(1000);
 		}
+
+		//execute commands
 		if(cmd_available)
 		{
 			uart_printString("<EXECUTE_CMD:",0);
@@ -364,7 +376,6 @@ int main(void)
 						};
 						__nrfRadio_PowerDown();
 						__nrfRadio_PipeConfig(pipecfg);
-						__nrfRadio_PowerUp();
 						char tmp[8];
 						memcpy(tmp, cmd, 6);
 						tmp[6] = '>';
@@ -395,6 +406,7 @@ int main(void)
 						__nrfRadio_ListeningMode();
 						uart_printString("<NRF_CONFIG:DONE_RX>",1);
 					}
+					__nrfRadio_PowerUp();
 				break;
 				case CMD_SEND_TX:
 					uart_printRegister(command_type);
@@ -503,6 +515,19 @@ int main(void)
 			}
 			cmd_available = 0;
 		}
+		loop++;
+		if((loop == 10000) && (!radio_enabled)) //after ten seconds of no big activity
+		{
+			loop = 0;
+			//add a delay here to finish some things like UART sending or other interrupts that are ongoing
+			uart_printString("Enter sleep..",1);
+			_delay_ms(20);
+			goToSleep(WAKEUP_8S);
+			_delay_ms(5);
+			uart_printString("Return ..",1);
+		}
+		_delay_ms(1);
     }
+	
 }
 
