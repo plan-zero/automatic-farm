@@ -88,7 +88,7 @@ int32_t temperature = 0;
 
 uint8_t sleep_enabled = 0;
 
-#define THRESHOLD_ENTER_SLEEP_VOLT		2400
+#define THRESHOLD_ENTER_SLEEP_VOLT		1150//2400
 #define THRESHOLD_EXIT_SLEEP_VOLT		2500
 
 #define THRESHOLD_ENTER_SLEEP_TEMP		0
@@ -162,6 +162,7 @@ static inline void check_sleep()
 	static uint8_t voltage_restore_sleep = 1;
 
 	//if the temperature is below 0C
+
 	if(temperature < THRESHOLD_ENTER_SLEEP_TEMP)
 	{
 		under_zero_count++;
@@ -176,6 +177,7 @@ static inline void check_sleep()
 	if(under_zero_count > THRESHOLD_ENTER_SLEEP_TEMP_COUNT)
 	{
 		temp_restore_sleep = 0;
+		temp_restore_count = 0;
 		under_zero_count = 0;
 		sleep_enabled = 1;
 		uart_printString("Enter sleep: below 0C", 1);
@@ -183,6 +185,7 @@ static inline void check_sleep()
 	if(under_voltage_count > THRESHOLD_ENTER_SLEEP_VOLT_COUNT)
 	{
 		voltage_restore_sleep = 0;
+		voltage_restore_count = 0;
 		under_voltage_count = 0;
 		sleep_enabled = 1;
 		uart_printString("Enter sleep: under voltage", 1);
@@ -190,21 +193,15 @@ static inline void check_sleep()
 
 	if(sleep_enabled)
 	{
-		//if battery volate get back and is over 25V
-		if( (voltage_restore_sleep == 0) && battery_lvl > THRESHOLD_EXIT_SLEEP_VOLT)
-		{
-			voltage_restore_count++;
-		}
-		//temperature is over 5C
-		if( (temp_restore_count == 0) && temperature > THRESHOLD_EXIT_SLEEP_TEMP)
-		{
-			temp_restore_count++;
-		}
 
 		if(voltage_restore_count > THRESHOLD_EXIT_SLEEP_VOLT_COUNT)
 		{
 			voltage_restore_sleep = 1;
 			uart_printString("Voltage is over 24V, set flag ok", 1);
+		}
+		else if ( battery_lvl > THRESHOLD_EXIT_SLEEP_VOLT)
+		{
+			voltage_restore_count++;
 		}
 
 		if(temp_restore_count > THRESHOLD_EXIT_SLEEP_TEMP_COUNT)
@@ -212,12 +209,18 @@ static inline void check_sleep()
 			temp_restore_sleep = 1;
 			uart_printString("Temperature is over 5C, set flag ok", 1);
 		}
+		else if(temperature > THRESHOLD_EXIT_SLEEP_TEMP)
+		{
+			temp_restore_count++;
+		}
 
 		//restore the sleep
 		if( temp_restore_sleep && voltage_restore_sleep)
 		{
 			sleep_enabled = 0;
 			uart_printString("Restore sleep", 1);
+			under_voltage_count = 0;
+			under_zero_count = 0;
 		}
 	}
 }
@@ -658,7 +661,7 @@ int main(void)
 			while(sleep_enabled)
 			{
 				BUCK_12V_OFF();
-				BUCK_5V_OFF();
+				//BUCK_5V_OFF();
 				wdg_disable();
 				//give some time to finish the uart transmision
 				_delay_ms(5);
